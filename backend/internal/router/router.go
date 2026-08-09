@@ -2,12 +2,14 @@ package router
 
 import (
 	"github.com/abde1khaliq/korasa/internal/api"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
+	r.Use(cors.Default())
 
 	SubjectRouteGroup := r.Group("/api/subjects")
 	api.SubjectRoutes(SubjectRouteGroup, db)

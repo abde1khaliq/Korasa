@@ -62,12 +62,49 @@ func LoginUser(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		token, err := security.GenerateToken(user.ID)
+		accessToken, refreshToken, err := security.GenerateTokens(int(user.ID))
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate token"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate tokens"})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"token": token})
+		c.JSON(http.StatusOK, gin.H{
+			"accessToken":  accessToken,
+			"refreshToken": refreshToken,
+			"user": gin.H{
+				"id":       user.ID,
+				"email":    user.Email,
+				"username": user.Username,
+			},
+		})
+	}
+}
+
+func RefreshUser(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var input struct {
+			RefreshToken string `json:"refreshToken"`
+		}
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "missing refresh token"})
+			return
+		}
+
+		userID, err := security.ValidateToken(input.RefreshToken, true)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid refresh token"})
+			return
+		}
+
+		accessToken, newRefreshToken, err := security.GenerateTokens(userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate tokens"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"accessToken":  accessToken,
+			"refreshToken": newRefreshToken,
+		})
 	}
 }

@@ -18,7 +18,7 @@ func RequireAuth() gin.HandlerFunc {
 			return
 		}
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		userID, err := security.ValidateToken(tokenStr)
+		userID, err := security.ValidateToken(tokenStr, false)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			return
@@ -27,3 +27,4 @@ func RequireAuth() gin.HandlerFunc {
 		c.Next()
 	}
 }
+

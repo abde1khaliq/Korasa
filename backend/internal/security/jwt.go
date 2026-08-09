@@ -8,26 +8,49 @@ import (
 )
 
 var jwtSecret = []byte("your-secret-key")
+var jwtRefreshSecret = []byte("your-refresh-secret-key")
 
-func GenerateToken(userID int) (string, error) {
+func GenerateTokens(userID int) (string, string, error) {
 	if len(jwtSecret) == 0 {
-		return "", errors.New("JWT_SECRET not set")
+		return "", "", errors.New("JWT_SECRET not set")
 	}
 
-	claims := jwt.MapClaims{
+	// Access Token (15 minutes)
+	accessClaims := jwt.MapClaims{
 		"sub": userID,
-		"exp": time.Now().Add(24 * time.Hour).Unix(),
+		"exp": time.Now().Add(15 * time.Minute).Unix(),
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtSecret)
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
+	accessString, err := accessToken.SignedString(jwtSecret)
+	if err != nil {
+		return "", "", err
+	}
+
+	// Refresh Token (7 days)
+	refreshClaims := jwt.MapClaims{
+		"sub": userID,
+		"exp": time.Now().Add(7 * 24 * time.Hour).Unix(),
+	}
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	refreshString, err := refreshToken.SignedString(jwtRefreshSecret)
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessString, refreshString, nil
 }
 
-func ValidateToken(tokenStr string) (int, error) {
+func ValidateToken(tokenStr string, isRefresh bool) (int, error) {
+	secret := jwtSecret
+	if isRefresh {
+		secret = jwtRefreshSecret
+	}
+
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
 		}
-		return jwtSecret, nil
+		return secret, nil
 	})
 	if err != nil || !token.Valid {
 		return 0, errors.New("invalid token")
