@@ -1,20 +1,38 @@
+"use client";
+
+import { useState } from "react";
 import { Search, LayoutGrid, Plus } from "lucide-react";
 import { Screen } from "./Screen";
+import { useRouter } from "next/navigation";
 
-const subjects: { name: string; folders: number; questions: number }[] = [
-  {
-    name: "Mathematics",
-    folders: 2,
-    questions: 10,
-  },
-];
+export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
+  const [subjects, setSubjects] = useState(initialSubjects || []);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const router = useRouter();
 
-export function HomeSubjects() {
-  if (subjects.length === 0) {
-    return <HomeEmptyState />;
+  const handleCreateSubject = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!newSubjectName.trim()) return;
+
+    try {
+      const { createSubject } = await import("@/app/actions/subject");
+      const newSubject = await createSubject(newSubjectName);
+      
+      // Update local state for optimistic UI before revalidate takes over
+      setSubjects([...subjects, newSubject]);
+      setNewSubjectName("");
+      setIsCreating(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (subjects.length === 0 && !isCreating) {
+    return <HomeEmptyState onCreateClick={() => setIsCreating(true)} />;
   }
 
-  const totalQuestions = subjects.reduce((sum, s) => sum + s.questions, 0);
+  const totalQuestions = subjects.reduce((sum, s) => sum + (s.questions || 0), 0);
 
   return (
     <Screen>
@@ -37,31 +55,54 @@ export function HomeSubjects() {
       <div className="grid grid-cols-2 gap-4 px-6 py-6">
         {subjects.map((s) => (
           <article
-            key={s.name}
-            className="flex h-[190px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4"
+            key={s.ID}
+            className="flex h-[190px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors"
           >
             <h2 className="font-display text-[18px] leading-[1.15]">
-              {s.name}
+              {s.Name}
             </h2>
             <div className="flex flex-col gap-0.5 font-mono text-[14px] text-ink-soft">
-              <span>{s.folders} folders</span>
-              <span>{s.questions} questions</span>
+              <span>{s.folders || 0} folders</span>
+              <span>{s.questions || 0} questions</span>
             </div>
           </article>
         ))}
 
-        <button className="flex h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule">
-          <span className="flex size-12 items-center justify-center rounded-full border border-ink-faint">
-            <Plus className="size-5 text-ink-soft" strokeWidth={1.5} />
-          </span>
-          <span className="text-[16px] text-ink-soft">New subject</span>
-        </button>
+        {isCreating ? (
+          <form 
+            onSubmit={handleCreateSubject}
+            className="flex h-[190px] flex-col justify-center gap-3 rounded-2xl border border-rule bg-paper-card p-4"
+          >
+            <input 
+              type="text" 
+              autoFocus
+              placeholder="Subject name" 
+              value={newSubjectName}
+              onChange={e => setNewSubjectName(e.target.value)}
+              className="w-full bg-transparent font-display text-[18px] leading-[1.15] text-ink placeholder:text-ink-faint outline-none border-b border-rule focus:border-brand pb-1"
+            />
+            <div className="flex gap-2 mt-2">
+              <button type="submit" className="text-sm text-paper bg-brand rounded-full px-3 py-1">Save</button>
+              <button type="button" onClick={() => setIsCreating(false)} className="text-sm text-ink-soft hover:text-ink">Cancel</button>
+            </div>
+          </form>
+        ) : (
+          <button 
+            onClick={() => setIsCreating(true)}
+            className="flex h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule hover:border-brand hover:text-brand transition-colors text-ink-soft"
+          >
+            <span className="flex size-12 items-center justify-center rounded-full border border-inherit">
+              <Plus className="size-5" strokeWidth={1.5} />
+            </span>
+            <span className="text-[16px]">New subject</span>
+          </button>
+        )}
       </div>
     </Screen>
   );
 }
 
-function HomeEmptyState() {
+function HomeEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
   return (
     <Screen>
       <header className="flex items-center justify-between px-6 pt-6">
@@ -90,7 +131,10 @@ function HomeEmptyState() {
           follow.
         </p>
 
-        <button className="mt-8 inline-flex items-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper">
+        <button 
+          onClick={onCreateClick}
+          className="mt-8 inline-flex items-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper hover:bg-onyx/90 transition-colors"
+        >
           <Plus className="size-5" strokeWidth={1.75} />
           Create your first subject
         </button>

@@ -66,7 +66,7 @@ export const authOptions = {
 
       // Access token has expired, try to update it
       try {
-        const res = await fetch(`${backendUrl}/refresh`, {
+        const res = await fetch(`${backendUrl}/auth/refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -74,7 +74,13 @@ export const authOptions = {
           }),
         });
 
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (err) {
+          throw new Error(`Failed to parse JSON. Response: ${text.slice(0, 100)}`);
+        }
 
         if (!res.ok) throw new Error("Refresh failed");
 

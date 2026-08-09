@@ -10,5 +10,23 @@ export default async function Home() {
     redirect("/login");
   }
 
-  return <HomeSubjects/>
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+  let subjects = [];
+
+  try {
+    const res = await fetch(`${backendUrl}/api/subjects`, {
+      headers: {
+        Authorization: `Bearer ${(session as any).accessToken}`,
+      },
+      cache: "no-store", // always fetch fresh data for now
+    });
+
+    if (res.ok) {
+      subjects = await res.json();
+    }
+  } catch (error) {
+    console.error("Failed to fetch subjects:", error);
+  }
+
+  return <HomeSubjects initialSubjects={subjects} />
 }
