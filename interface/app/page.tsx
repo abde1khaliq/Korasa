@@ -16,7 +16,7 @@ export default async function Home() {
   try {
     const res = await fetch(`${backendUrl}/api/subjects`, {
       headers: {
-        Authorization: `Bearer ${(session as any).accessToken}`,
+        Authorization: `Bearer ${session?.accessToken}`,
       },
     });
 
