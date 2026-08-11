@@ -9,10 +9,16 @@ import (
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 
 	SubjectRouteGroup := r.Group("/api/subjects")
 	api.SubjectRoutes(SubjectRouteGroup, db)
+	api.FolderRoutes(SubjectRouteGroup, db)
 
 	UserRouteGroup := r.Group("/auth")
 	api.UserRouters(UserRouteGroup, db)
