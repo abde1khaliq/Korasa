@@ -6,7 +6,7 @@ import {
   BookOpen,
   Plus,
 } from "lucide-react";
-import { Screen, difficultyStyles, type Difficulty } from "./Screen";
+import { Screen, difficultyStyles, type Difficulty } from "./Lib/Screen";
 import { InlineMath, BlockMath } from "react-katex";
 
 const questions: {

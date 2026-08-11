@@ -5,7 +5,7 @@ import {
   MoreHorizontal,
   Eye,
 } from "lucide-react";
-import { Screen, Breadcrumb, DifficultyPill } from "./Screen";
+import { Screen, Breadcrumb, DifficultyPill } from "./Lib/Screen";
 
 /** Question detail. `revealed` toggles between the two designed states. */
 export function QuestionDetail({ revealed = false }: { revealed?: boolean }) {

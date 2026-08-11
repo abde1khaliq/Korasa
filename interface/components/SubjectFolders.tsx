@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ChevronLeft,
   ChevronRight,
@@ -7,20 +9,62 @@ import {
   ArrowDownUp,
   Plus,
 } from "lucide-react";
-import { Screen } from "./Screen";
+import { Screen } from "./Lib/Screen";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { Subject } from "./HomeSubjects";
+import { useParams } from "next/navigation";
 
-const folders: { name: string; qs: number; e: number; m: number; h: number }[] =
-  [
-    { name: "Pure Math", qs: 5, e: 2, m: 2, h: 1 },
-    { name: "Applied Math", qs: 5, e: 1, m: 1, h: 3 },
-  ];
+interface Folder {
+  id: number;
+  name: string;
+}
 
 export function SubjectFolders() {
+  const [subject, setSubject] = useState<Subject | null>(null);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const { data: session } = useSession();
+  const { id: subjectID } = useParams();
+
+  useEffect(() => {
+    const fetchSubject = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/${subjectID}`,
+          { headers: { Authorization: `Bearer ${session?.accessToken}` } },
+        );
+        if (res.ok) {
+          const subject: Subject = await res.json();
+          setSubject(subject);
+        }
+      } catch (err) {
+        console.error("Failed to fetch the subject:", err);
+      }
+    };
+
+    const fetchFolders = async () => {
+      try {
+        const res = await fetch(`/api/subjects/${subjectID}/folders`);
+        if (res.ok) {
+          const data: Folder[] = await res.json();
+          setFolders(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch folders:", err);
+      }
+    };
+
+    if (session && subjectID) {
+      fetchSubject();
+      fetchFolders();
+    }
+  }, [session, subjectID]);
+
   return (
     <Screen className="relative">
       <header className="flex items-center justify-between px-6 pt-6">
         <ChevronLeft className="size-7" strokeWidth={1.75} />
-        <h1 className="text-[20px] font-semibold">Mathematics</h1>
+        <h1 className="text-[20px] font-semibold">{subject?.name}</h1>
         <div className="flex items-center gap-4">
           <Search className="size-6" strokeWidth={1.75} />
           <MoreHorizontal className="size-6" strokeWidth={1.75} />
@@ -29,11 +73,11 @@ export function SubjectFolders() {
 
       <section className="mx-6 mt-6 rounded-2xl border border-rule bg-paper-card p-6">
         <h2 className="mt-4 font-display text-[42px] leading-none">
-          Mathematics
+          {subject?.name}
         </h2>
         <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft">
-          <Stat value="2" label="folders" />
-          <Stat value="10" label="questions" />
+          {/* <Stat value="-" label="folders" />
+          <Stat value="-" label="questions" /> */}
         </div>
       </section>
 
@@ -48,23 +92,23 @@ export function SubjectFolders() {
       </div>
 
       <ul className="mt-4 px-6 pb-28">
-        {folders.map((f) => (
+        {folders.map((folder) => (
           <li
-            key={f.name}
+            key={folder.name}
             className="flex items-center gap-4 border-b border-rule py-5"
           >
             <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-tag">
               <Folder className="size-6 text-brand" strokeWidth={1.5} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[19px]">{f.name}</p>
-              <p className="mt-1 flex items-center gap-2 font-mono text-[14px] text-ink-soft">
+              <p className="truncate text-[19px]">{folder.name}</p>
+              {/* <p className="mt-1 flex items-center gap-2 font-mono text-[14px] text-ink-soft">
                 <span>{f.qs} questions</span>
                 <span className="text-ink-faint">·</span>
                 <Count color="bg-easy" n={f.e} />
                 <Count color="bg-medium" n={f.m} />
                 <Count color="bg-hard" n={f.h} />
-              </p>
+              </p> */}
             </div>
             <ChevronRight
               className="size-5 text-ink-faint"
@@ -99,14 +143,5 @@ function Stat({
       </p>
       <p className="mt-2">{label}</p>
     </div>
-  );
-}
-
-function Count({ color, n }: { color: string; n: number }) {
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span className={`size-[7px] rounded-full ${color}`} />
-      {n}
-    </span>
   );
 }

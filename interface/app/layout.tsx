@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 import { AppProviders } from "./providers";
 

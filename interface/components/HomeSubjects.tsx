@@ -1,42 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, LayoutGrid, Plus } from "lucide-react";
-import { Screen } from "./Screen";
+import { Screen } from "./Lib/Screen";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
-export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
-  const [subjects, setSubjects] = useState(initialSubjects || []);
-  const [isCreating, setIsCreating] = useState(false);
-  const [newSubjectName, setNewSubjectName] = useState("");
+export interface Subject {
+  id: number;
+  name: string;
+}
+
+export function HomeSubjects() {
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const router = useRouter();
+  const { data: session } = useSession();
 
-  const handleCreateSubject = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!newSubjectName.trim()) return;
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/`, {
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        });
 
-    try {
-      const { createSubject } = await import("@/app/actions/subject");
-      const newSubject = await createSubject(newSubjectName);
+        if (res.ok) {
+          const subjects: Subject[] = await res.json();
+          setSubjects(subjects);
+        }
+      } catch (err) {
+        console.error("Failed to fetch subjects:", err);
+      }
+    };
 
-      // Update local state for optimistic UI before revalidate takes over
-      setSubjects([...subjects, newSubject]);
-      setNewSubjectName("");
-      setIsCreating(false);
-    } catch (err) {
-      console.error(err);
+    if (session) {
+      fetchSubjects();
     }
-  };
+  }, [session]);
 
-  if (subjects.length === 0 && !isCreating) {
-    return <HomeEmptyState onCreateClick={() => setIsCreating(true)} />;
+  if (subjects.length === 0) {
+    return <HomeEmptyState />;
   }
-
-  const totalQuestions = subjects.reduce(
-    (sum, s) => sum + (s.questions || 0),
-    0,
-  );
 
   return (
     <Screen>
@@ -55,74 +60,33 @@ export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
       <div className="px-6 pt-6">
         <h1 className="font-display text-[56px] leading-[1.05]">Subjects</h1>
         <p className="mt-2 text-[17px] text-ink-soft">
-          {subjects.length} {subjects.length === 1 ? "subject" : "subjects"} ·{" "}
-          {totalQuestions} questions
+          {subjects.length} {subjects.length === 1 ? "subject" : "subjects"} · 0
+          questions
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 px-6 py-6">
-        {subjects.map((s) => (
+        {subjects.map((subject) => (
           <article
-            key={s.id}
-            onClick={() => router.push(`/subject/${s.id}`)}
+            key={subject.id}
+            onClick={() => router.push(`/subject/${subject.id}`)}
             className="flex h-[190px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors"
           >
             <h2 className="font-display text-[18px] leading-[1.15]">
-              {s.name}
+              {subject.name}
             </h2>
-            <div className="flex flex-col gap-0.5 font-mono text-[14px] text-ink-soft">
+            {/* <div className="flex flex-col gap-0.5 font-mono text-[14px] text-ink-soft">
               <span>{s.folders || 0} folders</span>
               <span>{s.questions || 0} questions</span>
-            </div>
+            </div> */}
           </article>
         ))}
-
-        {isCreating ? (
-          <form
-            onSubmit={handleCreateSubject}
-            className="flex h-[190px] flex-col justify-center gap-3 rounded-2xl border border-rule bg-paper-card p-4"
-          >
-            <input
-              type="text"
-              autoFocus
-              placeholder="Subject name"
-              value={newSubjectName}
-              onChange={(e) => setNewSubjectName(e.target.value)}
-              className="w-full bg-transparent font-display text-[18px] leading-[1.15] text-ink placeholder:text-ink-faint outline-none border-b border-rule focus:border-brand pb-1"
-            />
-            <div className="flex gap-2 mt-2">
-              <button
-                type="submit"
-                className="text-sm text-paper bg-brand rounded-full px-3 py-1"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCreating(false)}
-                className="text-sm text-ink-soft hover:text-ink"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        ) : (
-          <button
-            onClick={() => setIsCreating(true)}
-            className="flex h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule hover:border-brand hover:text-brand transition-colors text-ink-soft"
-          >
-            <span className="flex size-12 items-center justify-center rounded-full border border-inherit">
-              <Plus className="size-5" strokeWidth={1.5} />
-            </span>
-            <span className="text-[16px]">New subject</span>
-          </button>
-        )}
       </div>
     </Screen>
   );
 }
 
-function HomeEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
+function HomeEmptyState() {
   return (
     <Screen>
       <header className="flex items-center justify-between px-6 pt-6">
@@ -147,14 +111,10 @@ function HomeEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
           Begin with a subject
         </h2>
         <p className="mt-3 max-w-[19rem] text-center text-[17px] leading-relaxed text-ink-soft">
-          English, Chemistry, or anything you're learning. Folders and questions
-          follow.
+          English, Chemistry, or anything you're learning.
         </p>
 
-        <button
-          onClick={onCreateClick}
-          className="mt-8 inline-flex items-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper hover:bg-onyx/90 transition-colors"
-        >
+        <button className="mt-8 inline-flex items-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper hover:bg-onyx/90 transition-colors">
           <Plus className="size-5" strokeWidth={1.75} />
           Create your first subject
         </button>

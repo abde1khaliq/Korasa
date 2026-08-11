@@ -1,14 +1,14 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
-import { Register } from "@/components/Authentication/Register";
+import { SubjectFolders } from "@/components/SubjectFolders";
 
-export default async function RegisterPage() {
+export default async function SubjectPage() {
   const session = await getServerSession(authOptions);
-  
-  if (session) {
-    redirect("/");
+
+  if (!session) {
+    redirect("/login");
   }
 
-  return <Register/>
+  return <SubjectFolders/>;
 }
