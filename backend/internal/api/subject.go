@@ -12,4 +12,7 @@ func SubjectRoutes(router *gin.RouterGroup, db *gorm.DB) {
 
 	router.GET("/", services.GetUserSubjects(db))
 	router.POST("/", services.CreateSubject(db))
+	router.GET("/:id", services.GetSubjectByID(db))
+	router.DELETE("/:id", services.DeleteSubject(db))
+	router.PUT("/:id", services.UpdateSubject(db))
 }
