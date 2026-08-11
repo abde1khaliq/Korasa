@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Search, LayoutGrid, Plus } from "lucide-react";
 import { Screen } from "./Screen";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
   const [subjects, setSubjects] = useState(initialSubjects || []);
@@ -40,7 +41,7 @@ export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
         <span className="font-display text-2xl leading-none">K</span>
         <div className="flex items-center gap-5 text-ink">
           <Search className="size-6" strokeWidth={1.75} />
-          <LayoutGrid className="size-6" strokeWidth={1.75} />
+          <LayoutGrid className="size-6" strokeWidth={1.75} onClick={() => signOut()}/>
         </div>
       </header>
 
@@ -56,6 +57,7 @@ export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
         {subjects.map((s) => (
           <article
             key={s.ID}
+            onClick={() => router.push(`/subject/${s.ID}`)}
             className="flex h-[190px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors"
           >
             <h2 className="font-display text-[18px] leading-[1.15]">
