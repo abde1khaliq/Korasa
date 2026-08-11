@@ -25,7 +25,8 @@ export function CreateQuestion() {
         </p>
         <div className="mt-2 min-h-[90px] rounded-2xl border border-brand bg-paper-card p-4">
           <p className="font-display text-[19px] leading-snug">
-            The number of terms in the expansion of (x + 1/x)^n is 9. Find the value of n.
+            The number of terms in the expansion of (x + 1/x)^n is 9. Find the
+            value of n.
           </p>
         </div>
 
@@ -33,9 +34,7 @@ export function CreateQuestion() {
           Answer
         </p>
         <div className="mt-2 min-h-[100px] rounded-2xl border border-rule bg-paper-card p-4">
-          <p className="text-[15px] leading-relaxed">
-            29
-          </p>
+          <p className="text-[15px] leading-relaxed">29</p>
         </div>
 
         <p className="mt-5 font-mono text-[12px] tracking-[0.15em] text-ink-faint uppercase">

@@ -19,7 +19,7 @@ export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
     try {
       const { createSubject } = await import("@/app/actions/subject");
       const newSubject = await createSubject(newSubjectName);
-      
+
       // Update local state for optimistic UI before revalidate takes over
       setSubjects([...subjects, newSubject]);
       setNewSubjectName("");
@@ -33,7 +33,10 @@ export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
     return <HomeEmptyState onCreateClick={() => setIsCreating(true)} />;
   }
 
-  const totalQuestions = subjects.reduce((sum, s) => sum + (s.questions || 0), 0);
+  const totalQuestions = subjects.reduce(
+    (sum, s) => sum + (s.questions || 0),
+    0,
+  );
 
   return (
     <Screen>
@@ -41,7 +44,11 @@ export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
         <span className="font-display text-2xl leading-none">K</span>
         <div className="flex items-center gap-5 text-ink">
           <Search className="size-6" strokeWidth={1.75} />
-          <LayoutGrid className="size-6" strokeWidth={1.75} onClick={() => signOut()}/>
+          <LayoutGrid
+            className="size-6"
+            strokeWidth={1.75}
+            onClick={() => signOut()}
+          />
         </div>
       </header>
 
@@ -71,25 +78,36 @@ export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
         ))}
 
         {isCreating ? (
-          <form 
+          <form
             onSubmit={handleCreateSubject}
             className="flex h-[190px] flex-col justify-center gap-3 rounded-2xl border border-rule bg-paper-card p-4"
           >
-            <input 
-              type="text" 
+            <input
+              type="text"
               autoFocus
-              placeholder="Subject name" 
+              placeholder="Subject name"
               value={newSubjectName}
-              onChange={e => setNewSubjectName(e.target.value)}
+              onChange={(e) => setNewSubjectName(e.target.value)}
               className="w-full bg-transparent font-display text-[18px] leading-[1.15] text-ink placeholder:text-ink-faint outline-none border-b border-rule focus:border-brand pb-1"
             />
             <div className="flex gap-2 mt-2">
-              <button type="submit" className="text-sm text-paper bg-brand rounded-full px-3 py-1">Save</button>
-              <button type="button" onClick={() => setIsCreating(false)} className="text-sm text-ink-soft hover:text-ink">Cancel</button>
+              <button
+                type="submit"
+                className="text-sm text-paper bg-brand rounded-full px-3 py-1"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCreating(false)}
+                className="text-sm text-ink-soft hover:text-ink"
+              >
+                Cancel
+              </button>
             </div>
           </form>
         ) : (
-          <button 
+          <button
             onClick={() => setIsCreating(true)}
             className="flex h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule hover:border-brand hover:text-brand transition-colors text-ink-soft"
           >
@@ -133,7 +151,7 @@ function HomeEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
           follow.
         </p>
 
-        <button 
+        <button
           onClick={onCreateClick}
           className="mt-8 inline-flex items-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper hover:bg-onyx/90 transition-colors"
         >

@@ -9,10 +9,11 @@ import {
 } from "lucide-react";
 import { Screen } from "./Screen";
 
-const folders: { name: string; qs: number; e: number; m: number; h: number }[] = [
-  { name: "Pure Math", qs: 5, e: 2, m: 2, h: 1 },
-  { name: "Applied Math", qs: 5, e: 1, m: 1, h: 3 },
-];
+const folders: { name: string; qs: number; e: number; m: number; h: number }[] =
+  [
+    { name: "Pure Math", qs: 5, e: 2, m: 2, h: 1 },
+    { name: "Applied Math", qs: 5, e: 1, m: 1, h: 3 },
+  ];
 
 export function SubjectFolders() {
   return (

@@ -1,4 +1,10 @@
-import { ChevronLeft, ChevronRight, Pencil, MoreHorizontal, Eye } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  MoreHorizontal,
+  Eye,
+} from "lucide-react";
 import { Screen, Breadcrumb, DifficultyPill } from "./Screen";
 
 /** Question detail. `revealed` toggles between the two designed states. */
@@ -29,21 +35,25 @@ export function QuestionDetail({ revealed = false }: { revealed?: boolean }) {
         </h2>
 
         <div className="mt-6 flex h-[170px] items-center justify-center rounded-2xl bg-[oklch(0.9_0.012_88)]">
-          <span className="font-mono text-[16px] text-ink-soft">keats-letter-1817.jpg</span>
+          <span className="font-mono text-[16px] text-ink-soft">
+            keats-letter-1817.jpg
+          </span>
         </div>
 
         <div className="mt-8 flex items-center gap-3">
           <span className="h-px w-6 bg-ink-faint" />
-          <p className="font-mono text-[14px] tracking-[0.18em] text-ink-soft uppercase">Answer</p>
+          <p className="font-mono text-[14px] tracking-[0.18em] text-ink-soft uppercase">
+            Answer
+          </p>
         </div>
 
         {revealed ? (
           <div className="mt-4 rounded-2xl border border-rule bg-paper-card p-6">
             <p className="text-[19px] leading-[1.55]">
-              The capacity to remain in "uncertainties, mysteries, doubts, without any
-              irritable reaching after fact and reason." For Keats, it was the mark of a
-              true poet — the ability to accept ambiguity rather than resolve it
-              prematurely.
+              The capacity to remain in "uncertainties, mysteries, doubts,
+              without any irritable reaching after fact and reason." For Keats,
+              it was the mark of a true poet — the ability to accept ambiguity
+              rather than resolve it prematurely.
             </p>
           </div>
         ) : (
@@ -58,8 +68,8 @@ export function QuestionDetail({ revealed = false }: { revealed?: boolean }) {
         </p>
         <div className="mt-4 mb-32 rounded-2xl border border-rule bg-[oklch(0.955_0.008_90)] p-6">
           <p className="font-display text-[18px] leading-[1.6] italic text-ink-soft">
-            Contrast with Wordsworth's "emotion recollected in tranquility". See also:
-            Keats's letter of 21 Dec 1817 to his brothers.
+            Contrast with Wordsworth's "emotion recollected in tranquility". See
+            also: Keats's letter of 21 Dec 1817 to his brothers.
           </p>
         </div>
       </div>

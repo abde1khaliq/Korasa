@@ -97,7 +97,7 @@ export function Register() {
             Username
           </p>
           <div className="mt-3 rounded-2xl border border-rule bg-paper-card px-5 py-1">
-            <input 
+            <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -111,7 +111,7 @@ export function Register() {
             Email
           </p>
           <div className="mt-3 rounded-2xl border border-rule bg-paper-card px-5 py-1">
-            <input 
+            <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -125,7 +125,7 @@ export function Register() {
             Password
           </p>
           <div className="mt-3 flex items-center justify-between rounded-2xl border focus-within:border-brand border-rule bg-paper-card px-5 py-1">
-            <input 
+            <input
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -133,8 +133,8 @@ export function Register() {
               className="w-full font-mono text-[20px] tracking-[0.1em] text-ink placeholder:tracking-normal placeholder:text-ink-faint bg-transparent outline-none py-3"
               disabled={loading}
             />
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="font-mono text-[14px] tracking-[0.14em] text-ink-faint uppercase hover:text-ink ml-2 shrink-0"
               disabled={loading}
@@ -142,19 +142,30 @@ export function Register() {
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
-          <p className="mt-2 text-[15px] text-ink-faint">At least 8 characters.</p>
+          <p className="mt-2 text-[15px] text-ink-faint">
+            At least 8 characters.
+          </p>
 
-          <div className="mt-7 flex items-start gap-3 cursor-pointer" onClick={() => !loading && setAgreed(!agreed)}>
-            <span className={`mt-0.5 flex size-6 items-center justify-center rounded-md border ${agreed ? 'bg-onyx border-onyx' : 'border-ink-faint bg-paper-card'} transition-colors`}>
-              {agreed && <Check className="size-4 text-paper" strokeWidth={2.25} />}
+          <div
+            className="mt-7 flex items-start gap-3 cursor-pointer"
+            onClick={() => !loading && setAgreed(!agreed)}
+          >
+            <span
+              className={`mt-0.5 flex size-6 items-center justify-center rounded-md border ${agreed ? "bg-onyx border-onyx" : "border-ink-faint bg-paper-card"} transition-colors`}
+            >
+              {agreed && (
+                <Check className="size-4 text-paper" strokeWidth={2.25} />
+              )}
             </span>
             <p className="text-[16px] leading-snug text-ink-soft select-none">
-              I agree to the <span className="text-brand hover:underline">Terms</span> and{" "}
-              <span className="text-brand hover:underline">Privacy Policy</span>.
+              I agree to the{" "}
+              <span className="text-brand hover:underline">Terms</span> and{" "}
+              <span className="text-brand hover:underline">Privacy Policy</span>
+              .
             </p>
           </div>
 
-          <button 
+          <button
             type="submit"
             disabled={loading}
             className="mt-8 inline-flex items-center justify-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper disabled:opacity-50"
@@ -165,7 +176,10 @@ export function Register() {
         </form>
 
         <p className="mt-auto pt-12 text-center text-[17px] text-ink-soft">
-          Already have an account? <Link href="/login" className="text-brand hover:underline">Sign in</Link>
+          Already have an account?{" "}
+          <Link href="/login" className="text-brand hover:underline">
+            Sign in
+          </Link>
         </p>
       </div>
     </Screen>

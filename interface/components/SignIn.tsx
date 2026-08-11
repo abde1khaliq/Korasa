@@ -49,7 +49,9 @@ export function Login() {
         <p className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
           Welcome back
         </p>
-        <h1 className="mt-3 font-display text-[48px] leading-[1.05]">Sign in</h1>
+        <h1 className="mt-3 font-display text-[48px] leading-[1.05]">
+          Sign in
+        </h1>
         <p className="mt-3 text-[17px] text-ink-soft">
           Pick up where your questions left off.
         </p>
@@ -61,7 +63,7 @@ export function Login() {
             Email
           </p>
           <div className="mt-3 rounded-2xl border border-rule bg-paper-card px-5 py-1">
-            <input 
+            <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -75,7 +77,7 @@ export function Login() {
             Password
           </p>
           <div className="mt-3 flex items-center justify-between rounded-2xl border focus-within:border-brand border-rule bg-paper-card px-5 py-1">
-            <input 
+            <input
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -83,8 +85,8 @@ export function Login() {
               className="w-full font-mono text-[20px] tracking-[0.1em] text-ink placeholder:tracking-normal placeholder:text-ink-faint bg-transparent outline-none py-3"
               disabled={loading}
             />
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="font-mono text-[14px] tracking-[0.14em] text-ink-faint uppercase hover:text-ink ml-2 shrink-0"
               disabled={loading}
@@ -93,10 +95,12 @@ export function Login() {
             </button>
           </div>
 
-          <p className="mt-4 text-[16px] text-brand hover:underline cursor-pointer">Forgot password?</p>
+          <p className="mt-4 text-[16px] text-brand hover:underline cursor-pointer">
+            Forgot password?
+          </p>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="mt-8 inline-flex items-center justify-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper disabled:opacity-50"
           >
@@ -118,7 +122,10 @@ export function Login() {
         </button>
 
         <p className="mt-auto pt-12 text-center text-[17px] text-ink-soft">
-          New here? <Link href="/register" className="text-brand hover:underline">Create an account</Link>
+          New here?{" "}
+          <Link href="/register" className="text-brand hover:underline">
+            Create an account
+          </Link>
         </p>
       </div>
     </Screen>

@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const authOptions = {
   providers: [
@@ -79,7 +79,9 @@ export const authOptions = {
         try {
           data = text ? JSON.parse(text) : {};
         } catch (err) {
-          throw new Error(`Failed to parse JSON. Response: ${text.slice(0, 100)}`);
+          throw new Error(
+            `Failed to parse JSON. Response: ${text.slice(0, 100)}`,
+          );
         }
 
         if (!res.ok) throw new Error("Refresh failed");

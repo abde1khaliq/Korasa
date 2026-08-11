@@ -5,12 +5,12 @@ import { HomeSubjects } from "@/components/HomeSubjects";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
-  
+
   if (!session) {
     redirect("/login");
   }
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
   let subjects = [];
 
   try {
@@ -27,5 +27,5 @@ export default async function Home() {
     console.error("Failed to fetch subjects:", error);
   }
 
-  return <HomeSubjects initialSubjects={subjects} />
+  return <HomeSubjects initialSubjects={subjects} />;
 }
