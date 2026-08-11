@@ -26,7 +26,7 @@ func GetUserSubjects(db *gorm.DB) gin.HandlerFunc {
 func GetSubjectByID(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
-		subjectID := c.Param("id")
+		subjectID := c.Param("subjectID")
 		var subject models.Subject
 
 		if err := db.Where("user_id = ?", userID).First(&subject, subjectID).Error; err != nil {
@@ -70,7 +70,7 @@ func CreateSubject(db *gorm.DB) gin.HandlerFunc {
 func UpdateSubject(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
-		subjectID := c.Param("id")
+		subjectID := c.Param("subjectID")
 
 		var subject models.Subject
 		if err := db.Where("user_id = ?", userID).First(&subject, subjectID).Error; err != nil {
@@ -106,7 +106,7 @@ func UpdateSubject(db *gorm.DB) gin.HandlerFunc {
 func DeleteSubject(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
-		subjectID := c.Param("id")
+		subjectID := c.Param("subjectID")
 
 		var subject models.Subject
 		if err := db.Where("user_id = ?", userID).First(&subject, subjectID).Error; err != nil {

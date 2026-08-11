@@ -16,7 +16,7 @@ func main() {
 
 	fmt.Println("Database connected successfully!")
 
-	db.AutoMigrate(&models.User{}, &models.Subject{})
+	db.AutoMigrate(&models.User{}, &models.Subject{}, &models.Folder{})
 
 	r := router.SetupRouter(db)
 	r.Run(":8080")
