@@ -153,6 +153,15 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 @layer base {
   * {
     border-color: var(--color-border);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, LayoutGrid, Plus } from "lucide-react";
+import { Search, LayoutGrid, Plus, RefreshCw } from "lucide-react";
 import { Screen } from "./Lib/Screen";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -13,31 +13,79 @@ export interface Subject {
 
 export function HomeSubjects() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { data: session } = useSession();
 
-  useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/`, {
-          headers: {
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-        });
+  const fetchSubjects = async () => {
+    setIsLoading(true);
+    setError(null);
 
-        if (res.ok) {
-          const subjects: Subject[] = await res.json();
-          setSubjects(subjects);
-        }
-      } catch (err) {
-        console.error("Failed to fetch subjects:", err);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/`, {
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to load subjects (${res.status})`);
       }
-    };
 
+      const subjects: Subject[] = await res.json();
+      setSubjects(subjects);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+      console.error("Failed to fetch subjects:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (session) {
       fetchSubjects();
     }
   }, [session]);
+
+  if (isLoading) {
+    return <HomeSubjectsSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <Screen>
+        <header className="flex items-center justify-between px-6 pt-6">
+          <span className="font-display text-2xl leading-none">K</span>
+          <div className="flex items-center gap-5 text-ink">
+            <Search className="size-6" strokeWidth={1.75} />
+            <LayoutGrid className="size-6" strokeWidth={1.75} />
+          </div>
+        </header>
+
+        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
+          <div className="flex size-16 items-center justify-center rounded-2xl bg-hard-soft">
+            <span className="text-2xl">!</span>
+          </div>
+          <h2 className="mt-6 font-display text-[24px] leading-tight text-center">
+            Couldn&apos;t load subjects
+          </h2>
+          <p className="mt-3 max-w-[19rem] text-center text-[16px] leading-relaxed text-ink-soft">
+            {error}
+          </p>
+          <button
+            onClick={fetchSubjects}
+            className="mt-8 inline-flex items-center gap-3 rounded-full border border-rule bg-paper-card px-8 py-3.5 text-[16px] text-ink hover:bg-tag transition-colors"
+          >
+            <RefreshCw className="size-4" strokeWidth={1.75} />
+            Try again
+          </button>
+        </div>
+      </Screen>
+    );
+  }
 
   if (subjects.length === 0) {
     return <HomeEmptyState />;
@@ -80,6 +128,55 @@ export function HomeSubjects() {
               <span>{s.questions || 0} questions</span>
             </div> */}
           </article>
+        ))}
+      </div>
+    </Screen>
+  );
+}
+
+function HomeSubjectsSkeleton() {
+  return (
+    <Screen>
+      <header className="flex items-center justify-between px-6 pt-6">
+        <div className="h-7 w-5 animate-pulse rounded bg-tag/70" />
+        <div className="flex items-center gap-5">
+          <div className="size-6 animate-pulse rounded bg-tag/70" />
+          <div className="size-6 animate-pulse rounded bg-tag/70" />
+        </div>
+      </header>
+
+      <div className="px-6 pt-6">
+        <div className="h-[59px] w-[75%] animate-pulse rounded-lg bg-tag/70" />
+        <div className="mt-3 h-[20px] w-[55%] animate-pulse rounded bg-tag/50" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 px-6 py-6">
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="flex h-[190px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4"
+          >
+            <div>
+              <div
+                className="h-[18px] animate-pulse rounded bg-tag/70"
+                style={{ width: `${60 + (i % 3) * 15}%`, animationDelay: `${i * 100}ms` }}
+              />
+              <div
+                className="mt-2 h-[18px] animate-pulse rounded bg-tag/50"
+                style={{ width: `${40 + (i % 2) * 20}%`, animationDelay: `${i * 100 + 50}ms` }}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <div
+                className="h-[14px] w-[50%] animate-pulse rounded bg-tag/40"
+                style={{ animationDelay: `${i * 100 + 100}ms` }}
+              />
+              <div
+                className="h-[14px] w-[60%] animate-pulse rounded bg-tag/40"
+                style={{ animationDelay: `${i * 100 + 150}ms` }}
+              />
+            </div>
+          </div>
         ))}
       </div>
     </Screen>
