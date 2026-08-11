@@ -56,12 +56,12 @@ export function HomeSubjects({ initialSubjects }: { initialSubjects: any[] }) {
       <div className="grid grid-cols-2 gap-4 px-6 py-6">
         {subjects.map((s) => (
           <article
-            key={s.ID}
-            onClick={() => router.push(`/subject/${s.ID}`)}
+            key={s.id}
+            onClick={() => router.push(`/subject/${s.id}`)}
             className="flex h-[190px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors"
           >
             <h2 className="font-display text-[18px] leading-[1.15]">
-              {s.Name}
+              {s.name}
             </h2>
             <div className="flex flex-col gap-0.5 font-mono text-[14px] text-ink-soft">
               <span>{s.folders || 0} folders</span>

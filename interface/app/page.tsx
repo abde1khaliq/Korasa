@@ -18,7 +18,6 @@ export default async function Home() {
       headers: {
         Authorization: `Bearer ${(session as any).accessToken}`,
       },
-      cache: "no-store", // always fetch fresh data for now
     });
 
     if (res.ok) {
