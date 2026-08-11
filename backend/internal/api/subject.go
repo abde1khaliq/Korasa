@@ -14,5 +14,5 @@ func SubjectRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	router.POST("/", services.CreateSubject(db))
 	router.GET("/:subjectID", services.GetSubjectByID(db))
 	router.DELETE("/:subjectID", services.DeleteSubject(db))
-	router.PUT("/:subjectID", services.UpdateSubject(db))
+	router.PATCH("/:subjectID", services.UpdateSubject(db))
 }
