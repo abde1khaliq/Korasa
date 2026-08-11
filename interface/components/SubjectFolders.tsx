@@ -44,7 +44,10 @@ export function SubjectFolders() {
 
     const fetchFolders = async () => {
       try {
-        const res = await fetch(`/api/subjects/${subjectID}/folders`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/${subjectID}/folders`,
+          { headers: { Authorization: `Bearer ${session?.accessToken}` } },
+        );
         if (res.ok) {
           const data: Folder[] = await res.json();
           setFolders(data);

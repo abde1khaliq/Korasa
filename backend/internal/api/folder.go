@@ -8,4 +8,5 @@ import (
 
 func FolderRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	router.GET("/:subjectID/folders", services.GetSubjectFolders(db))
+	router.POST("/:subjectID/folders", services.CreateFolder(db))
 }
