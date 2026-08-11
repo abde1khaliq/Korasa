@@ -1,0 +1,1 @@
+Korasa is an application built to ease studying
