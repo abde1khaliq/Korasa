@@ -34,7 +34,7 @@ export function FolderQuestions() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Difficulty | "All">("All");
   const { data: session } = useSession();
-  const { folderId } = useParams();
+  const { id: subjectId, folderId } = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -47,7 +47,7 @@ export function FolderQuestions() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/folders/${folderId}/questions`,
-        { headers: { Authorization: `Bearer ${session?.accessToken}` } }
+        { headers: { Authorization: `Bearer ${session?.accessToken}` } },
       );
 
       if (!res.ok) {
@@ -57,7 +57,8 @@ export function FolderQuestions() {
       const data: Question[] = await res.json();
       setQuestions(data);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
       setError(message);
       console.error("Failed to fetch questions:", err);
     } finally {
@@ -140,7 +141,9 @@ export function FolderQuestions() {
           <Folder className="size-4 text-brand" strokeWidth={1.5} />
           <span className="text-brand">{folderName}</span>
         </p>
-        <h2 className="mt-2 font-display text-[34px] leading-tight">{folderName}</h2>
+        <h2 className="mt-2 font-display text-[34px] leading-tight">
+          {folderName}
+        </h2>
         <p className="mt-1 text-[15px] text-ink-soft">
           {questions.length} {questions.length === 1 ? "question" : "questions"}
         </p>
@@ -150,7 +153,9 @@ export function FolderQuestions() {
         <button
           onClick={() => setFilter("All")}
           className={`rounded-full px-3 py-1.5 text-[12px] ${
-            filter === "All" ? "bg-onyx text-paper" : "border border-rule text-ink"
+            filter === "All"
+              ? "bg-onyx text-paper"
+              : "border border-rule text-ink"
           }`}
         >
           All
@@ -169,7 +174,9 @@ export function FolderQuestions() {
       {visibleQuestions.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-12">
           <p className="text-[16px] text-ink-soft">
-            {questions.length === 0 ? "No questions yet." : "No questions match this filter."}
+            {questions.length === 0
+              ? "No questions yet."
+              : "No questions match this filter."}
           </p>
         </div>
       ) : (
@@ -193,7 +200,9 @@ export function FolderQuestions() {
                       {label}
                     </span>
                     {q.note && (
-                      <span className="text-[13px] text-ink-faint">Has notes</span>
+                      <span className="text-[13px] text-ink-faint">
+                        Has notes
+                      </span>
                     )}
                   </div>
                 </div>
@@ -203,7 +212,14 @@ export function FolderQuestions() {
         </ul>
       )}
 
-      <button className="absolute inset-x-0 bottom-6 mx-auto flex w-fit items-center gap-2 rounded-full bg-onyx px-6 py-3 text-[16px] text-paper">
+      <button
+        onClick={() =>
+          router.push(
+            `/subject/${subjectId}/folder/${folderId}/create?name=${encodeURIComponent(folderName)}`,
+          )
+        }
+        className="absolute inset-x-0 bottom-6 mx-auto flex w-fit items-center gap-2 rounded-full bg-onyx px-6 py-3 text-[16px] text-paper"
+      >
         <Plus className="size-5" strokeWidth={1.75} />
         Add question
       </button>
@@ -260,7 +276,10 @@ function FolderQuestionsSkeleton() {
             <div className="min-w-0 flex-1">
               <div
                 className="h-[14px] animate-pulse rounded bg-tag/70"
-                style={{ width: `${70 + (i % 3) * 10}%`, animationDelay: `${i * 100}ms` }}
+                style={{
+                  width: `${70 + (i % 3) * 10}%`,
+                  animationDelay: `${i * 100}ms`,
+                }}
               />
               <div
                 className="mt-2 h-[14px] w-[40%] animate-pulse rounded bg-tag/50"
