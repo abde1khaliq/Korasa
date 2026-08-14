@@ -3,12 +3,13 @@ package database
 import (
 	"fmt"
 
+	"github.com/abde1khaliq/korasa/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func Connect() (*gorm.DB, error) {
-	dsn := "postgresql://postgres.cwrqolotwbylpeltyvvh:yAUXYTlSsg06xKXV@aws-0-eu-central-1.pooler.supabase.com:5432/postgres"
+	dsn := config.App.PostgresDBUrl
 	if dsn == "" {
 		return nil, fmt.Errorf("PostgresDBUrl is empty — check env loading")
 	}
