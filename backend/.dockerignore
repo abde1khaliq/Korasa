@@ -1,0 +1,6 @@
+# backend/.dockerignore
+korasa.db
+*.db
+.git
+.gitignore
+README.MD

@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// mount on /api/folders — nested create/list
 func QuestionRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	router.Use(middleware.RequireAuth())
 
@@ -15,7 +14,6 @@ func QuestionRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	router.GET("/:folderID/questions", services.GetFolderQuestions(db))
 }
 
-// mount on /api/questions — flat single-question access
 func QuestionDirectRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	router.Use(middleware.RequireAuth())
 

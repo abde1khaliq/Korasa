@@ -4,11 +4,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/abde1khaliq/korasa/config"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var jwtSecret = []byte("your-secret-key")
-var jwtRefreshSecret = []byte("your-refresh-secret-key")
+var jwtSecret = []byte(config.App.JWTSecret)
+var jwtRefreshSecret = []byte(config.App.JWTRefreshSecret)
 
 func GenerateTokens(userID int) (string, string, error) {
 	if len(jwtSecret) == 0 {

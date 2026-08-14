@@ -1,12 +1,15 @@
 package database
 
 import (
-	"gorm.io/driver/sqlite"
+	"github.com/abde1khaliq/korasa/config"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func Connect() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open("korasa.db"), &gorm.Config{})
+	dsn := config.App.PostgresDBUrl
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
