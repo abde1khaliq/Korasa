@@ -96,7 +96,6 @@ export function FolderQuestions() {
           <h1 className="text-[17px] font-semibold">{folderName}</h1>
           <div className="flex items-center gap-3">
             <Search className="size-5" strokeWidth={1.75} />
-            <SlidersHorizontal className="size-5" strokeWidth={1.75} />
           </div>
         </header>
 
@@ -133,7 +132,6 @@ export function FolderQuestions() {
         <h1 className="text-[17px] font-semibold">{folderName}</h1>
         <div className="flex items-center gap-3">
           <Search className="size-5" strokeWidth={1.75} />
-          <SlidersHorizontal className="size-5" strokeWidth={1.75} />
         </div>
       </header>
 

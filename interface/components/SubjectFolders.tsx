@@ -97,10 +97,10 @@ export function SubjectFolders() {
             onClick={() => router.back()}
           />
           <h1 className="text-[20px] font-semibold">Subject</h1>
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <Search className="size-6" strokeWidth={1.75} />
             <MoreHorizontal className="size-6" strokeWidth={1.75} />
-          </div>
+          </div> */}
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
@@ -133,11 +133,6 @@ export function SubjectFolders() {
           strokeWidth={1.75}
           onClick={() => router.back()}
         />
-        <h1 className="text-[20px] font-semibold">{subject?.name}</h1>
-        <div className="flex items-center gap-4">
-          <Search className="size-6" strokeWidth={1.75} />
-          <MoreHorizontal className="size-6" strokeWidth={1.75} />
-        </div>
       </header>
 
       <section className="mx-6 mt-6 rounded-2xl border border-rule bg-paper-card p-6">
@@ -145,8 +140,6 @@ export function SubjectFolders() {
           {subject?.name}
         </h2>
         <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft">
-          {/* <Stat value="-" label="folders" />
-          <Stat value="-" label="questions" /> */}
         </div>
       </section>
 

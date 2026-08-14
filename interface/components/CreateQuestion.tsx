@@ -1,4 +1,4 @@
-import { X, ChevronRight, Image as ImageIcon, Plus } from "lucide-react";
+import { X, Image as ImageIcon, Plus } from "lucide-react";
 import { Screen, difficultyStyles, type Difficulty } from "./Lib/Screen";
 
 const levels: Difficulty[] = ["Easy", "Medium", "Hard"];

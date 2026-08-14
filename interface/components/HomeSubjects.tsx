@@ -59,10 +59,10 @@ export function HomeSubjects() {
       <Screen>
         <header className="flex items-center justify-between px-6 pt-6">
           <span className="font-display text-2xl leading-none">K</span>
-          <div className="flex items-center gap-5 text-ink">
+          {/* <div className="flex items-center gap-5 text-ink">
             <Search className="size-6" strokeWidth={1.75} />
             <LayoutGrid className="size-6" strokeWidth={1.75} />
-          </div>
+          </div> */}
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
@@ -95,14 +95,14 @@ export function HomeSubjects() {
     <Screen>
       <header className="flex items-center justify-between px-6 pt-6">
         <span className="font-display text-2xl leading-none">K</span>
-        <div className="flex items-center gap-5 text-ink">
+        {/* <div className="flex items-center gap-5 text-ink">
           <Search className="size-6" strokeWidth={1.75} />
           <LayoutGrid
             className="size-6"
             strokeWidth={1.75}
             onClick={() => signOut()}
           />
-        </div>
+        </div> */}
       </header>
 
       <div className="px-6 pt-6">
