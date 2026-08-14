@@ -1,7 +1,6 @@
 package router
 
 import (
-	"github.com/abde1khaliq/korasa/config"
 	"github.com/abde1khaliq/korasa/internal/api"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -11,7 +10,7 @@ import (
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{config.App.ClientUrl},
+		AllowOrigins:     []string{"https://korasa.vercel.app"},
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
