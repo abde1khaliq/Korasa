@@ -185,7 +185,15 @@ export function FolderQuestions() {
             const label = difficultyLabels[q.difficulty];
             const s = difficultyStyles[label];
             return (
-              <li key={q.id} className="flex gap-3 border-b border-rule py-5">
+              <li
+                key={q.id}
+                className="flex gap-3 border-b border-rule py-5"
+                onClick={() =>
+                  router.push(
+                    `/subject/${subjectId}/folder/${folderId}/question/${q.id}`,
+                  )
+                }
+              >
                 <span className="pt-0.5 font-mono text-[12px] text-ink-faint">
                   {String(i + 1).padStart(2, "0")}
                 </span>
