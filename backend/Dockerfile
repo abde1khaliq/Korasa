@@ -1,4 +1,4 @@
-FROM golang:1.24-bookworm AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 
@@ -7,18 +7,14 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-s -w" -o /app/server ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/server ./cmd/server
 
-FROM debian:bookworm-slim
+FROM alpine:3.20
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
 COPY --from=builder /app/server /app/server
-
-EXPOSE 8080
 
 ENTRYPOINT ["/app/server"]
