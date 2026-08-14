@@ -7,10 +7,13 @@ import (
 	"github.com/abde1khaliq/korasa/internal/database"
 	"github.com/abde1khaliq/korasa/internal/models"
 	"github.com/abde1khaliq/korasa/internal/router"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	config.Load()
+	fmt.Println("Config loaded.")
+	gin.SetMode(gin.ReleaseMode)
 
 	db, err := database.Connect()
 	if err != nil {

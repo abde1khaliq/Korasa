@@ -25,7 +25,7 @@ func Load() {
 	App = Config{
 		Port:             getEnv("PORT", "8080"),
 		JWTSecret:        getEnv("JWT_SECRET", ""),
-		JWTRefreshSecret: getEnv("JWTRefreshSecret", ""),
+		JWTRefreshSecret: getEnv("JWT_REFRESH_SECRET", ""),
 		ClientUrl:        getEnv("CLIENT_URL", ""),
 		PostgresDBUrl:    getEnv("POSTGRES_DATABASE_URL", ""),
 	}
