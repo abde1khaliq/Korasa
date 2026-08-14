@@ -11,7 +11,7 @@ import {
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Screen, difficultyStyles, type Difficulty } from "./misc/Screen";
+import { Screen, difficultyStyles, type Difficulty } from "@/components/misc/Screen";
 
 interface Question {
   id: number;

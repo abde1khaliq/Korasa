@@ -12,10 +12,10 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import { Screen } from "./misc/Screen";
+import { Screen } from "@/components/misc/Screen";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Subject } from "./HomeSubjects";
+import { Subject } from "@/components/HomeSubjects";
 import { useParams, useRouter } from "next/navigation";
 
 interface FolderItem {
