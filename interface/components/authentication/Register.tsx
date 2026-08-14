@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
-import { Screen } from "../Lib/Screen";
+import { Screen } from "../misc/Screen";
 
 export function Register() {
   const [username, setUsername] = useState("");

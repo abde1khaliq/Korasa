@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Search, LayoutGrid, Plus, RefreshCw } from "lucide-react";
-import { Screen } from "./Lib/Screen";
+import { Screen } from "./misc/Screen";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
