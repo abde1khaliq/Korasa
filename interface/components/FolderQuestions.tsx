@@ -69,7 +69,6 @@ export function FolderQuestions() {
     if (session && folderId) {
       fetchQuestions();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, folderId]);
 
   const counts = {
