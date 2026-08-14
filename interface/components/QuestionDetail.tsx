@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Screen, Breadcrumb, DifficultyPill, type Difficulty } from "@/components/Misc/Screen";
+import { Screen, Breadcrumb, DifficultyPill, type Difficulty } from "@/components/misc/Screen";
 
 interface Question {
   id: number;
