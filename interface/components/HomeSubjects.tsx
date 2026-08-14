@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Search, LayoutGrid, Plus, RefreshCw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Search,
+  LayoutGrid,
+  Plus,
+  RefreshCw,
+  X,
+  Loader2,
+} from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -15,6 +22,7 @@ export function HomeSubjects() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -23,11 +31,14 @@ export function HomeSubjects() {
     setError(null);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/`, {
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/`,
+        {
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
         },
-      });
+      );
 
       if (!res.ok) {
         throw new Error(`Failed to load subjects (${res.status})`);
@@ -36,12 +47,17 @@ export function HomeSubjects() {
       const subjects: Subject[] = await res.json();
       setSubjects(subjects);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
       setError(message);
       console.error("Failed to fetch subjects:", err);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubjectCreated = (newSubject: Subject) => {
+    setSubjects((prev) => [...prev, newSubject]);
   };
 
   useEffect(() => {
@@ -88,49 +104,77 @@ export function HomeSubjects() {
   }
 
   if (subjects.length === 0) {
-    return <HomeEmptyState />;
+    return (
+      <>
+        <HomeEmptyState onCreateClick={() => setShowCreateModal(true)} />
+        {showCreateModal && (
+          <CreateSubjectModal
+            accessToken={session?.accessToken}
+            onClose={() => setShowCreateModal(false)}
+            onCreated={handleSubjectCreated}
+          />
+        )}
+      </>
+    );
   }
 
   return (
-    <Screen>
-      <header className="flex items-center justify-between px-6 pt-6">
-        <span className="font-display text-2xl leading-none">K</span>
-        {/* <div className="flex items-center gap-5 text-ink">
-          <Search className="size-6" strokeWidth={1.75} />
-          <LayoutGrid
-            className="size-6"
-            strokeWidth={1.75}
-            onClick={() => signOut()}
-          />
-        </div> */}
-      </header>
+    <>
+      <Screen>
+        <header className="flex items-center justify-between px-6 pt-6">
+          <span className="font-display text-2xl leading-none">K</span>
+          {/* <div className="flex items-center gap-5 text-ink">
+            <Search className="size-6" strokeWidth={1.75} />
+            <LayoutGrid
+              className="size-6"
+              strokeWidth={1.75}
+              onClick={() => signOut()}
+            />
+          </div> */}
+        </header>
 
-      <div className="px-6 pt-6">
-        <h1 className="font-display text-[56px] leading-[1.05]">Subjects</h1>
-        <p className="mt-2 text-[17px] text-ink-soft">
-          {subjects.length} {subjects.length === 1 ? "subject" : "subjects"} · 0
-          questions
-        </p>
-      </div>
+        <div className="px-6 pt-6">
+          <h1 className="font-display text-[56px] leading-[1.05]">Subjects</h1>
+          <p className="mt-2 text-[17px] text-ink-soft">
+            {subjects.length} {subjects.length === 1 ? "subject" : "subjects"} ·
+            0 questions
+          </p>
+        </div>
 
-      <div className="grid grid-cols-2 gap-4 px-6 py-6">
-        {subjects.map((subject) => (
-          <article
-            key={subject.id}
-            onClick={() => router.push(`/subject/${subject.id}`)}
-            className="flex h-[190px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors"
-          >
-            <h2 className="font-display text-[18px] leading-[1.15]">
-              {subject.name}
-            </h2>
-            {/* <div className="flex flex-col gap-0.5 font-mono text-[14px] text-ink-soft">
-              <span>{s.folders || 0} folders</span>
-              <span>{s.questions || 0} questions</span>
-            </div> */}
-          </article>
-        ))}
-      </div>
-    </Screen>
+        <div className="grid grid-cols-2 gap-4 px-6 py-6">
+          {subjects.map((subject) => (
+            <article
+              key={subject.id}
+              onClick={() => router.push(`/subject/${subject.id}`)}
+              className="flex h-[190px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors"
+            >
+              <h2 className="font-display text-[18px] leading-[1.15]">
+                {subject.name}
+              </h2>
+              {/* <div className="flex flex-col gap-0.5 font-mono text-[14px] text-ink-soft">
+                <span>{s.folders || 0} folders</span>
+                <span>{s.questions || 0} questions</span>
+              </div> */}
+            </article>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="fixed bottom-8 left-1/2 ml-[130px] flex size-12 -translate-x-1/5 items-center justify-center rounded-2xl bg-onyx text-paper hover:bg-onyx/90 transition-colors"
+        >
+          <Plus className="size-7" strokeWidth={1.75} />
+        </button>
+      </Screen>
+
+      {showCreateModal && (
+        <CreateSubjectModal
+          accessToken={session?.accessToken}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={handleSubjectCreated}
+        />
+      )}
+    </>
   );
 }
 
@@ -159,11 +203,17 @@ function HomeSubjectsSkeleton() {
             <div>
               <div
                 className="h-[18px] animate-pulse rounded bg-tag/70"
-                style={{ width: `${60 + (i % 3) * 15}%`, animationDelay: `${i * 100}ms` }}
+                style={{
+                  width: `${60 + (i % 3) * 15}%`,
+                  animationDelay: `${i * 100}ms`,
+                }}
               />
               <div
                 className="mt-2 h-[18px] animate-pulse rounded bg-tag/50"
-                style={{ width: `${40 + (i % 2) * 20}%`, animationDelay: `${i * 100 + 50}ms` }}
+                style={{
+                  width: `${40 + (i % 2) * 20}%`,
+                  animationDelay: `${i * 100 + 50}ms`,
+                }}
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -183,7 +233,7 @@ function HomeSubjectsSkeleton() {
   );
 }
 
-function HomeEmptyState() {
+function HomeEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
   return (
     <Screen>
       <header className="flex items-center justify-between px-6 pt-6">
@@ -211,12 +261,126 @@ function HomeEmptyState() {
           English, Chemistry, or anything you're learning.
         </p>
 
-        <button className="mt-8 inline-flex items-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper hover:bg-onyx/90 transition-colors">
+        <button
+          onClick={onCreateClick}
+          className="mt-8 inline-flex items-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper hover:bg-onyx/90 transition-colors"
+        >
           <Plus className="size-5" strokeWidth={1.75} />
           Create your first subject
         </button>
       </div>
     </Screen>
+  );
+}
+
+function CreateSubjectModal({
+  accessToken,
+  onClose,
+  onCreated,
+}: {
+  accessToken?: string;
+  onClose: () => void;
+  onCreated: (subject: Subject) => void;
+}) {
+  const [name, setName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ name: trimmed }),
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error(`Failed to create subject (${res.status})`);
+      }
+
+      const created: Subject = await res.json();
+      onCreated(created);
+      onClose();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-onyx/40 backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="w-full max-w-[420px] animate-[slideUp_0.25s_ease-out] rounded-t-3xl bg-paper px-6 pb-8 pt-5">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-[22px]">New subject</h2>
+          <button
+            onClick={onClose}
+            className="flex size-9 items-center justify-center rounded-full hover:bg-tag transition-colors"
+          >
+            <X className="size-5" strokeWidth={1.75} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-5">
+          <label
+            htmlFor="subject-name"
+            className="font-mono text-[13px] tracking-[0.12em] text-ink-faint uppercase"
+          >
+            Subject name
+          </label>
+          <input
+            ref={inputRef}
+            id="subject-name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. English, Chemistry…"
+            className="mt-2 w-full rounded-xl border border-rule bg-paper-card px-4 py-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none focus:border-brand transition-colors"
+          />
+
+          {error && <p className="mt-3 text-[14px] text-hard">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={isSubmitting || !name.trim()}
+            className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-xl bg-onyx py-3.5 text-[16px] font-medium text-paper transition-colors hover:bg-onyx/90 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <Loader2 className="size-5 animate-spin" strokeWidth={1.75} />
+            ) : (
+              <Plus className="size-5" strokeWidth={1.75} />
+            )}
+            {isSubmitting ? "Creating…" : "Create subject"}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
 
