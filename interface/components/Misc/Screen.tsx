@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-/** Mobile-width canvas used by every screen. No device bezel. */
 export function Screen({
   children,
   className = "",
