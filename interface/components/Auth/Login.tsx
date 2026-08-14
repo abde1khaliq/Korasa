@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Screen } from "@/components/misc/Screen";
+import { Screen } from "@/components/Misc/Screen";
 
 export function Login() {
   const [email, setEmail] = useState("");

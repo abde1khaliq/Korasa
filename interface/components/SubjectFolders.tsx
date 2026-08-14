@@ -12,7 +12,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import { Screen } from "@/components/misc/Screen";
+import { Screen } from "@/components/Misc/Screen";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Subject } from "@/components/HomeSubjects";

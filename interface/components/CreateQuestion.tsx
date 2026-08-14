@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Screen, difficultyStyles, type Difficulty } from "@/components/misc/Screen";
+import { Screen, difficultyStyles, type Difficulty } from "@/components/Misc/Screen";
 
 const levels: Difficulty[] = ["Easy", "Medium", "Hard"];
 const difficultyToApi: Record<Difficulty, "easy" | "medium" | "hard"> = {
