@@ -92,7 +92,7 @@ func GetQuestionByID(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
 
-		questionID, err := strconv.Atoi(c.Param("id"))
+		questionID, err := strconv.Atoi(c.Param("questionID"))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid question id"})
 			return
@@ -121,7 +121,7 @@ func UpdateQuestion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
 
-		questionID, err := strconv.Atoi(c.Param("id"))
+		questionID, err := strconv.Atoi(c.Param("questionID"))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid question id"})
 			return
@@ -172,7 +172,7 @@ func DeleteQuestion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
 
-		questionID, err := strconv.Atoi(c.Param("id"))
+		questionID, err := strconv.Atoi(c.Param("questionID"))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid question id"})
 			return
