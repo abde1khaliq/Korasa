@@ -64,7 +64,8 @@ export function SubjectFolders() {
       setSubject(subjectData);
       setFolders(foldersData);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
       setError(message);
       console.error("Failed to fetch subject data:", err);
     } finally {
@@ -162,21 +163,19 @@ export function SubjectFolders() {
       <ul className="mt-4 px-6 pb-28">
         {folders.map((folder) => (
           <li
-            key={folder.name}
-            className="flex items-center gap-4 border-b border-rule py-5"
+            key={folder.id}
+            onClick={() =>
+              router.push(
+                `/subject/${subjectID}/folder/${folder.id}?name=${encodeURIComponent(folder.name)}`,
+              )
+            }
+            className="flex items-center gap-4 border-b border-rule py-5 cursor-pointer hover:bg-tag/30 transition-colors"
           >
             <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-tag">
               <Folder className="size-6 text-brand" strokeWidth={1.5} />
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-[19px]">{folder.name}</p>
-              {/* <p className="mt-1 flex items-center gap-2 font-mono text-[14px] text-ink-soft">
-                <span>{f.qs} questions</span>
-                <span className="text-ink-faint">·</span>
-                <Count color="bg-easy" n={f.e} />
-                <Count color="bg-medium" n={f.m} />
-                <Count color="bg-hard" n={f.h} />
-              </p> */}
             </div>
             <ChevronRight
               className="size-5 text-ink-faint"
@@ -220,9 +219,7 @@ function SubjectFoldersSkeleton() {
 
       {/* Subject hero card skeleton */}
       <section className="mx-6 mt-6 rounded-2xl border border-rule bg-paper-card p-6">
-        <div
-          className="mt-4 h-[42px] w-[65%] animate-pulse rounded-lg bg-tag/70"
-        />
+        <div className="mt-4 h-[42px] w-[65%] animate-pulse rounded-lg bg-tag/70" />
         <div className="mt-6 grid grid-cols-3 gap-4">
           {[0, 1, 2].map((i) => (
             <div key={i}>
@@ -259,11 +256,17 @@ function SubjectFoldersSkeleton() {
             <div className="min-w-0 flex-1">
               <div
                 className="h-[19px] animate-pulse rounded bg-tag/70"
-                style={{ width: `${55 + (i % 3) * 15}%`, animationDelay: `${i * 120 + 40}ms` }}
+                style={{
+                  width: `${55 + (i % 3) * 15}%`,
+                  animationDelay: `${i * 120 + 40}ms`,
+                }}
               />
               <div
                 className="mt-2 h-[14px] animate-pulse rounded bg-tag/40"
-                style={{ width: `${70 + (i % 2) * 10}%`, animationDelay: `${i * 120 + 80}ms` }}
+                style={{
+                  width: `${70 + (i % 2) * 10}%`,
+                  animationDelay: `${i * 120 + 80}ms`,
+                }}
               />
             </div>
             <div
@@ -327,7 +330,8 @@ function CreateFolderModal({
       onCreated(created);
       onClose();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -369,9 +373,7 @@ function CreateFolderModal({
             className="mt-2 w-full rounded-xl border border-rule bg-paper-card px-4 py-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none focus:border-brand transition-colors"
           />
 
-          {error && (
-            <p className="mt-3 text-[14px] text-hard">{error}</p>
-          )}
+          {error && <p className="mt-3 text-[14px] text-hard">{error}</p>}
 
           <button
             type="submit"
