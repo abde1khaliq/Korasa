@@ -139,8 +139,7 @@ export function SubjectFolders() {
         <h2 className="mt-4 font-display text-[42px] leading-none">
           {subject?.name}
         </h2>
-        <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft">
-        </div>
+        <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft"></div>
       </section>
 
       <div className="mt-8 flex items-center justify-between px-6">
