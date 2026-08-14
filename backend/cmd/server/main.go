@@ -25,6 +25,6 @@ func main() {
 	db.AutoMigrate(&models.User{}, &models.Subject{}, &models.Folder{}, &models.Question{})
 
 	r := router.SetupRouter(db)
-	r.Run(":8080")
+	r.Run(":" + config.App.Port)
 
 }
