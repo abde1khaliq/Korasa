@@ -6,9 +6,9 @@ import {
   RefreshCw,
   X,
   Loader2,
-  LayoutGrid,
   ArrowRight,
   LogOut,
+  Trash2,
 } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { useRouter } from "next/navigation";
@@ -51,6 +51,8 @@ export function HomeSubjects() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [menuSubject, setMenuSubject] = useState<Subject | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
@@ -120,6 +122,38 @@ export function HomeSubjects() {
   const handleSubjectCreated = (newSubject: Subject) => {
     setSubjects((prev) => [...prev, newSubject]);
     showNotification(`"${newSubject.name}" created`);
+  };
+
+  const handleDeleteSubject = async (subject: Subject) => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/${subject.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error(`Failed to delete subject (${res.status})`);
+      }
+
+      setSubjects((prev) => prev.filter((s) => s.id !== subject.id));
+      if (recentSubject?.id === subject.id) {
+        setRecentSubject(null);
+      }
+      showNotification(`"${subject.name}" deleted`);
+      setMenuSubject(null);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
+      showNotification(message);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   useEffect(() => {
@@ -279,7 +313,11 @@ export function HomeSubjects() {
               <article
                 key={subject.id}
                 onClick={() => router.push(`/subject/${subject.id}`)}
-                className="flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setMenuSubject(subject);
+                }}
+                className="flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors select-none"
               >
                 <span
                   className={`inline-flex w-fit rounded-lg px-3 py-1.5 font-mono text-[13px] tracking-widest ${chip}`}
@@ -315,6 +353,43 @@ export function HomeSubjects() {
           </button>
         </div>
       </Screen>
+
+      {/* --- Context Action Popup Menu --- */}
+      {menuSubject && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-onyx/40 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setMenuSubject(null);
+          }}
+        >
+          <div className="w-full max-w-[420px] animate-[slideUp_0.25s_ease-out] rounded-t-3xl bg-paper px-6 pb-8 pt-5">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-[22px]">{menuSubject.name}</h2>
+              <button
+                onClick={() => setMenuSubject(null)}
+                className="flex size-9 items-center justify-center rounded-full hover:bg-tag transition-colors"
+              >
+                <X className="size-5" strokeWidth={1.75} />
+              </button>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                onClick={() => handleDeleteSubject(menuSubject)}
+                disabled={isDeleting}
+                className="flex w-full items-center gap-3 rounded-xl bg-hard-soft/50 px-4 py-3.5 text-[16px] font-medium text-hard transition-colors hover:bg-hard-soft disabled:opacity-40"
+              >
+                {isDeleting ? (
+                  <Loader2 className="size-5 animate-spin" strokeWidth={1.75} />
+                ) : (
+                  <Trash2 className="size-5" strokeWidth={1.75} />
+                )}
+                {isDeleting ? "Deleting..." : "Delete subject"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showCreateModal && (
         <CreateSubjectModal
