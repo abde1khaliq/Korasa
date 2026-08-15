@@ -7,8 +7,6 @@ import {
   ArrowDownUp,
   Plus,
   RefreshCw,
-  MoreHorizontal,
-  Search,
   RotateCcw,
 } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
@@ -26,6 +24,9 @@ import { CreateFolderModal } from "@/components/SubjectFolders/CreateFolderModal
 export interface FolderItem {
   id: number;
   name: string;
+  question_count?: number;
+  folder_count?: number;
+  difficulty?: string;
 }
 
 export function SubjectFolders() {
@@ -156,6 +157,7 @@ export function SubjectFolders() {
   return (
     <>
       <Screen className="relative">
+        {/* Header */}
         <header className="flex items-center justify-between px-4 pt-5">
           <ChevronLeft
             className="size-6 cursor-pointer"
@@ -164,38 +166,30 @@ export function SubjectFolders() {
           />
           <h1 className="text-[17px]">{subject?.name}</h1>
           <div className="flex items-center gap-3">
-            <RotateCcw className="size-5" strokeWidth={1.75}/>
+            <RotateCcw className="size-5" strokeWidth={1.75} />
           </div>
         </header>
 
+      <div className="px-6 pt-6">
+        <h2 className="mt-2 font-display text-[46px] leading-none">{subject?.name}</h2>
+        <p className="mt-3 font-mono text-[15px] text-ink-soft">
+          {subject?.folder_count} folders <span className="text-ink-faint">·</span> {subject?.question_count} questions
+        </p>
+      </div>
 
-        <section className="mx-6 mt-6 rounded-2xl border border-rule bg-paper-card p-6">
-          <span
-            className={`inline-flex w-fit rounded-lg px-3 py-1.5 font-mono text-[13px] tracking-widest ${chip}`}
-          >
-            {code}
-          </span>
-          <h2 className="mt-4 font-display text-[42px] leading-none">
-            {subject?.name}
-          </h2>
-          <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft">
-            <Stat value={`${subject?.folder_count}`} label="folders" />
-            <Stat value={`${subject?.question_count}`} label="questions" />
-          </div>
-          <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft"></div>
-        </section>
-
+        {/* Folders List Header */}
         <div className="mt-8 flex items-center justify-between px-6">
           <p className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
             Folders
           </p>
-          <button className="flex items-center gap-2 text-[16px] text-ink">
+          {/* <button className="flex items-center gap-2 text-[15px] text-ink">
             <ArrowDownUp className="size-4" strokeWidth={1.75} />
             Recent
-          </button>
+          </button> */}
         </div>
 
-        <ul className="mt-4 px-6 pb-28">
+        {/* Folders List */}
+        <ul className="mt-3 px-5 pb-28">
           {folders.map((folder) => (
             <li
               key={folder.id}
@@ -204,27 +198,37 @@ export function SubjectFolders() {
                   `/subject/${subjectID}/folder/${folder.id}?name=${encodeURIComponent(folder.name)}`,
                 )
               }
-              className="flex items-center gap-4 border-b border-rule py-5 cursor-pointer hover:bg-tag/30 transition-colors"
+              className="flex items-center gap-4 rounded-xl px-2 py-4 cursor-pointer hover:bg-tag/40 transition-colors"
             >
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-tag">
+              <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-tag">
                 <Folder className="size-6 text-brand" strokeWidth={1.5} />
               </span>
+              
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[19px]">{folder.name}</p>
+                <p className="truncate text-[18px] font-medium text-ink">
+                  {folder.name}
+                </p>
+                <div className="mt-1 flex items-center gap-2.5 font-mono text-[13px] text-ink-soft">
+                  <span>{folder.question_count || 0} questions</span>
+                  <span className="h-[3px] w-[3px] rounded-full bg-ink-faint/50"></span>
+                  <span className="capitalize">{folder.difficulty || "Mixed"}</span>
+                </div>
               </div>
+              
               <ChevronRight
-                className="size-5 text-ink-faint"
-                strokeWidth={1.75}
+                className="size-5 text-ink-faint/60"
+                strokeWidth={2}
               />
             </li>
           ))}
         </ul>
 
+        {/* Add Folder Button */}
         <button
           onClick={() => setShowCreateModal(true)}
-          className="absolute inset-x-0 bottom-6 mx-auto flex w-fit items-center gap-2 rounded-full bg-onyx px-6 py-3 text-[16px] text-paper"
+          className="absolute inset-x-0 bottom-6 mx-auto flex w-fit items-center gap-2 rounded-full bg-onyx px-6 py-3.5 text-[16px] font-medium text-paper shadow-lg shadow-onyx/20 transition-transform active:scale-95"
         >
-          <Plus className="size-5" strokeWidth={1.75} />
+          <Plus className="size-5" strokeWidth={2} />
           Add Folder
         </button>
 
@@ -240,26 +244,5 @@ export function SubjectFolders() {
 
       <Notification message={notification} />
     </>
-  );
-}
-
-function Stat({
-  value,
-  label,
-  accent,
-}: {
-  value: string;
-  label: string;
-  accent?: boolean;
-}) {
-  return (
-    <div>
-      <p
-        className={`font-display text-[34px] leading-none ${accent ? "text-brand" : "text-ink"}`}
-      >
-        {value}
-      </p>
-      <p className="mt-2">{label}</p>
-    </div>
   );
 }

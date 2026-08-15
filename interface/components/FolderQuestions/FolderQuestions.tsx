@@ -4,10 +4,12 @@ import {
   ChevronLeft,
   Search,
   SlidersHorizontal,
-  Folder,
   Plus,
   RefreshCw,
   RotateCcw,
+  Folder,
+  X,
+  Loader2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -36,12 +38,22 @@ const difficultyLabels: Record<Question["difficulty"], Difficulty> = {
   hard: "Hard",
 };
 
+const levels: Difficulty[] = ["Easy", "Medium", "Hard"];
+const difficultyToApi: Record<Difficulty, "easy" | "medium" | "hard"> = {
+  Easy: "easy",
+  Medium: "medium",
+  Hard: "hard",
+};
+
+const MAX_LEN = 2000;
+
 export function FolderQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Difficulty | "All">("All");
   const [notification, setNotification] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { data: session } = useSession();
@@ -50,7 +62,6 @@ export function FolderQuestions() {
   const router = useRouter();
 
   const folderName = searchParams.get("name") ?? "Folder";
-  const createdFlag = searchParams.get("created");
 
   const showNotification = (message: string) => {
     setNotification(message);
@@ -92,16 +103,12 @@ export function FolderQuestions() {
     if (session && folderId) {
       fetchQuestions();
     }
-  }, [session, folderId, createdFlag]);
+  }, [session, folderId]);
 
-  useEffect(() => {
-    if (createdFlag) {
-      showNotification("Question added");
-      router.replace(
-        `/subject/${subjectId}/folder/${folderId}?name=${encodeURIComponent(folderName)}`,
-      );
-    }
-  }, [createdFlag]);
+  const handleQuestionCreated = (newQuestion: Question) => {
+    setQuestions((prev) => [...prev, newQuestion]);
+    showNotification("Question added");
+  };
 
   const counts = {
     Easy: questions.filter((q) => q.difficulty === "easy").length,
@@ -165,15 +172,11 @@ export function FolderQuestions() {
           />
           <h1 className="text-[17px] font">{folderName}</h1>
           <div className="flex items-center gap-3">
-            <RotateCcw className="size-5" strokeWidth={1.75}/>
+            <RotateCcw className="size-5" strokeWidth={1.75} />
           </div>
         </header>
 
         <div className="px-4 pt-5">
-          <p className="flex items-center gap-1.5 font-mono text-[13px] tracking-[0.1em] text-ink-soft uppercase">
-            <Folder className="size-4 text-brand" strokeWidth={1.5} />
-            <span className="text-brand">{folderName}</span>
-          </p>
           <h2 className="mt-2 font-display text-[34px] leading-tight">
             {folderName}
           </h2>
@@ -183,13 +186,13 @@ export function FolderQuestions() {
           </p>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-1.5 px-4">
+        <div className="mt-8 flex flex-wrap gap-2 px-4">
           <button
             onClick={() => setFilter("All")}
-            className={`rounded-full px-3 py-1.5 text-[12px] ${
+            className={`flex items-center gap-1.5 rounded-full border-black border px-3 py-1.5 text-[12px] transition-colors ${
               filter === "All"
                 ? "bg-onyx text-paper"
-                : "border border-rule text-ink"
+                : "border border-rule text-ink hover:bg-tag/50"
             }`}
           >
             All
@@ -205,6 +208,7 @@ export function FolderQuestions() {
           ))}
         </div>
 
+        {/* Questions List */}
         {visibleQuestions.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-12">
             <p className="text-[16px] text-ink-soft">
@@ -214,7 +218,7 @@ export function FolderQuestions() {
             </p>
           </div>
         ) : (
-          <ul className="mt-3 px-4 pb-24">
+          <ul className="mt-4 px-4 pb-28">
             {visibleQuestions.map((q, i) => {
               const label = difficultyLabels[q.difficulty];
               const s = difficultyStyles[label];
@@ -226,25 +230,30 @@ export function FolderQuestions() {
                       `/subject/${subjectId}/folder/${folderId}/question/${q.id}`,
                     )
                   }
-                  className="flex gap-3 border-b border-rule py-5 cursor-pointer hover:bg-tag/20 transition-colors"
+                  className="flex gap-4 rounded-xl px-2 py-4 cursor-pointer hover:bg-tag/40 transition-colors"
                 >
-                  <span className="pt-0.5 font-mono text-[12px] text-ink-faint">
+                  <span className="pt-0.5 font-mono text-[13px] text-ink-faint">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[14px] leading-relaxed">{q.text}</p>
+                    <p className="text-[15px] leading-relaxed text-ink line-clamp-2">
+                      {q.text}
+                    </p>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <div className="mt-3 flex flex-wrap items-center gap-2.5">
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] ${s.pill} ${s.text}`}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium ${s.pill} ${s.text}`}
                       >
-                        <span className={`size-[6px] rounded-full ${s.dot}`} />
+                        <span className={`size-[5px] rounded-full ${s.dot}`} />
                         {label}
                       </span>
                       {q.note && (
-                        <span className="text-[13px] text-ink-faint">
-                          Has notes
-                        </span>
+                        <>
+                          <span className="h-[3px] w-[3px] rounded-full bg-ink-faint/50"></span>
+                          <span className="text-[12px] text-ink-faint">
+                            Has notes
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>
@@ -254,20 +263,215 @@ export function FolderQuestions() {
           </ul>
         )}
 
+        {/* Add Question Button */}
         <button
-          onClick={() =>
-            router.push(
-              `/subject/${subjectId}/folder/${folderId}/create?name=${encodeURIComponent(folderName)}`,
-            )
-          }
-          className="absolute inset-x-0 bottom-6 mx-auto flex w-fit items-center gap-2 rounded-full bg-onyx px-6 py-3 text-[16px] text-paper"
+          onClick={() => setShowCreateModal(true)}
+          className="absolute inset-x-0 bottom-6 mx-auto flex w-fit items-center gap-2 rounded-full bg-onyx px-6 py-3.5 text-[16px] font-medium text-paper shadow-lg shadow-onyx/20 transition-transform active:scale-95"
         >
-          <Plus className="size-5" strokeWidth={1.75} />
+          <Plus className="size-5" strokeWidth={2} />
           Add question
         </button>
+
+        {/* Create Question Modal */}
+        {showCreateModal && (
+          <CreateQuestionModal
+            folderId={folderId as string}
+            folderName={folderName}
+            accessToken={session?.accessToken}
+            onClose={() => setShowCreateModal(false)}
+            onCreated={handleQuestionCreated}
+          />
+        )}
       </Screen>
 
       <Notification message={notification} />
     </>
+  );
+}
+
+function CreateQuestionModal({
+  folderId,
+  folderName,
+  accessToken,
+  onClose,
+  onCreated,
+}: {
+  folderId: string;
+  folderName: string;
+  accessToken?: string;
+  onClose: () => void;
+  onCreated: (q: Question) => void;
+}) {
+  const [text, setText] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
+  const [note, setNote] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const trimmedText = text.trim();
+  const trimmedAnswer = answer.trim();
+  const isValid =
+    trimmedText.length > 0 &&
+    trimmedText.length <= MAX_LEN &&
+    trimmedAnswer.length > 0 &&
+    trimmedAnswer.length <= MAX_LEN &&
+    note.length <= MAX_LEN;
+
+  const handleSave = async () => {
+    if (!isValid || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/folders/${folderId}/questions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            text: trimmedText,
+            answer: trimmedAnswer,
+            difficulty: difficultyToApi[difficulty],
+            note: note.trim(),
+          }),
+        },
+      );
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          data.error || `Failed to create question (${res.status})`,
+        );
+      }
+
+      const createdQuestion = await res.json();
+      onCreated(createdQuestion);
+      onClose();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-onyx/40 backdrop-blur-sm sm:items-center"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="flex w-full max-w-[420px] flex-col max-h-[90vh] animate-[slideUp_0.25s_ease-out] rounded-t-3xl bg-paper sm:rounded-3xl">
+        {/* Modal Header */}
+        <header className="flex shrink-0 items-center justify-between px-6 py-5 border-b border-rule">
+          <X
+            className="size-6 cursor-pointer text-ink-soft hover:text-ink transition-colors"
+            strokeWidth={1.75}
+            onClick={onClose}
+          />
+          <h1 className="text-[17px] font-semibold">New question</h1>
+          <button
+            onClick={handleSave}
+            disabled={!isValid || isSubmitting}
+            className="flex items-center gap-2 rounded-full bg-onyx px-5 py-2 text-[14px] font-medium text-paper disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {isSubmitting && (
+              <Loader2 className="size-3.5 animate-spin" strokeWidth={2} />
+            )}
+            {isSubmitting ? "Saving…" : "Save"}
+          </button>
+        </header>
+
+        {/* Modal Body (Scrollable) */}
+        <div className="overflow-y-auto px-6 py-6 pb-12">
+          {error && (
+            <p className="mt-4 rounded-xl bg-hard-soft px-4 py-3 text-[14px] text-hard">
+              {error}
+            </p>
+          )}
+
+          <p className="mt-6 flex items-center justify-between font-mono text-[12px] tracking-[0.15em] text-ink-faint uppercase">
+            Question
+            <span className="normal-case tracking-normal text-ink-faint">
+              {text.length}/{MAX_LEN}
+            </span>
+          </p>
+          <div className="mt-2 min-h-[90px] rounded-2xl border border-rule bg-paper-card p-4 focus-within:border-brand transition-colors">
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Type the question…"
+              maxLength={MAX_LEN}
+              rows={3}
+              className="w-full resize-none bg-transparent font-display text-[19px] leading-snug outline-none placeholder:text-ink-faint"
+            />
+          </div>
+
+          <p className="mt-6 flex items-center justify-between font-mono text-[12px] tracking-[0.15em] text-ink-faint uppercase">
+            Answer
+            <span className="normal-case tracking-normal text-ink-faint">
+              {answer.length}/{MAX_LEN}
+            </span>
+          </p>
+          <div className="mt-2 min-h-[100px] rounded-2xl border border-rule bg-paper-card p-4 focus-within:border-brand transition-colors">
+            <textarea
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder="Type the answer…"
+              maxLength={MAX_LEN}
+              rows={3}
+              className="w-full resize-none bg-transparent text-[15px] leading-relaxed outline-none placeholder:text-ink-faint"
+            />
+          </div>
+
+          <p className="mt-6 font-mono text-[12px] tracking-[0.15em] text-ink-faint uppercase">
+            Difficulty
+          </p>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {levels.map((l) => {
+              const s = difficultyStyles[l];
+              const on = l === difficulty;
+              return (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => setDifficulty(l)}
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border py-3.5 text-[14px] transition-colors ${
+                    on
+                      ? `${s.pill} ${s.text} border-current`
+                      : "border-rule bg-paper-card text-ink"
+                  }`}
+                >
+                  {l}
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="mt-6 flex items-center justify-between font-mono text-[12px] tracking-[0.15em] text-ink-faint uppercase">
+            Notes
+            <span className="normal-case tracking-normal text-ink-faint">
+              {note.length}/{MAX_LEN}
+            </span>
+          </p>
+          <div className="mt-2 min-h-[80px] rounded-2xl border border-rule bg-paper-card p-4 focus-within:border-brand transition-colors">
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Optional context, mnemonics, or exam tips…"
+              maxLength={MAX_LEN}
+              rows={2}
+              className="w-full resize-none bg-transparent text-[14px] outline-none placeholder:text-ink-faint"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

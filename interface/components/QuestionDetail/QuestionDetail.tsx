@@ -131,18 +131,17 @@ export function QuestionDetail() {
 
   return (
     <Screen className="relative">
-      <header className="flex items-center justify-between px-6 pt-6">
+      <header className="flex items-center justify-between px-4 pt-5">
         <ChevronLeft
-          className="size-7 cursor-pointer"
+          className="size-6 cursor-pointer"
           strokeWidth={1.75}
           onClick={() => router.back()}
         />
-        <h1 className="text-[20px] font-semibold">
+        <h1 className="text-[17px]">
           {index >= 0 ? `Question ${index + 1} of ${total}` : "Question"}
         </h1>
-        <div className="flex items-center gap-4">
-          <Pencil className="size-6" strokeWidth={1.5} />
-          <MoreHorizontal className="size-6" strokeWidth={1.75} />
+        <div className="flex items-center gap-3">
+          <Pencil className="size-5" strokeWidth={1.5} />
         </div>
       </header>
 
@@ -213,4 +212,3 @@ export function QuestionDetail() {
     </Screen>
   );
 }
-
