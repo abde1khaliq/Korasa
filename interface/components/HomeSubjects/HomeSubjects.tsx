@@ -53,9 +53,12 @@ export function HomeSubjects() {
   const [notification, setNotification] = useState<string | null>(null);
   const [menuSubject, setMenuSubject] = useState<Subject | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [longPressSubjectId, setLongPressSubjectId] = useState<number | null>(null);
+  const [longPressProgress, setLongPressProgress] = useState(0);
 
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressProgressRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPressRef = useRef(false);
 
   const router = useRouter();
@@ -161,10 +164,30 @@ export function HomeSubjects() {
 
   const handlePointerDown = (subject: Subject) => {
     isLongPressRef.current = false;
+    setLongPressSubjectId(subject.id);
+    setLongPressProgress(0);
+
+    // Start progress animation
+    const startTime = Date.now();
+    const duration = 500; // 500ms long press
+
+    longPressProgressRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min((elapsed / duration) * 100, 100);
+      setLongPressProgress(progress);
+
+      if (progress >= 100) {
+        clearInterval(longPressProgressRef.current);
+      }
+    }, 16); // ~60fps
+
+    // Set long press timer
     longPressTimerRef.current = setTimeout(() => {
       isLongPressRef.current = true;
       setMenuSubject(subject);
-    }, 500);
+      setLongPressSubjectId(null);
+      setLongPressProgress(0);
+    }, duration);
   };
 
   const handlePointerUpOrCancel = () => {
@@ -172,6 +195,12 @@ export function HomeSubjects() {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
     }
+    if (longPressProgressRef.current) {
+      clearInterval(longPressProgressRef.current);
+      longPressProgressRef.current = null;
+    }
+    setLongPressSubjectId(null);
+    setLongPressProgress(0);
   };
 
   useEffect(() => {
@@ -182,6 +211,12 @@ export function HomeSubjects() {
     return () => {
       if (notificationTimeoutRef.current) {
         clearTimeout(notificationTimeoutRef.current);
+      }
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+      if (longPressProgressRef.current) {
+        clearInterval(longPressProgressRef.current);
       }
     };
   }, [session]);
@@ -326,6 +361,7 @@ export function HomeSubjects() {
         <div className="grid grid-cols-2 gap-4 px-6 py-6 pb-24">
           {subjects.map((subject) => {
             const { code, chip } = getSubjectMeta(subject.id, subject.name);
+            const isLongPressing = longPressSubjectId === subject.id;
 
             return (
               <article
@@ -348,8 +384,30 @@ export function HomeSubjects() {
                   e.preventDefault();
                   setMenuSubject(subject);
                 }}
-                className="flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors select-none"
+                className="relative flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors select-none"
               >
+                {/* Long press border overlay */}
+                {isLongPressing && (
+                  <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                    <svg className="absolute inset-0 w-full h-full">
+                      <rect
+                        x="1"
+                        y="1"
+                        width="calc(100% - 2px)"
+                        height="calc(100% - 2px)"
+                        rx="15"
+                        ry="15"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeDasharray={`${(longPressProgress / 100) * 476} 476`}
+                        strokeLinecap="round"
+                        className="text-brand"
+                      />
+                    </svg>
+                  </div>
+                )}
+                
                 <span
                   className={`inline-flex w-fit rounded-lg px-3 py-1.5 font-mono text-[13px] tracking-widest ${chip}`}
                 >
