@@ -56,9 +56,9 @@ export function HomeSubjects() {
   const [longPressSubjectId, setLongPressSubjectId] = useState<number | null>(null);
   const [longPressProgress, setLongPressProgress] = useState(0);
 
-  const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const longPressProgressRef = useRef<NodeJS.Timeout | null>(null);
+  const notificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const longPressProgressRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const isLongPressRef = useRef(false);
 
   const router = useRouter();
@@ -177,7 +177,9 @@ export function HomeSubjects() {
       setLongPressProgress(progress);
 
       if (progress >= 100) {
-        clearInterval(longPressProgressRef.current);
+        if (longPressProgressRef.current) {
+          clearInterval(longPressProgressRef.current);
+        }
       }
     }, 16); // ~60fps
 
@@ -193,11 +195,11 @@ export function HomeSubjects() {
   const handlePointerUpOrCancel = () => {
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
+      longPressTimerRef.current = undefined;
     }
     if (longPressProgressRef.current) {
       clearInterval(longPressProgressRef.current);
-      longPressProgressRef.current = null;
+      longPressProgressRef.current = undefined;
     }
     setLongPressSubjectId(null);
     setLongPressProgress(0);
