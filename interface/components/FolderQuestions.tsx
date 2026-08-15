@@ -3,7 +3,6 @@
 import {
   ChevronLeft,
   Search,
-  SlidersHorizontal,
   Folder,
   Plus,
   RefreshCw,

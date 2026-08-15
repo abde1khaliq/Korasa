@@ -8,6 +8,7 @@ import {
   RefreshCw,
   X,
   Loader2,
+  Check,
 } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { useRouter } from "next/navigation";
@@ -23,6 +24,9 @@ export function HomeSubjects() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [notification, setNotification] = useState<string | null>(null);
+  
+  const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -56,14 +60,30 @@ export function HomeSubjects() {
     }
   };
 
+  const showNotification = (message: string) => {
+    setNotification(message);
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
+    notificationTimeoutRef.current = setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
+
   const handleSubjectCreated = (newSubject: Subject) => {
     setSubjects((prev) => [...prev, newSubject]);
+    showNotification(`"${newSubject.name}" created`);
   };
 
   useEffect(() => {
     if (session) {
       fetchSubjects();
     }
+    return () => {
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+    };
   }, [session]);
 
   if (isLoading) {
@@ -75,10 +95,6 @@ export function HomeSubjects() {
       <Screen>
         <header className="flex items-center justify-between px-6 pt-6">
           <span className="font-display text-2xl leading-none">K</span>
-          {/* <div className="flex items-center gap-5 text-ink">
-            <Search className="size-6" strokeWidth={1.75} />
-            <LayoutGrid className="size-6" strokeWidth={1.75} />
-          </div> */}
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
@@ -114,6 +130,7 @@ export function HomeSubjects() {
             onCreated={handleSubjectCreated}
           />
         )}
+        <Notification message={notification} />
       </>
     );
   }
@@ -123,14 +140,6 @@ export function HomeSubjects() {
       <Screen>
         <header className="flex items-center justify-between px-6 pt-6">
           <span className="font-display text-2xl leading-none">K</span>
-          {/* <div className="flex items-center gap-5 text-ink">
-            <Search className="size-6" strokeWidth={1.75} />
-            <LayoutGrid
-              className="size-6"
-              strokeWidth={1.75}
-              onClick={() => signOut()}
-            />
-          </div> */}
         </header>
 
         <div className="px-6 pt-6">
@@ -151,10 +160,6 @@ export function HomeSubjects() {
               <h2 className="font-display text-[18px] leading-[1.15]">
                 {subject.name}
               </h2>
-              {/* <div className="flex flex-col gap-0.5 font-mono text-[14px] text-ink-soft">
-                <span>{s.folders || 0} folders</span>
-                <span>{s.questions || 0} questions</span>
-              </div> */}
             </article>
           ))}
         </div>
@@ -174,6 +179,7 @@ export function HomeSubjects() {
           onCreated={handleSubjectCreated}
         />
       )}
+      <Notification message={notification} />
     </>
   );
 }
@@ -395,6 +401,19 @@ function EmptyIllustration() {
         <div className="mt-3 h-[7px] w-[52%] rounded-full bg-tag/70" />
         <div className="mt-3 h-[7px] w-[40%] rounded-full bg-tag/70" />
       </div>
+    </div>
+  );
+}
+
+function Notification({ message }: { message: string | null }) {
+  if (!message) return null;
+
+  return (
+    <div className="fixed bottom-24 left-1/2 z-40 flex -translate-x-1/2 animate-[slideUp_0.25s_ease-out] items-center gap-3 rounded-full bg-onyx px-5 py-3.5 text-[15px] text-paper shadow-sm">
+      <div className="flex size-5 items-center justify-center rounded-full bg-paper/20">
+        <Check className="size-3.5" strokeWidth={2.5} />
+      </div>
+      {message}
     </div>
   );
 }

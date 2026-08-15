@@ -11,6 +11,7 @@ import {
   RefreshCw,
   X,
   Loader2,
+  Check,
 } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { useEffect, useRef, useState } from "react";
@@ -29,6 +30,9 @@ export function SubjectFolders() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [notification, setNotification] = useState<string | null>(null);
+
+  const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { data: session } = useSession();
   const { id: subjectID } = useParams();
   const router = useRouter();
@@ -73,14 +77,31 @@ export function SubjectFolders() {
     }
   };
 
+  const showNotification = (message: string) => {
+    setNotification(message);
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
+    notificationTimeoutRef.current = setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
+
   const handleFolderCreated = (newFolder: FolderItem) => {
     setFolders((prev) => [...prev, newFolder]);
+    showNotification(`"${newFolder.name}" created`);
   };
 
   useEffect(() => {
     if (session && subjectID) {
       fetchData();
     }
+    
+    return () => {
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+    };
   }, [session, subjectID]);
 
   if (isLoading) {
@@ -97,10 +118,6 @@ export function SubjectFolders() {
             onClick={() => router.back()}
           />
           <h1 className="text-[20px] font-semibold">Subject</h1>
-          {/* <div className="flex items-center gap-4">
-            <Search className="size-6" strokeWidth={1.75} />
-            <MoreHorizontal className="size-6" strokeWidth={1.75} />
-          </div> */}
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
@@ -126,73 +143,77 @@ export function SubjectFolders() {
   }
 
   return (
-    <Screen className="relative">
-      <header className="flex items-center justify-between px-6 pt-6">
-        <ChevronLeft
-          className="size-7 cursor-pointer"
-          strokeWidth={1.75}
-          onClick={() => router.back()}
-        />
-      </header>
+    <>
+      <Screen className="relative">
+        <header className="flex items-center justify-between px-6 pt-6">
+          <ChevronLeft
+            className="size-7 cursor-pointer"
+            strokeWidth={1.75}
+            onClick={() => router.back()}
+          />
+        </header>
 
-      <section className="mx-6 mt-6 rounded-2xl border border-rule bg-paper-card p-6">
-        <h2 className="mt-4 font-display text-[42px] leading-none">
-          {subject?.name}
-        </h2>
-        <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft"></div>
-      </section>
+        <section className="mx-6 mt-6 rounded-2xl border border-rule bg-paper-card p-6">
+          <h2 className="mt-4 font-display text-[42px] leading-none">
+            {subject?.name}
+          </h2>
+          <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft"></div>
+        </section>
 
-      <div className="mt-8 flex items-center justify-between px-6">
-        <p className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
-          Folders
-        </p>
-        <button className="flex items-center gap-2 text-[16px] text-ink">
-          <ArrowDownUp className="size-4" strokeWidth={1.75} />
-          Recent
+        <div className="mt-8 flex items-center justify-between px-6">
+          <p className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
+            Folders
+          </p>
+          <button className="flex items-center gap-2 text-[16px] text-ink">
+            <ArrowDownUp className="size-4" strokeWidth={1.75} />
+            Recent
+          </button>
+        </div>
+
+        <ul className="mt-4 px-6 pb-28">
+          {folders.map((folder) => (
+            <li
+              key={folder.id}
+              onClick={() =>
+                router.push(
+                  `/subject/${subjectID}/folder/${folder.id}?name=${encodeURIComponent(folder.name)}`,
+                )
+              }
+              className="flex items-center gap-4 border-b border-rule py-5 cursor-pointer hover:bg-tag/30 transition-colors"
+            >
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-tag">
+                <Folder className="size-6 text-brand" strokeWidth={1.5} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[19px]">{folder.name}</p>
+              </div>
+              <ChevronRight
+                className="size-5 text-ink-faint"
+                strokeWidth={1.75}
+              />
+            </li>
+          ))}
+        </ul>
+
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="fixed bottom-8 left-1/2 ml-[130px] flex size-12 -translate-x-1/5 items-center justify-center rounded-2xl bg-onyx text-paper hover:bg-onyx/90 transition-colors"
+        >
+          <Plus className="size-7" strokeWidth={1.75} />
         </button>
-      </div>
 
-      <ul className="mt-4 px-6 pb-28">
-        {folders.map((folder) => (
-          <li
-            key={folder.id}
-            onClick={() =>
-              router.push(
-                `/subject/${subjectID}/folder/${folder.id}?name=${encodeURIComponent(folder.name)}`,
-              )
-            }
-            className="flex items-center gap-4 border-b border-rule py-5 cursor-pointer hover:bg-tag/30 transition-colors"
-          >
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-tag">
-              <Folder className="size-6 text-brand" strokeWidth={1.5} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[19px]">{folder.name}</p>
-            </div>
-            <ChevronRight
-              className="size-5 text-ink-faint"
-              strokeWidth={1.75}
-            />
-          </li>
-        ))}
-      </ul>
+        {showCreateModal && (
+          <CreateFolderModal
+            subjectID={subjectID as string}
+            accessToken={session?.accessToken}
+            onClose={() => setShowCreateModal(false)}
+            onCreated={handleFolderCreated}
+          />
+        )}
+      </Screen>
 
-      <button
-        onClick={() => setShowCreateModal(true)}
-        className="fixed bottom-8 left-1/2 ml-[130px] flex size-12 -translate-x-1/5 items-center justify-center rounded-2xl bg-onyx text-paper hover:bg-onyx/90 transition-colors"
-      >
-        <Plus className="size-7" strokeWidth={1.75} />
-      </button>
-
-      {showCreateModal && (
-        <CreateFolderModal
-          subjectID={subjectID as string}
-          accessToken={session?.accessToken}
-          onClose={() => setShowCreateModal(false)}
-          onCreated={handleFolderCreated}
-        />
-      )}
-    </Screen>
+      <Notification message={notification} />
+    </>
   );
 }
 
@@ -402,6 +423,19 @@ function Stat({
         {value}
       </p>
       <p className="mt-2">{label}</p>
+    </div>
+  );
+}
+
+function Notification({ message }: { message: string | null }) {
+  if (!message) return null;
+
+  return (
+    <div className="fixed bottom-24 left-1/2 z-40 flex -translate-x-1/2 animate-[slideUp_0.25s_ease-out] items-center gap-3 rounded-full bg-onyx px-5 py-3.5 text-[15px] text-paper shadow-sm">
+      <div className="flex size-5 items-center justify-center rounded-full bg-paper/20">
+        <Check className="size-3.5" strokeWidth={2.5} />
+      </div>
+      {message}
     </div>
   );
 }
