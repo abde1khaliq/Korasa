@@ -527,7 +527,7 @@ function CreateSubjectModal({
 
           {error && <p className="mt-3 text-[14px] text-hard">{error}</p>}
 
-          <button
+          <button 
             type="submit"
             disabled={isSubmitting || !name.trim()}
             className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-xl bg-onyx py-3.5 text-[16px] font-medium text-paper transition-colors hover:bg-onyx/90 disabled:opacity-40 disabled:cursor-not-allowed"
