@@ -14,8 +14,8 @@ import { useSession } from "next-auth/react";
 import { Subject } from "@/components/HomeSubjects/HomeSubjects";
 import { useParams, useRouter } from "next/navigation";
 import { Notification } from "@/components/misc/Notification";
-import { SubjectFoldersSkeleton } from "@/components/SubjectFolder/SubjectFolderSkeleton";
-import { CreateFolderModal } from "@/components/SubjectFolder/CreateFolderModal";
+import { SubjectFoldersSkeleton } from "@/components/SubjectFolders/SubjectFolderSkeleton";
+import { CreateFolderModal } from "@/components/SubjectFolders/CreateFolderModal";
 
 export interface FolderItem {
   id: number;

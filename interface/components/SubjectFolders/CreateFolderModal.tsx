@@ -1,6 +1,6 @@
 import { Loader2, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { FolderItem } from "@/components/SubjectFolder/SubjectFolders";
+import { FolderItem } from "@/components/SubjectFolders/SubjectFolders";
 
 export const CreateFolderModal = ({
   subjectID,
