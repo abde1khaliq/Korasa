@@ -54,11 +54,9 @@ export function HomeSubjects() {
   const [menuSubject, setMenuSubject] = useState<Subject | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [longPressSubjectId, setLongPressSubjectId] = useState<number | null>(null);
-  const [longPressProgress, setLongPressProgress] = useState(0);
 
   const notificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const longPressProgressRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const isLongPressRef = useRef(false);
 
   const router = useRouter();
@@ -162,34 +160,18 @@ export function HomeSubjects() {
     }
   };
 
-  const handlePointerDown = (subject: Subject) => {
+  const handlePointerDown = (subject: Subject, e: React.PointerEvent) => {
+    // Ignore right clicks, which open context menus natively
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
     isLongPressRef.current = false;
     setLongPressSubjectId(subject.id);
-    setLongPressProgress(0);
 
-    // Start progress animation
-    const startTime = Date.now();
-    const duration = 500; // 500ms long press
-
-    longPressProgressRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min((elapsed / duration) * 100, 100);
-      setLongPressProgress(progress);
-
-      if (progress >= 100) {
-        if (longPressProgressRef.current) {
-          clearInterval(longPressProgressRef.current);
-        }
-      }
-    }, 16); // ~60fps
-
-    // Set long press timer
     longPressTimerRef.current = setTimeout(() => {
       isLongPressRef.current = true;
       setMenuSubject(subject);
       setLongPressSubjectId(null);
-      setLongPressProgress(0);
-    }, duration);
+    }, 500); // 500ms long press
   };
 
   const handlePointerUpOrCancel = () => {
@@ -197,12 +179,7 @@ export function HomeSubjects() {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = undefined;
     }
-    if (longPressProgressRef.current) {
-      clearInterval(longPressProgressRef.current);
-      longPressProgressRef.current = undefined;
-    }
     setLongPressSubjectId(null);
-    setLongPressProgress(0);
   };
 
   useEffect(() => {
@@ -216,9 +193,6 @@ export function HomeSubjects() {
       }
       if (longPressTimerRef.current) {
         clearTimeout(longPressTimerRef.current);
-      }
-      if (longPressProgressRef.current) {
-        clearInterval(longPressProgressRef.current);
       }
     };
   }, [session]);
@@ -275,8 +249,15 @@ export function HomeSubjects() {
   return (
     <>
       <Screen>
-        {/* --- Header --- */}
+        {/* Added global style for the SVG animation instead of relying on interval state */}
+        <style>{`
+          @keyframes drawBorder {
+            from { stroke-dashoffset: 100; }
+            to { stroke-dashoffset: 0; }
+          }
+        `}</style>
 
+        {/* --- Header --- */}
         <header className="flex items-center justify-between px-6 pt-6">
           <span className="font-display text-2xl leading-none">K</span>
           <div className="flex items-center gap-5 text-ink">
@@ -368,11 +349,10 @@ export function HomeSubjects() {
             return (
               <article
                 key={subject.id}
-                onPointerDown={() => handlePointerDown(subject)}
+                onPointerDown={(e) => handlePointerDown(subject, e)}
                 onPointerUp={handlePointerUpOrCancel}
                 onPointerCancel={handlePointerUpOrCancel}
                 onPointerLeave={handlePointerUpOrCancel}
-                onPointerMove={handlePointerUpOrCancel}
                 onClick={(e) => {
                   if (isLongPressRef.current) {
                     e.preventDefault();
@@ -388,23 +368,27 @@ export function HomeSubjects() {
                 }}
                 className="relative flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors select-none"
               >
-                {/* Long press border overlay */}
+                {/* Long press border overlay - Driven fully by CSS now */}
                 {isLongPressing && (
-                  <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                  <div className="absolute inset-0 rounded-2xl pointer-events-none">
                     <svg className="absolute inset-0 w-full h-full">
                       <rect
                         x="1"
                         y="1"
-                        width="calc(100% - 2px)"
-                        height="calc(100% - 2px)"
                         rx="15"
                         ry="15"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2"
-                        strokeDasharray={`${(longPressProgress / 100) * 476} 476`}
+                        strokeWidth="3"
                         strokeLinecap="round"
                         className="text-brand"
+                        pathLength="100"
+                        strokeDasharray="100"
+                        style={{
+                          width: "calc(100% - 2px)",
+                          height: "calc(100% - 2px)",
+                          animation: "drawBorder 500ms linear forwards",
+                        }}
                       />
                     </svg>
                   </div>
