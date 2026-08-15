@@ -55,6 +55,9 @@ export function HomeSubjects() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPressRef = useRef(false);
+
   const router = useRouter();
   const { data: session } = useSession();
   const [recentSubject, setRecentSubject] = useState<Subject | null>(null);
@@ -153,6 +156,21 @@ export function HomeSubjects() {
       showNotification(message);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handlePointerDown = (subject: Subject) => {
+    isLongPressRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      setMenuSubject(subject);
+    }, 500);
+  };
+
+  const handlePointerUpOrCancel = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
     }
   };
 
@@ -312,7 +330,20 @@ export function HomeSubjects() {
             return (
               <article
                 key={subject.id}
-                onClick={() => router.push(`/subject/${subject.id}`)}
+                onPointerDown={() => handlePointerDown(subject)}
+                onPointerUp={handlePointerUpOrCancel}
+                onPointerCancel={handlePointerUpOrCancel}
+                onPointerLeave={handlePointerUpOrCancel}
+                onPointerMove={handlePointerUpOrCancel}
+                onClick={(e) => {
+                  if (isLongPressRef.current) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    isLongPressRef.current = false;
+                    return;
+                  }
+                  router.push(`/subject/${subject.id}`);
+                }}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   setMenuSubject(subject);
