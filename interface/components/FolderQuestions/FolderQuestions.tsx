@@ -7,6 +7,7 @@ import {
   Folder,
   Plus,
   RefreshCw,
+  RotateCcw,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -162,10 +163,9 @@ export function FolderQuestions() {
             strokeWidth={1.75}
             onClick={() => router.back()}
           />
-          <h1 className="text-[17px] font-semibold">{folderName}</h1>
+          <h1 className="text-[17px] font">{folderName}</h1>
           <div className="flex items-center gap-3">
-            <Search className="size-5" strokeWidth={1.75} />
-            <SlidersHorizontal className="size-5" strokeWidth={1.75} />
+            <RotateCcw className="size-5" strokeWidth={1.75}/>
           </div>
         </header>
 

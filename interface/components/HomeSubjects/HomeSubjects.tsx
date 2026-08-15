@@ -24,7 +24,7 @@ export interface Subject {
   folder_count?: number;
 }
 
-const CHIP_COLORS = [
+export const CHIP_COLORS = [
   "bg-[oklch(0.94_0.03_60)] text-brand",
   "bg-[oklch(0.94_0.025_160)] text-easy",
   "bg-[oklch(0.93_0.03_300)] text-[oklch(0.5_0.11_300)]",
@@ -32,7 +32,7 @@ const CHIP_COLORS = [
   "bg-[oklch(0.93_0.025_255)] text-[oklch(0.52_0.09_255)]",
 ];
 
-function getSubjectMeta(subjectId: number, name: string) {
+export function getSubjectMeta(subjectId: number, name: string) {
   const code = name.substring(0, 3).toUpperCase();
   const chip = CHIP_COLORS[subjectId % CHIP_COLORS.length];
   return { code, chip };

@@ -7,11 +7,17 @@ import {
   ArrowDownUp,
   Plus,
   RefreshCw,
+  MoreHorizontal,
+  Search,
+  RotateCcw,
 } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Subject } from "@/components/HomeSubjects/HomeSubjects";
+import {
+  getSubjectMeta,
+  Subject,
+} from "@/components/HomeSubjects/HomeSubjects";
 import { useParams, useRouter } from "next/navigation";
 import { Notification } from "@/components/misc/Notification";
 import { SubjectFoldersSkeleton } from "@/components/SubjectFolders/SubjectFolderSkeleton";
@@ -29,6 +35,8 @@ export function SubjectFolders() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [chip, setChip] = useState<string | null>();
+  const [code, setCode] = useState<string | null>();
 
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { data: session } = useSession();
@@ -62,6 +70,11 @@ export function SubjectFolders() {
 
       const subjectData: Subject = await subjectRes.json();
       const foldersData: FolderItem[] = await foldersRes.json();
+
+      const { code, chip } = getSubjectMeta(subjectData.id, subjectData.name);
+
+      setChip(chip);
+      setCode(code);
 
       setSubject(subjectData);
       setFolders(foldersData);
@@ -143,18 +156,32 @@ export function SubjectFolders() {
   return (
     <>
       <Screen className="relative">
-        <header className="flex items-center justify-between px-6 pt-6">
+        <header className="flex items-center justify-between px-4 pt-5">
           <ChevronLeft
-            className="size-7 cursor-pointer"
+            className="size-6 cursor-pointer"
             strokeWidth={1.75}
             onClick={() => router.back()}
           />
+          <h1 className="text-[17px]">{subject?.name}</h1>
+          <div className="flex items-center gap-3">
+            <RotateCcw className="size-5" strokeWidth={1.75}/>
+          </div>
         </header>
 
+
         <section className="mx-6 mt-6 rounded-2xl border border-rule bg-paper-card p-6">
+          <span
+            className={`inline-flex w-fit rounded-lg px-3 py-1.5 font-mono text-[13px] tracking-widest ${chip}`}
+          >
+            {code}
+          </span>
           <h2 className="mt-4 font-display text-[42px] leading-none">
             {subject?.name}
           </h2>
+          <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft">
+            <Stat value={`${subject?.folder_count}`} label="folders" />
+            <Stat value={`${subject?.question_count}`} label="questions" />
+          </div>
           <div className="mt-6 grid grid-cols-3 font-mono text-[15px] text-ink-soft"></div>
         </section>
 
@@ -195,9 +222,10 @@ export function SubjectFolders() {
 
         <button
           onClick={() => setShowCreateModal(true)}
-          className="fixed bottom-8 left-1/2 ml-[130px] flex size-12 -translate-x-1/5 items-center justify-center rounded-2xl bg-onyx text-paper hover:bg-onyx/90 transition-colors"
+          className="absolute inset-x-0 bottom-6 mx-auto flex w-fit items-center gap-2 rounded-full bg-onyx px-6 py-3 text-[16px] text-paper"
         >
-          <Plus className="size-7" strokeWidth={1.75} />
+          <Plus className="size-5" strokeWidth={1.75} />
+          Add Folder
         </button>
 
         {showCreateModal && (
@@ -212,5 +240,26 @@ export function SubjectFolders() {
 
       <Notification message={notification} />
     </>
+  );
+}
+
+function Stat({
+  value,
+  label,
+  accent,
+}: {
+  value: string;
+  label: string;
+  accent?: boolean;
+}) {
+  return (
+    <div>
+      <p
+        className={`font-display text-[34px] leading-none ${accent ? "text-brand" : "text-ink"}`}
+      >
+        {value}
+      </p>
+      <p className="mt-2">{label}</p>
+    </div>
   );
 }
