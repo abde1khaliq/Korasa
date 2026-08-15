@@ -1,15 +1,23 @@
-import { LayoutGrid, Plus, Search } from "lucide-react";
+import { LayoutGrid, LogOut, Plus, Search } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { EmptyIllustration } from "@/components/HomeSubjects/EmptyIllustration";
+import { signOut } from "next-auth/react";
 
-export const HomeEmptyState = ({ onCreateClick }: { onCreateClick: () => void }) => {
+export const HomeEmptyState = ({
+  onCreateClick,
+}: {
+  onCreateClick: () => void;
+}) => {
   return (
     <Screen>
       <header className="flex items-center justify-between px-6 pt-6">
         <span className="font-display text-2xl leading-none">K</span>
         <div className="flex items-center gap-5 text-ink">
-          <Search className="size-6" strokeWidth={1.75} />
-          <LayoutGrid className="size-6" strokeWidth={1.75} />
+          <LogOut
+            className="w-6 h-6 cursor-pointer text-red-500"
+            strokeWidth={1.75}
+            onClick={() => signOut()}
+          />
         </div>
       </header>
 
@@ -40,4 +48,4 @@ export const HomeEmptyState = ({ onCreateClick }: { onCreateClick: () => void })
       </div>
     </Screen>
   );
-}
+};

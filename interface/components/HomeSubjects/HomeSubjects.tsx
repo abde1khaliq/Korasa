@@ -244,7 +244,7 @@ export function HomeSubjects() {
           <span className="font-display text-2xl leading-none">K</span>
           <div className="flex items-center gap-5 text-ink">
             <LogOut
-              className="w-6 h-6 cursor-pointer"
+              className="w-6 h-6 cursor-pointer text-red-500"
               strokeWidth={1.75}
               onClick={() => signOut()}
             />
