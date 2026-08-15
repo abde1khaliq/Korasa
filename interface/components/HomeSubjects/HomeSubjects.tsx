@@ -6,10 +6,13 @@ import {
   RefreshCw,
   X,
   Loader2,
+  LayoutGrid,
+  ArrowRight,
+  LogOut,
 } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Notification } from "@/components/misc/Notification";
 import { HomeSubjectsSkeleton } from "@/components/HomeSubjects/HomeSubjectsSkeleton";
 import { HomeEmptyState } from "@/components/HomeSubjects/HomeEmptyState";
@@ -17,6 +20,29 @@ import { HomeEmptyState } from "@/components/HomeSubjects/HomeEmptyState";
 export interface Subject {
   id: number;
   name: string;
+  question_count?: number;
+  folder_count?: number;
+}
+
+const CHIP_COLORS = [
+  "bg-[oklch(0.94_0.03_60)] text-brand",
+  "bg-[oklch(0.94_0.025_160)] text-easy",
+  "bg-[oklch(0.93_0.03_300)] text-[oklch(0.5_0.11_300)]",
+  "bg-[oklch(0.94_0.03_35)] text-hard",
+  "bg-[oklch(0.93_0.025_255)] text-[oklch(0.52_0.09_255)]",
+];
+
+function getSubjectMeta(subjectId: number, name: string) {
+  const code = name.substring(0, 3).toUpperCase();
+  const chip = CHIP_COLORS[subjectId % CHIP_COLORS.length];
+  return { code, chip };
+}
+
+function greeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
 }
 
 export function HomeSubjects() {
@@ -25,10 +51,31 @@ export function HomeSubjects() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
-  
+
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const { data: session } = useSession();
+  const [recentSubject, setRecentSubject] = useState<Subject | null>(null);
+
+  const fetchRecentSubject = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/recent`,
+        { headers: { Authorization: `Bearer ${session?.accessToken}` } },
+      );
+      if (!res.ok) {
+        setRecentSubject(null);
+        return;
+      }
+      const data: Subject = await res.json();
+      setRecentSubject(data);
+    } catch (err) {
+      console.error("Failed to fetch recent subject:", err);
+      setRecentSubject(null);
+    }
+  };
+
+  const userName = session?.user?.name || "";
 
   const fetchSubjects = async () => {
     setIsLoading(true);
@@ -78,6 +125,7 @@ export function HomeSubjects() {
   useEffect(() => {
     if (session) {
       fetchSubjects();
+      fetchRecentSubject();
     }
     return () => {
       if (notificationTimeoutRef.current) {
@@ -138,38 +186,134 @@ export function HomeSubjects() {
   return (
     <>
       <Screen>
+        {/* --- Header --- */}
+
         <header className="flex items-center justify-between px-6 pt-6">
           <span className="font-display text-2xl leading-none">K</span>
+          <div className="flex items-center gap-5 text-ink">
+            <LogOut
+              className="w-6 h-6 cursor-pointer"
+              strokeWidth={1.75}
+              onClick={() => signOut()}
+            />
+          </div>
         </header>
 
+        {/* --- Greeting Section --- */}
         <div className="px-6 pt-6">
-          <h1 className="font-display text-[56px] leading-[1.05]">Subjects</h1>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
+              {greeting()}
+            </span>
+          </div>
+          <h1 className="mt-2 font-display text-[48px] leading-[1.05]">
+            {userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase()}
+          </h1>
           <p className="mt-2 text-[17px] text-ink-soft">
-            {subjects.length} {subjects.length === 1 ? "subject" : "subjects"} ·
-            0 questions
+            Ready to pick up where you left off?
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 px-6 py-6">
-          {subjects.map((subject) => (
-            <article
-              key={subject.id}
-              onClick={() => router.push(`/subject/${subject.id}`)}
-              className="flex h-[190px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors"
-            >
-              <h2 className="font-display text-[18px] leading-[1.15]">
-                {subject.name}
-              </h2>
-            </article>
-          ))}
+        {/* --- Continue Studying --- */}
+        {recentSubject && (
+          <div className="mt-6 px-6">
+            <div className="relative overflow-hidden rounded-2xl border border-rule bg-onyx p-5 text-paper">
+              <div className="relative z-10">
+                <span className="font-mono text-[13px] tracking-[0.18em] text-paper/60 uppercase">
+                  Continue studying
+                </span>
+                <h2 className="mt-2 font-display text-[26px] leading-[1.15]">
+                  {recentSubject.name}
+                </h2>
+                <button
+                  onClick={() => router.push(`/subject/${recentSubject.id}`)}
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-paper px-5 py-2.5 text-[15px] font-medium text-onyx"
+                >
+                  Continue
+                  <ArrowRight className="size-4" strokeWidth={1.75} />
+                </button>
+              </div>
+              <div className="pointer-events-none absolute -right-6 -top-6 opacity-10">
+                <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
+                  <circle
+                    cx="80"
+                    cy="80"
+                    r="60"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <circle
+                    cx="80"
+                    cy="80"
+                    r="44"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <circle
+                    cx="80"
+                    cy="80"
+                    r="28"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- Subjects Header --- */}
+        <div className="px-6 pt-8">
+          <h2 className="font-display text-[30px] leading-tight">Subjects</h2>
+          <p className="mt-1 text-[17px] text-ink-soft">
+            {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
+          </p>
         </div>
 
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="fixed bottom-8 left-1/2 ml-[130px] flex size-12 -translate-x-1/5 items-center justify-center rounded-2xl bg-onyx text-paper hover:bg-onyx/90 transition-colors"
-        >
-          <Plus className="size-7" strokeWidth={1.75} />
-        </button>
+        {/* --- Subjects Grid --- */}
+        <div className="grid grid-cols-2 gap-4 px-6 py-6 pb-24">
+          {subjects.map((subject) => {
+            const { code, chip } = getSubjectMeta(subject.id, subject.name);
+
+            return (
+              <article
+                key={subject.id}
+                onClick={() => router.push(`/subject/${subject.id}`)}
+                className="flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors"
+              >
+                <span
+                  className={`inline-flex w-fit rounded-lg px-3 py-1.5 font-mono text-[13px] tracking-widest ${chip}`}
+                >
+                  {code}
+                </span>
+                <h2 className="mt-auto font-display text-[26px] leading-[1.15]">
+                  {subject.name}
+                </h2>
+                <div className="mt-3 flex flex-col gap-2 font-mono text-[14px] text-ink-soft">
+                  <span className="flex flex-row items-center gap-2 leading-tight">
+                    <span>{subject.folder_count || 0}</span>
+                    <span>folders</span>
+                  </span>
+                  <span className="flex flex-row items-center gap-2 leading-tight">
+                    <span>{subject.question_count || 0}</span>
+                    <span>questions</span>
+                  </span>
+                </div>
+              </article>
+            );
+          })}
+
+          {/* New Subject Card Button inside grid */}
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule hover:bg-tag/30 transition-colors"
+          >
+            <span className="flex size-12 items-center justify-center rounded-full border border-ink-faint">
+              <Plus className="size-5 text-ink-soft" strokeWidth={1.5} />
+            </span>
+            <span className="text-[16px] text-ink-soft">New subject</span>
+          </button>
+        </div>
       </Screen>
 
       {showCreateModal && (
@@ -183,10 +327,6 @@ export function HomeSubjects() {
     </>
   );
 }
-
-
-
-
 
 function CreateSubjectModal({
   accessToken,

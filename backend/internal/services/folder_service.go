@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/abde1khaliq/korasa/internal/dto"
 	"github.com/abde1khaliq/korasa/internal/models"
@@ -44,7 +45,15 @@ func CreateFolder(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := db.Create(&folder).Error; err != nil {
+		err = db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Create(&folder).Error; err != nil {
+				return err
+			}
+			return tx.Model(&models.Subject{}).
+				Where("id = ?", subjectID).
+				Update("updated_at", time.Now()).Error
+		})
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create folder"})
 			return
 		}

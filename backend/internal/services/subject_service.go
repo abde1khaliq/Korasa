@@ -19,7 +19,7 @@ func GetUserSubjects(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, dto.ToSubjectListResponse(subjects))
+		c.JSON(http.StatusOK, dto.ToSubjectListResponse(subjects, db))
 	}
 }
 
@@ -37,7 +37,7 @@ func GetSubjectByID(db *gorm.DB) gin.HandlerFunc {
 			}
 			return
 		}
-		c.JSON(http.StatusOK, dto.ToSubjectResponse(subject))
+		c.JSON(http.StatusOK, dto.ToSubjectResponse(subject, db))
 	}
 }
 
@@ -63,7 +63,7 @@ func CreateSubject(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusCreated, dto.ToSubjectResponse(subject))
+		c.JSON(http.StatusCreated, dto.ToSubjectResponse(subject, db))
 	}
 }
 
@@ -99,7 +99,7 @@ func UpdateSubject(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, dto.ToSubjectResponse(subject))
+		c.JSON(http.StatusOK, dto.ToSubjectResponse(subject, db))
 	}
 }
 
@@ -125,4 +125,19 @@ func DeleteSubject(db *gorm.DB) gin.HandlerFunc {
 
 		c.Status(http.StatusNoContent)
 	}
+}
+
+func GetMostRecentSubject(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var subject models.Subject
+		userID := c.GetInt("userID")
+
+		if err := db.Where("user_id = ?", userID).Order("updated_at DESC").First(&subject).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not get the most recent subject"})
+			return
+		}
+
+		c.JSON(http.StatusOK, dto.ToSubjectResponse(subject, db))
+	}
+
 }

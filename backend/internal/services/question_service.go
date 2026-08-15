@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/abde1khaliq/korasa/internal/dto"
 	"github.com/abde1khaliq/korasa/internal/models"
@@ -22,7 +23,8 @@ func CreateQuestion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if _, err := validators.UserOwnFolder(db, folderID, userID); err != nil {
+		folder, err := validators.UserOwnFolder(db, folderID, userID)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
 			} else {
@@ -50,7 +52,24 @@ func CreateQuestion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := db.Create(&question).Error; err != nil {
+		err = db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Create(&question).Error; err != nil {
+				return err
+			}
+			now := time.Now()
+			if err := tx.Model(&models.Folder{}).
+				Where("id = ?", folderID).
+				Update("updated_at", now).Error; err != nil {
+				return err
+			}
+			if err := tx.Model(&models.Subject{}).
+				Where("id = ?", folder.SubjectID).
+				Update("updated_at", now).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create question"})
 			return
 		}
