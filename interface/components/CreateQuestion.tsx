@@ -4,7 +4,11 @@ import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Screen, difficultyStyles, type Difficulty } from "@/components/misc/Screen";
+import {
+  Screen,
+  difficultyStyles,
+  type Difficulty,
+} from "@/components/misc/Screen";
 
 const levels: Difficulty[] = ["Easy", "Medium", "Hard"];
 const difficultyToApi: Record<Difficulty, "easy" | "medium" | "hard"> = {
@@ -24,7 +28,7 @@ export function CreateQuestion() {
   const [error, setError] = useState<string | null>(null);
 
   const { data: session } = useSession();
-  const { folderId } = useParams();
+  const { id: subjectId, folderId } = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -60,18 +64,22 @@ export function CreateQuestion() {
             difficulty: difficultyToApi[difficulty],
             note: note.trim(),
           }),
-        }
+        },
       );
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `Failed to create question (${res.status})`);
+        throw new Error(
+          data.error || `Failed to create question (${res.status})`,
+        );
       }
 
-      router.back();
-      router.refresh();
+      router.push(
+        `/subject/${subjectId}/folder/${folderId}?name=${encodeURIComponent(folderName)}&created=1`,
+      );
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
       setError(message);
       setIsSubmitting(false);
     }
@@ -91,7 +99,9 @@ export function CreateQuestion() {
           disabled={!isValid || isSubmitting}
           className="flex items-center gap-2 rounded-full bg-onyx px-5 py-2.5 text-[14px] text-paper disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {isSubmitting && <Loader2 className="size-3.5 animate-spin" strokeWidth={2} />}
+          {isSubmitting && (
+            <Loader2 className="size-3.5 animate-spin" strokeWidth={2} />
+          )}
           {isSubmitting ? "Saving…" : "Save"}
         </button>
       </header>
