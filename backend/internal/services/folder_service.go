@@ -58,7 +58,7 @@ func CreateFolder(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusCreated, dto.ToFolderResponse(folder))
+		c.JSON(http.StatusCreated, dto.ToFolderResponse(folder, db))
 	}
 }
 
@@ -87,6 +87,6 @@ func GetSubjectFolders(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, dto.ToFolderListResponse(folders))
+		c.JSON(http.StatusOK, dto.ToFolderListResponse(folders, db))
 	}
 }
