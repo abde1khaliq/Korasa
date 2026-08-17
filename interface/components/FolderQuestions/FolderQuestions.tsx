@@ -22,6 +22,8 @@ import {
 import { Notification } from "@/components/misc/Notification";
 import { FolderQuestionsSkeleton } from "@/components/FolderQuestions/FolderQuestionsSkeleton";
 import { FilterChip } from "./FilterChip";
+import { Camera } from "lucide-react";
+import { QuestionOCRCapture } from "./QuestionOCRCapture";
 
 interface Question {
   id: number;
@@ -308,6 +310,21 @@ function CreateQuestionModal({
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showOCR, setShowOCR] = useState(false);
+
+  const handleOCRText = (recognized: string) => {
+    if (text.trim().length > 0) {
+      const confirmed = window.confirm(
+        "This will replace what you've already typed in the question field. Continue?",
+      );
+      if (!confirmed) {
+        setShowOCR(false);
+        return;
+      }
+    }
+    setText(recognized);
+    setShowOCR(false);
+  };
 
   const trimmedText = text.trim();
   const trimmedAnswer = answer.trim();
@@ -395,10 +412,14 @@ function CreateQuestionModal({
               {error}
             </p>
           )}
-
           <p className="mt-6 flex items-center justify-between font-mono text-[12px] tracking-[0.15em] text-ink-faint uppercase">
             Question
-            <span className="normal-case tracking-normal text-ink-faint">
+            <span className="flex items-center gap-3 normal-case tracking-normal text-ink-faint">
+              <Camera
+                className="size-4 cursor-pointer text-ink-soft hover:text-ink transition-colors"
+                strokeWidth={1.75}
+                onClick={() => setShowOCR(true)}
+              />
               {text.length}/{MAX_LEN}
             </span>
           </p>
@@ -470,6 +491,12 @@ function CreateQuestionModal({
               className="w-full resize-none bg-transparent text-[14px] outline-none placeholder:text-ink-faint"
             />
           </div>
+          {showOCR && (
+            <QuestionOCRCapture
+              onClose={() => setShowOCR(false)}
+              onTextRecognized={handleOCRText}
+            />
+          )}
         </div>
       </div>
     </div>
