@@ -176,7 +176,6 @@ func UpdateQuestion(db *gorm.DB) gin.HandlerFunc {
 		question.Answer = input.Answer
 		question.Difficulty = input.Difficulty
 		question.Note = input.Note
-		// FolderID intentionally never touched here — no move endpoint, same as Folder/Subject
 
 		if err := db.Save(&question).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update question"})
