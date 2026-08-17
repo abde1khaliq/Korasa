@@ -18,4 +18,5 @@ func QuestionDirectRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	router.Use(middleware.RequireAuth())
 
 	router.GET("/:questionID", services.GetQuestionByID(db))
+	router.PUT("/:questionID", services.UpdateQuestion(db))
 }
