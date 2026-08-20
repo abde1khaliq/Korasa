@@ -118,7 +118,19 @@ func DeleteSubject(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := db.Delete(&subject).Error; err != nil {
+		err := db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Exec(`
+				DELETE FROM questions
+				WHERE folder_id IN (SELECT id FROM folders WHERE subject_id = ?)
+			`, subject.ID).Error; err != nil {
+				return err
+			}
+			if err := tx.Where("subject_id = ?", subject.ID).Delete(&models.Folder{}).Error; err != nil {
+				return err
+			}
+			return tx.Delete(&subject).Error
+		})
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete subject"})
 			return
 		}
