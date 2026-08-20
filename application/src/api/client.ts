@@ -1,10 +1,13 @@
 import { getAccessToken, getRefreshToken, saveTokens, clearTokens } from "@/auth/tokenStorage";
 
 // EXPO_PUBLIC_ prefix required for Expo to inline this at build time.
-const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
-
-if (!BASE_URL) {
-  throw new Error("EXPO_PUBLIC_BACKEND_URL is not set — check your .env / app config");
+// Resolved lazily so a missing env var doesn't crash the app at import time.
+function getBaseUrl(): string {
+  const url = process.env.EXPO_PUBLIC_BACKEND_URL;
+  if (!url) {
+    throw new Error("EXPO_PUBLIC_BACKEND_URL is not set — check your .env / app config");
+  }
+  return url;
 }
 
 class ApiError extends Error {
@@ -25,7 +28,7 @@ async function refreshAccessToken(): Promise<string | null> {
     if (!refreshToken) return null;
 
     try {
-      const res = await fetch(`${BASE_URL}/auth/refresh`, {
+      const res = await fetch(`${getBaseUrl()}/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken }),
@@ -56,7 +59,7 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   const { skipAuth, headers, ...rest } = options;
 
   const doFetch = async (token: string | null) => {
-    return fetch(`${BASE_URL}${path}`, {
+    return fetch(`${getBaseUrl()}${path}`, {
       ...rest,
       headers: {
         "Content-Type": "application/json",
