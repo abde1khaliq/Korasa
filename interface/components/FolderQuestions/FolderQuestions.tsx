@@ -49,6 +49,24 @@ const difficultyToApi: Record<Difficulty, "easy" | "medium" | "hard"> = {
 
 const MAX_LEN = 2000;
 
+// Helper function to highlight text
+function highlightText(text: string, query: string): React.ReactNode {
+  if (!query.trim()) return text;
+  
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+  
+  return parts.map((part, i) => 
+    regex.test(part) ? (
+      <mark key={i} className="bg-yellow-200/60 text-ink px-0.5 rounded">
+        {part}
+      </mark>
+    ) : (
+      part
+    )
+  );
+}
+
 export function FolderQuestions() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,6 +74,8 @@ export function FolderQuestions() {
   const [filter, setFilter] = useState<Difficulty | "All">("All");
   const [notification, setNotification] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { data: session } = useSession();
@@ -107,6 +127,13 @@ export function FolderQuestions() {
     }
   }, [session, folderId]);
 
+  useEffect(() => {
+    // Focus search input on mount
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []);
+
   const handleQuestionCreated = (newQuestion: Question) => {
     setQuestions((prev) => [...prev, newQuestion]);
     showNotification("Question added");
@@ -118,10 +145,21 @@ export function FolderQuestions() {
     Hard: questions.filter((q) => q.difficulty === "hard").length,
   };
 
-  const visibleQuestions =
+  // Filter questions by difficulty and search query
+  const filteredByDifficulty =
     filter === "All"
       ? questions
       : questions.filter((q) => difficultyLabels[q.difficulty] === filter);
+
+  const searchLower = searchQuery.toLowerCase().trim();
+  const visibleQuestions = searchLower
+    ? filteredByDifficulty.filter(
+        (q) =>
+          q.text.toLowerCase().includes(searchLower) ||
+          q.answer.toLowerCase().includes(searchLower) ||
+          q.note.toLowerCase().includes(searchLower)
+      )
+    : filteredByDifficulty;
 
   if (isLoading) return <FolderQuestionsSkeleton />;
 
@@ -168,13 +206,17 @@ export function FolderQuestions() {
       <Screen className="relative">
         <header className="flex items-center justify-between px-4 pt-5">
           <ChevronLeft
-            className="size-6 cursor-pointer"
+            className="size-6 cursor-pointer shrink-0"
             strokeWidth={1.75}
             onClick={() => router.back()}
           />
-          <h1 className="text-[17px] font">{folderName}</h1>
-          <div className="flex items-center gap-3">
-            <RotateCcw className="size-5" strokeWidth={1.75} />
+          <h1 className="text-[17px] font-semibold truncate px-2">{folderName}</h1>
+          <div className="flex items-center gap-3 shrink-0">
+            <RotateCcw 
+              className="size-5 cursor-pointer text-ink-soft hover:text-ink transition-colors" 
+              strokeWidth={1.75}
+              onClick={fetchQuestions}
+            />
           </div>
         </header>
 
@@ -183,18 +225,45 @@ export function FolderQuestions() {
             {folderName}
           </h2>
           <p className="mt-1 text-[15px] text-ink-soft">
-            {questions.length}{" "}
+            {visibleQuestions.length} of {questions.length}{" "}
             {questions.length === 1 ? "question" : "questions"}
+            {searchQuery && (
+              <span className="ml-2 text-ink-faint">
+                matching "{searchQuery}"
+              </span>
+            )}
           </p>
         </div>
 
-        <div className="mt-8 flex flex-wrap gap-2 px-4">
+        {/* Search Bar - Always Visible */}
+        <div className="mt-4 px-4">
+          <div className="flex items-center gap-2 rounded-xl border border-rule bg-paper-card px-3 py-2 focus-within:border-brand transition-colors">
+            <Search className="size-4 text-ink-faint shrink-0" strokeWidth={1.75} />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search questions..."
+              className="flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-faint min-w-0"
+            />
+            {searchQuery && (
+              <X
+                className="size-4 cursor-pointer text-ink-faint hover:text-ink shrink-0"
+                strokeWidth={1.75}
+                onClick={() => setSearchQuery("")}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2 px-4">
           <button
             onClick={() => setFilter("All")}
-            className={`flex items-center gap-1.5 rounded-full border-black border px-3 py-1.5 text-[12px] transition-colors ${
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] transition-colors ${
               filter === "All"
-                ? "bg-onyx text-paper"
-                : "border border-rule text-ink hover:bg-tag/50"
+                ? "bg-onyx text-paper border-onyx"
+                : "border-rule text-ink hover:bg-tag/50"
             }`}
           >
             All
@@ -213,9 +282,11 @@ export function FolderQuestions() {
         {/* Questions List */}
         {visibleQuestions.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-12">
-            <p className="text-[16px] text-ink-soft">
+            <p className="text-[16px] text-ink-soft text-center">
               {questions.length === 0
-                ? "No questions yet."
+                ? "No questions yet. Add your first question!"
+                : searchQuery
+                ? `No questions match "${searchQuery}"`
                 : "No questions match this filter."}
             </p>
           </div>
@@ -224,6 +295,10 @@ export function FolderQuestions() {
             {visibleQuestions.map((q, i) => {
               const label = difficultyLabels[q.difficulty];
               const s = difficultyStyles[label];
+              const highlightedText = searchQuery.trim() 
+                ? highlightText(q.text, searchQuery)
+                : q.text;
+              
               return (
                 <li
                   key={q.id}
@@ -234,12 +309,12 @@ export function FolderQuestions() {
                   }
                   className="flex gap-4 rounded-xl px-2 py-4 cursor-pointer hover:bg-tag/40 transition-colors"
                 >
-                  <span className="pt-0.5 font-mono text-[13px] text-ink-faint">
+                  <span className="pt-0.5 font-mono text-[13px] text-ink-faint shrink-0">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[15px] leading-relaxed text-ink line-clamp-2">
-                      {q.text}
+                      {highlightedText}
                     </p>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2.5">
@@ -254,6 +329,16 @@ export function FolderQuestions() {
                           <span className="h-[3px] w-[3px] rounded-full bg-ink-faint/50"></span>
                           <span className="text-[12px] text-ink-faint">
                             Has notes
+                          </span>
+                        </>
+                      )}
+                      {searchQuery.trim() && 
+                        (q.answer.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         q.note.toLowerCase().includes(searchQuery.toLowerCase())) && (
+                        <>
+                          <span className="h-[3px] w-[3px] rounded-full bg-ink-faint/50"></span>
+                          <span className="text-[12px] text-ink-faint">
+                            Match in {q.answer.toLowerCase().includes(searchQuery.toLowerCase()) ? 'answer' : 'notes'}
                           </span>
                         </>
                       )}

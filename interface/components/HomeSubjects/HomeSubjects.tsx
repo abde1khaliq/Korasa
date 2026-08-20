@@ -9,6 +9,7 @@ import {
   ArrowRight,
   LogOut,
   Trash2,
+  Zap,
 } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ import { signOut, useSession } from "next-auth/react";
 import { Notification } from "@/components/misc/Notification";
 import { HomeSubjectsSkeleton } from "@/components/HomeSubjects/HomeSubjectsSkeleton";
 import { HomeEmptyState } from "@/components/HomeSubjects/HomeEmptyState";
+import { QuickCreateModal } from "@/components/HomeSubjects/QuickCreateModal";
 
 export interface Subject {
   id: number;
@@ -53,15 +55,44 @@ export function HomeSubjects() {
   const [notification, setNotification] = useState<string | null>(null);
   const [menuSubject, setMenuSubject] = useState<Subject | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [longPressSubjectId, setLongPressSubjectId] = useState<number | null>(null);
+  const [longPressSubjectId, setLongPressSubjectId] = useState<number | null>(
+    null,
+  );
 
-  const notificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const notificationTimeoutRef = useRef<
+    ReturnType<typeof setTimeout> | undefined
+  >(undefined);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const isLongPressRef = useRef(false);
 
   const router = useRouter();
   const { data: session } = useSession();
   const [recentSubject, setRecentSubject] = useState<Subject | null>(null);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+
+  const handleQuickFolderCreated = (subjectId: number) => {
+    setSubjects((prev) =>
+      prev.map((s) =>
+        s.id === subjectId
+          ? { ...s, folder_count: (s.folder_count || 0) + 1 }
+          : s,
+      ),
+    );
+    showNotification("Folder created");
+  };
+
+  const handleQuickQuestionCreated = (subjectId: number) => {
+    setSubjects((prev) =>
+      prev.map((s) =>
+        s.id === subjectId
+          ? { ...s, question_count: (s.question_count || 0) + 1 }
+          : s,
+      ),
+    );
+    showNotification("Question created");
+  };
 
   const fetchRecentSubject = async () => {
     try {
@@ -261,6 +292,11 @@ export function HomeSubjects() {
         <header className="flex items-center justify-between px-6 pt-6">
           <span className="font-display text-2xl leading-none">K</span>
           <div className="flex items-center gap-5 text-ink">
+            <Zap
+              className="w-6 h-6 cursor-pointer text-brand"
+              strokeWidth={1.75}
+              onClick={() => setShowQuickCreate(true)}
+            />
             <LogOut
               className="w-6 h-6 cursor-pointer text-red-500"
               strokeWidth={1.75}
@@ -393,13 +429,13 @@ export function HomeSubjects() {
                     </svg>
                   </div>
                 )}
-                
+
                 <span
                   className={`inline-flex w-fit rounded-lg px-3 py-1.5 font-mono text-[13px] tracking-widest ${chip}`}
                 >
                   {code}
                 </span>
-                <h2 className="mt-auto font-display text-[26px] leading-[1.15]">
+                <h2 className="mt-auto font-display text-[26px] leading-[1.15] truncate">
                   {subject.name}
                 </h2>
                 <div className="mt-3 flex flex-col gap-2 font-mono text-[14px] text-ink-soft">
@@ -471,6 +507,15 @@ export function HomeSubjects() {
           accessToken={session?.accessToken}
           onClose={() => setShowCreateModal(false)}
           onCreated={handleSubjectCreated}
+        />
+      )}
+      {showQuickCreate && (
+        <QuickCreateModal
+          subjects={subjects}
+          accessToken={session?.accessToken}
+          onClose={() => setShowQuickCreate(false)}
+          onFolderCreated={handleQuickFolderCreated}
+          onQuestionCreated={handleQuickQuestionCreated}
         />
       )}
       <Notification message={notification} />
@@ -571,7 +616,7 @@ function CreateSubjectModal({
 
           {error && <p className="mt-3 text-[14px] text-hard">{error}</p>}
 
-          <button 
+          <button
             type="submit"
             disabled={isSubmitting || !name.trim()}
             className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-xl bg-onyx py-3.5 text-[16px] font-medium text-paper transition-colors hover:bg-onyx/90 disabled:opacity-40 disabled:cursor-not-allowed"
