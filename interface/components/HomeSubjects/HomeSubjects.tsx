@@ -10,6 +10,9 @@ import {
   LogOut,
   Trash2,
   Zap,
+  Menu,
+  User,
+  Settings,
 } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { useRouter } from "next/navigation";
@@ -58,6 +61,7 @@ export function HomeSubjects() {
   const [longPressSubjectId, setLongPressSubjectId] = useState<number | null>(
     null,
   );
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const notificationTimeoutRef = useRef<
     ReturnType<typeof setTimeout> | undefined
@@ -66,11 +70,23 @@ export function HomeSubjects() {
     undefined,
   );
   const isLongPressRef = useRef(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
   const { data: session } = useSession();
   const [recentSubject, setRecentSubject] = useState<Subject | null>(null);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleQuickFolderCreated = (subjectId: number) => {
     setSubjects((prev) =>
@@ -113,6 +129,7 @@ export function HomeSubjects() {
   };
 
   const userName = session?.user?.name || "";
+  const userEmail = session?.user?.email || "";
 
   const fetchSubjects = async () => {
     setIsLoading(true);
@@ -286,22 +303,64 @@ export function HomeSubjects() {
             from { stroke-dashoffset: 100; }
             to { stroke-dashoffset: 0; }
           }
+          @keyframes slideDown {
+            from {
+              opacity: 0;
+              transform: translateY(-8px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
         `}</style>
 
         {/* --- Header --- */}
         <header className="flex items-center justify-between px-6 pt-6">
           <span className="font-display text-2xl leading-none">K</span>
-          <div className="flex items-center gap-5 text-ink">
-            <Zap
-              className="w-6 h-6 cursor-pointer text-brand"
-              strokeWidth={1.75}
-              onClick={() => setShowQuickCreate(true)}
-            />
-            <LogOut
-              className="w-6 h-6 cursor-pointer text-red-500"
-              strokeWidth={1.75}
-              onClick={() => signOut()}
-            />
+          <div className="relative" ref={userMenuRef}>
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex size-9 items-center justify-center rounded-full transition-colors"
+            >
+              <Menu className="size-5 text-ink" strokeWidth={1.75} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-rule bg-paper shadow-lg overflow-hidden animate-[slideDown_0.15s_ease-out]">
+                {/* User Info */}
+                <div className="px-4 py-3 border-b border-rule">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 items-center justify-center rounded-full bg-onyx/10">
+                      <User className="size-5 text-ink-soft" strokeWidth={1.75} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[15px] font-medium truncate">
+                        {userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase()}
+                      </p>
+                      <p className="text-[12px] text-ink-faint truncate">
+                        {userEmail}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Menu Items */}
+                <div className="p-2">
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      signOut();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] text-hard hover:bg-hard-soft/20 transition-colors"
+                  >
+                    <LogOut className="size-4" strokeWidth={1.75} />
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
@@ -463,6 +522,14 @@ export function HomeSubjects() {
             <span className="text-[16px] text-ink-soft">New subject</span>
           </button>
         </div>
+
+        {/* Quick Add FAB - Bottom Right */}
+        <button
+          onClick={() => setShowQuickCreate(true)}
+          className="fixed bottom-6 right-6 flex size-14 items-center justify-center rounded-full bg-onyx text-paper shadow-lg shadow-onyx/30 hover:bg-onyx/90 transition-all active:scale-95 border border-rule/20"
+        >
+          <Zap className="size-6" strokeWidth={0} fill="currentColor" />
+        </button>
       </Screen>
 
       {/* --- Context Action Popup Menu --- */}
