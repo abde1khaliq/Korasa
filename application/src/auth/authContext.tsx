@@ -23,6 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getAccessToken().then((token) => {
       setIsAuthenticated(!!token);
       setIsLoading(false);
+    }).catch(err => {
+      console.error("Failed to read token:", err);
+      setIsAuthenticated(false);
+      setIsLoading(false);
     });
   }, []);
 
