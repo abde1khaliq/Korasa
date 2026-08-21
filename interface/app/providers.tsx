@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/verify-email";
 
   return (
     <SessionProvider>

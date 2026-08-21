@@ -12,7 +12,7 @@ type Config struct {
 	JWTSecret        string
 	JWTRefreshSecret string
 	PostgresDBUrl    string
-	ClientUrl        string
+	ResendAPIKey     string
 }
 
 var App Config
@@ -26,8 +26,8 @@ func Load() {
 		Port:             getEnv("PORT", "8080"),
 		JWTSecret:        getEnv("JWT_SECRET", ""),
 		JWTRefreshSecret: getEnv("JWT_REFRESH_SECRET", ""),
-		ClientUrl:        getEnv("CLIENT_URL", ""),
 		PostgresDBUrl:    getEnv("POSTGRES_DATABASE_URL", ""),
+		ResendAPIKey:     getEnv("RESEND_API_KEY", ""),
 	}
 }
 

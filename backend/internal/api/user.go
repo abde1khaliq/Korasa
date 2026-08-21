@@ -10,4 +10,6 @@ func UserRouters(router *gin.RouterGroup, db *gorm.DB) {
 	router.POST("/register", services.RegisterUser(db))
 	router.POST("/login", services.LoginUser(db))
 	router.POST("/refresh", services.RefreshUser(db))
+	router.POST("/verify", services.VerifyEmail(db))
+	router.POST("/resend-verification", services.ResendVerificationCode())
 }

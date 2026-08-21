@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 
@@ -20,6 +19,7 @@ export function Register() {
     e?.preventDefault();
     setError("");
 
+    // Validation
     if (!username || !email || !password) {
       setError("Please fill in all fields.");
       return;
@@ -37,7 +37,8 @@ export function Register() {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/register`, {
+      // Call the backend register API (sends verification code)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
@@ -51,20 +52,12 @@ export function Register() {
         return;
       }
 
-      // Automatically sign in
-      const signInRes = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (signInRes?.error) {
-        // Fallback to manual login
-        router.push("/login");
-      } else {
-        router.push("/");
-        router.refresh();
-      }
+      // Store email in sessionStorage for verification page
+      sessionStorage.setItem("verificationEmail", email);
+      
+      // Redirect to verification page
+      router.push("/verify-email");
+      
     } catch (err) {
       console.error(err);
       setError("An unexpected error occurred.");
@@ -75,21 +68,25 @@ export function Register() {
   return (
     <>
       <header className="px-6 pt-6">
-        <span className="font-display text-2xl leading-none">K</span>
+        <span className="font-display text-2xl leading-none text-ink">Korasa</span>
       </header>
 
       <div className="flex flex-1 flex-col px-6 pt-10 pb-16">
         <p className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
           Get started
         </p>
-        <h1 className="mt-3 font-display text-[48px] leading-[1.05]">
+        <h1 className="mt-3 font-display text-[48px] leading-[1.05] text-ink">
           Create account
         </h1>
         <p className="mt-3 text-[17px] text-ink-soft">
           Subjects, folders and questions all in one quiet place.
         </p>
 
-        {error && <p className="mt-4 text-red-500 text-sm">{error}</p>}
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleRegister} className="flex flex-col flex-1">
           <p className="mt-6 font-mono text-[14px] tracking-[0.18em] text-ink-faint uppercase">
@@ -167,9 +164,9 @@ export function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-8 inline-flex items-center justify-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper disabled:opacity-50"
+            className="mt-8 inline-flex items-center justify-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
           >
-            {loading ? "Creating..." : "Create account"}
+            {loading ? "Sending verification..." : "Create account"}
             <ArrowRight className="size-5" strokeWidth={1.75} />
           </button>
         </form>
