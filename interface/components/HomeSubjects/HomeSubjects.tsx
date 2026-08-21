@@ -13,6 +13,7 @@ import {
   Menu,
   User,
   Settings,
+  Moon,
 } from "lucide-react";
 import { Screen } from "@/components/misc/Screen";
 import { useRouter } from "next/navigation";
@@ -21,6 +22,7 @@ import { Notification } from "@/components/misc/Notification";
 import { HomeSubjectsSkeleton } from "@/components/HomeSubjects/HomeSubjectsSkeleton";
 import { HomeEmptyState } from "@/components/HomeSubjects/HomeEmptyState";
 import { QuickCreateModal } from "@/components/HomeSubjects/QuickCreateModal";
+import { useTheme } from "next-themes";
 
 export interface Subject {
   id: number;
@@ -62,6 +64,7 @@ export function HomeSubjects() {
     null,
   );
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const { theme, setTheme } = useTheme()
 
   const notificationTimeoutRef = useRef<
     ReturnType<typeof setTimeout> | undefined
@@ -80,7 +83,10 @@ export function HomeSubjects() {
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setShowUserMenu(false);
       }
     };
@@ -328,16 +334,20 @@ export function HomeSubjects() {
 
             {/* Dropdown Menu */}
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-rule bg-paper shadow-lg overflow-hidden animate-[slideDown_0.15s_ease-out]">
+              <div className="absolute right-0 mt-2 w-56 z-10 rounded-2xl border border-rule bg-paper shadow-lg overflow-hidden animate-[slideDown_0.15s_ease-out]">
                 {/* User Info */}
                 <div className="px-4 py-3 border-b border-rule">
                   <div className="flex items-center gap-3">
                     <div className="flex size-10 items-center justify-center rounded-full bg-onyx/10">
-                      <User className="size-5 text-ink-soft" strokeWidth={1.75} />
+                      <User
+                        className="size-5 text-ink-soft"
+                        strokeWidth={1.75}
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[15px] font-medium truncate">
-                        {userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase()}
+                        {userName.charAt(0).toUpperCase() +
+                          userName.slice(1).toLowerCase()}
                       </p>
                       <p className="text-[12px] text-ink-faint truncate">
                         {userEmail}
@@ -357,6 +367,16 @@ export function HomeSubjects() {
                   >
                     <LogOut className="size-4" strokeWidth={1.75} />
                     Sign out
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      setTheme(theme === "dark" ? "light" : "dark");
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px]"
+                  >
+                    <Moon className="size-4" strokeWidth={1.75} />
+                    {theme === "dark" ? "Light mode" : "Dark mode"}
                   </button>
                 </div>
               </div>
@@ -542,7 +562,7 @@ export function HomeSubjects() {
         >
           <div className="w-full max-w-[420px] animate-[slideUp_0.25s_ease-out] rounded-t-3xl bg-paper px-6 pb-8 pt-5">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-[22px]">{menuSubject.name}</h2>
+              <h2 className="font-display text-[22px] text-ink">{menuSubject.name}</h2>
               <button
                 onClick={() => setMenuSubject(null)}
                 className="flex size-9 items-center justify-center rounded-full hover:bg-tag transition-colors"
@@ -655,7 +675,7 @@ function CreateSubjectModal({
     >
       <div className="w-full max-w-[420px] animate-[slideUp_0.25s_ease-out] rounded-t-3xl bg-paper px-6 pb-8 pt-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[22px]">New subject</h2>
+          <h2 className="font-display text-[22px] text-ink">New subject</h2>
           <button
             onClick={onClose}
             className="flex size-9 items-center justify-center rounded-full hover:bg-tag transition-colors"
