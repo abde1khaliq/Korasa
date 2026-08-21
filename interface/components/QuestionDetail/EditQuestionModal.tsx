@@ -1,10 +1,10 @@
 import { Loader2, X } from "lucide-react";
 import { useState } from "react";
-import { Question } from "./QuestionDetail";
+import { Question } from "@/types/question";
+import { useSession } from "next-auth/react";
 
 export const EditQuestionModal = ({
   question,
-  accessToken,
   onClose,
   onSave,
 }: {
@@ -21,6 +21,7 @@ export const EditQuestionModal = ({
   const [note, setNote] = useState(question.note || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +38,7 @@ export const EditQuestionModal = ({
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${session?.accessToken}`,
           },
           body: JSON.stringify({
             text: text.trim(),
@@ -158,4 +159,4 @@ export const EditQuestionModal = ({
       </div>
     </div>
   );
-}
+};

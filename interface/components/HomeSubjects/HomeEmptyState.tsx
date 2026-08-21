@@ -9,20 +9,9 @@ export const HomeEmptyState = ({
   onCreateClick: () => void;
 }) => {
   return (
-    <Screen>
-      <header className="flex items-center justify-between px-6 pt-6">
-        <span className="font-display text-2xl leading-none">K</span>
-        <div className="flex items-center gap-5 text-ink">
-          <LogOut
-            className="w-6 h-6 cursor-pointer text-red-500"
-            strokeWidth={1.75}
-            onClick={() => signOut()}
-          />
-        </div>
-      </header>
-
+    <>
       <div className="px-6 pt-8">
-        <h1 className="font-display text-[56px] leading-[1.05]">Subjects</h1>
+        <h1 className="font-display text-[56px] leading-[1.05] text-ink">Subjects</h1>
         <p className="mt-3 text-[17px] text-ink-soft">
           A quiet place for the questions worth remembering.
         </p>
@@ -31,7 +20,7 @@ export const HomeEmptyState = ({
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
         <EmptyIllustration />
 
-        <h2 className="mt-10 font-display text-[32px] leading-tight">
+        <h2 className="mt-10 font-display text-[32px] leading-tight text-ink">
           Begin with a subject
         </h2>
         <p className="mt-3 max-w-[19rem] text-center text-[17px] leading-relaxed text-ink-soft">
@@ -46,6 +35,6 @@ export const HomeEmptyState = ({
           Create your first subject
         </button>
       </div>
-    </Screen>
+  </>
   );
 };

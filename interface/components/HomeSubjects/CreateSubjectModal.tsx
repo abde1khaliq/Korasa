@@ -1,23 +1,20 @@
-import { Loader2, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { FolderItem } from "@/types/folder";
-import { useSession } from "next-auth/react";
+import { Loader2, Plus, X } from "lucide-react";
+import { Subject } from "@/types/subject";
 
-export const CreateFolderModal = ({
-  subjectID,
+export const CreateSubjectModal = ({
+  accessToken,
   onClose,
   onCreated,
 }: {
-  subjectID: string;
   accessToken?: string;
   onClose: () => void;
-  onCreated: (folder: FolderItem) => void;
+  onCreated: (subject: Subject) => void;
 }) => {
   const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { data: session } = useSession()
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -34,22 +31,22 @@ export const CreateFolderModal = ({
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/${subjectID}/folders`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({ name: trimmed }),
         },
       );
 
       if (!res.ok) {
-        throw new Error(`Failed to create folder (${res.status})`);
+        throw new Error(`Failed to create subject (${res.status})`);
       }
 
-      const created: FolderItem = await res.json();
+      const created: Subject = await res.json();
       onCreated(created);
       onClose();
     } catch (err) {
@@ -70,7 +67,7 @@ export const CreateFolderModal = ({
     >
       <div className="w-full max-w-[420px] animate-[slideUp_0.25s_ease-out] rounded-t-3xl bg-paper px-6 pb-8 pt-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-[22px] text-ink">New folder</h2>
+          <h2 className="font-display text-[22px] text-ink">New subject</h2>
           <button
             onClick={onClose}
             className="flex size-9 items-center justify-center rounded-full hover:bg-tag transition-colors"
@@ -81,18 +78,18 @@ export const CreateFolderModal = ({
 
         <form onSubmit={handleSubmit} className="mt-5">
           <label
-            htmlFor="folder-name"
+            htmlFor="subject-name"
             className="font-mono text-[13px] tracking-[0.12em] text-ink-faint uppercase"
           >
-            Folder name
+            Subject name
           </label>
           <input
             ref={inputRef}
-            id="folder-name"
+            id="subject-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Chapter 1, Vocabulary…"
+            placeholder="e.g. English, Chemistry…"
             className="mt-2 w-full rounded-xl border border-rule bg-paper-card px-4 py-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none focus:border-brand transition-colors"
           />
 
@@ -108,7 +105,7 @@ export const CreateFolderModal = ({
             ) : (
               <Plus className="size-5" strokeWidth={1.75} />
             )}
-            {isSubmitting ? "Creating…" : "Create folder"}
+            {isSubmitting ? "Creating…" : "Create subject"}
           </button>
         </form>
       </div>

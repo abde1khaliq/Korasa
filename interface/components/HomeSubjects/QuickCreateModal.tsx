@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X, Loader2, Plus } from "lucide-react";
-import type { Subject } from "@/components/HomeSubjects/HomeSubjects";
+import type { Subject } from "@/types/subject";
 import type { Difficulty } from "@/components/misc/Screen";
 
 interface FolderOption {
@@ -38,10 +38,8 @@ export function QuickCreateModal({
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Folder tab
   const [folderName, setFolderName] = useState("");
 
-  // Question tab
   const [folders, setFolders] = useState<FolderOption[]>([]);
   const [loadingFolders, setLoadingFolders] = useState(false);
   const [folderId, setFolderId] = useState<number | "new" | "">("");
@@ -214,7 +212,7 @@ export function QuickCreateModal({
             strokeWidth={1.75}
             onClick={onClose}
           />
-          <h1 className="text-[17px]">Quick add</h1>
+          <h1 className="text-[17px] text-ink">Quick add</h1>
           <div className="size-6" />
         </header>
 
@@ -300,7 +298,10 @@ export function QuickCreateModal({
               </button>
             </form>
           ) : (
-            <form onSubmit={handleCreateQuestion} className="flex flex-col gap-4">
+            <form
+              onSubmit={handleCreateQuestion}
+              className="flex flex-col gap-4"
+            >
               <div>
                 <label className="font-mono text-[12px] tracking-[0.12em] text-ink-faint uppercase">
                   Subject
@@ -324,7 +325,10 @@ export function QuickCreateModal({
                 </label>
                 {loadingFolders ? (
                   <div className="mt-2 flex items-center gap-2 text-[14px] text-ink-soft">
-                    <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
+                    <Loader2
+                      className="size-4 animate-spin"
+                      strokeWidth={1.75}
+                    />
                     Loading folders…
                   </div>
                 ) : (

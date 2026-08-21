@@ -1,42 +1,50 @@
-import { Screen } from "@/components/misc/Screen";
+import { Search } from "lucide-react";
 
-export const FolderQuestionsSkeleton = () => {
+export function FolderQuestionsSkeleton() {
   return (
-    <Screen className="relative">
-      <header className="flex items-center justify-between px-4 pt-5">
-        <div className="size-6 animate-pulse rounded bg-tag/70" />
-        <div className="h-5 w-24 animate-pulse rounded bg-tag/70" />
-        <div className="flex items-center gap-3">
-          <div className="size-5 animate-pulse rounded bg-tag/70" />
-          <div className="size-5 animate-pulse rounded bg-tag/70" />
-        </div>
-      </header>
-
-      <div className="px-4 pt-5">
-        <div className="h-[13px] w-20 animate-pulse rounded bg-tag/50" />
-        <div className="mt-2 h-[34px] w-[60%] animate-pulse rounded-lg bg-tag/70" />
+    <>
+      <div className="px-4 pt-5 animate-pulse">
+        <div className="mt-2 h-[34px] w-48 rounded-lg bg-ink-faint/20" />
+        <div className="mt-1 h-5 w-32 rounded bg-ink-faint/20" />
       </div>
 
-      <ul className="mt-6 px-4 pb-24">
-        {[0, 1, 2].map((i) => (
-          <li key={i} className="flex gap-3 border-b border-rule py-5">
-            <div className="h-[12px] w-4 animate-pulse rounded bg-tag/40" />
-            <div className="min-w-0 flex-1">
-              <div
-                className="h-[14px] animate-pulse rounded bg-tag/70"
-                style={{
-                  width: `${70 + (i % 3) * 10}%`,
-                  animationDelay: `${i * 100}ms`,
-                }}
-              />
-              <div
-                className="mt-2 h-[14px] w-[40%] animate-pulse rounded bg-tag/50"
-                style={{ animationDelay: `${i * 100 + 50}ms` }}
-              />
+      <div className="mt-4 px-4">
+        <div className="flex items-center gap-2 rounded-xl border border-rule bg-paper-card px-3 py-2">
+          <Search className="size-4 text-ink-faint/30" strokeWidth={1.75} />
+          <div className="h-5 flex-1 rounded bg-ink-faint/10" />
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2 px-4 animate-pulse">
+        <div className="h-8 w-12 rounded-full bg-ink-faint/20" />
+        <div className="h-8 w-20 rounded-full bg-ink-faint/20" />
+        <div className="h-8 w-24 rounded-full bg-ink-faint/20" />
+        <div className="h-8 w-20 rounded-full bg-ink-faint/20" />
+      </div>
+
+      <ul className="mt-4 px-4 pb-28">
+        {[...Array(6)].map((_, index) => (
+          <li key={index} className="flex gap-4 rounded-xl px-2 py-4">
+            <span className="pt-0.5 font-mono text-[13px] text-ink-faint/30 shrink-0">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="h-5 w-full rounded bg-ink-faint/20 animate-pulse" />
+              <div className="h-5 w-3/4 rounded bg-ink-faint/20 animate-pulse" />
+              <div className="mt-3 flex flex-wrap items-center gap-2.5">
+                <div className="h-6 w-16 rounded-full bg-ink-faint/20 animate-pulse" />
+                <div className="h-[3px] w-[3px] rounded-full bg-ink-faint/20"></div>
+                <div className="h-5 w-20 rounded bg-ink-faint/20 animate-pulse" />
+              </div>
             </div>
           </li>
         ))}
       </ul>
-    </Screen>
+
+      <div className="absolute inset-x-0 bottom-6 mx-auto flex w-fit items-center gap-2 rounded-full bg-ink-faint/20 px-6 py-3.5">
+        <div className="size-5 rounded bg-ink-faint/20" />
+        <div className="h-4 w-24 rounded bg-ink-faint/20" />
+      </div>
+    </>
   );
 }

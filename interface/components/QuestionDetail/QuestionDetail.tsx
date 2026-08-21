@@ -1,122 +1,51 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  Pencil,
   Eye,
-  RefreshCw,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import {
-  Screen,
   Breadcrumb,
   DifficultyPill,
-  type Difficulty,
 } from "@/components/misc/Screen";
 import { QuestionDetailSkeleton } from "@/components/QuestionDetail/QuestionDetailSkeleton";
+import { QuestionDetailError } from "@/components/QuestionDetail/QuestionDetailError";
 import { Notification } from "@/components/misc/Notification";
 import { EditQuestionModal } from "@/components/QuestionDetail/EditQuestionModal";
-
-export interface Question {
-  id: number;
-  text: string;
-  answer: string;
-  difficulty: "easy" | "medium" | "hard";
-  note: string;
-  folder_id: number;
-}
-
-const difficultyLabels: Record<Question["difficulty"], Difficulty> = {
-  easy: "Easy",
-  medium: "Medium",
-  hard: "Hard",
-};
+import { useQuestionDetail } from "@/app/hooks/useQuestionDetail";
+import { useQuestionNavigation } from "@/app/hooks/useQuestionNavigation";
+import { useReveal } from "@/app/hooks/useReveal";
+import { useNotification } from "@/app/hooks/useNotification";
+import { difficultyLabels } from "@/app/utils/questionUtils";
+import { Question } from "@/types/question";
 
 export function QuestionDetail() {
-  const [question, setQuestion] = useState<Question | null>(null);
-  const [siblings, setSiblings] = useState<Question[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [revealed, setRevealed] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-
-  const [notification, setNotification] = useState<string | null>(null);
-  const notificationTimeoutRef = useRef<
-    ReturnType<typeof setTimeout> | undefined
-  >(undefined);
-
-  const { data: session } = useSession();
   const { questionId } = useParams();
   const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
 
-  const showNotification = (message: string) => {
-    setNotification(message);
-    if (notificationTimeoutRef.current) {
-      clearTimeout(notificationTimeoutRef.current);
-    }
-    notificationTimeoutRef.current = setTimeout(() => {
-      setNotification(null);
-    }, 3000);
-  };
+  const {
+    question,
+    siblings,
+    isLoading,
+    error,
+    fetchQuestion,
+    updateQuestion,
+  } = useQuestionDetail(questionId);
 
-  const fetchQuestion = async () => {
-    setIsLoading(true);
-    setError(null);
-    setRevealed(false);
+  const { prevQuestion, nextQuestion, goTo } = useQuestionNavigation(
+    question,
+    siblings
+  );
 
-    try {
-      const headers = { Authorization: `Bearer ${session?.accessToken}` };
-
-      const qRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/questions/${questionId}`,
-        { headers },
-      );
-      if (!qRes.ok) {
-        throw new Error(`Failed to load question (${qRes.status})`);
-      }
-      const q: Question = await qRes.json();
-      setQuestion(q);
-
-      const listRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/folders/${q.folder_id}/questions`,
-        { headers },
-      );
-      if (listRes.ok) {
-        const list: Question[] = await listRes.json();
-        setSiblings(list);
-      }
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
-      console.error("Failed to fetch question:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (session && questionId) {
-      fetchQuestion();
-    }
-  }, [session, questionId]);
-
-  useEffect(() => {
-    return () => {
-      if (notificationTimeoutRef.current) {
-        clearTimeout(notificationTimeoutRef.current);
-      }
-    };
-  }, []);
+  const { revealed, toggleReveal } = useReveal();
+  const { notification, showNotification } = useNotification();
 
   const handleUpdate = (updatedQuestion: Question) => {
-    setQuestion(updatedQuestion);
-    setSiblings((prev) =>
-      prev.map((s) => (s.id === updatedQuestion.id ? updatedQuestion : s)),
-    );
+    updateQuestion(updatedQuestion);
     setIsEditing(false);
     showNotification("Question saved");
   };
@@ -125,152 +54,95 @@ export function QuestionDetail() {
 
   if (error || !question) {
     return (
-      <Screen className="relative">
-        <header className="flex items-center justify-between px-6 pt-5">
-          <ChevronLeft
-            className="size-6 cursor-pointer"
-            strokeWidth={1.75}
-            onClick={() => router.back()}
-          />
-          <h1 className="text-[18px] font-semibold">Question</h1>
-          <div className="size-6" />
-        </header>
-        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-hard-soft">
-            <span className="text-xl">!</span>
-          </div>
-          <h2 className="mt-5 font-display text-[20px] leading-tight text-center">
-            Couldn&apos;t load this question
-          </h2>
-          <p className="mt-2 max-w-[19rem] text-center text-[15px] leading-relaxed text-ink-soft">
-            {error ?? "Question not found."}
-          </p>
-          <button
-            onClick={fetchQuestion}
-            className="mt-6 inline-flex items-center gap-2.5 rounded-full border border-rule bg-paper-card px-6 py-3 text-[15px] text-ink hover:bg-tag transition-colors"
-          >
-            <RefreshCw className="size-4" strokeWidth={1.75} />
-            Try again
-          </button>
-        </div>
-      </Screen>
+      <QuestionDetailError
+        error={error}
+        onRetry={fetchQuestion}
+        onBack={() => router.back()}
+      />
     );
   }
 
-  const index = siblings.findIndex((s) => s.id === question.id);
-  const total = siblings.length;
-  const prevQuestion = index > 0 ? siblings[index - 1] : null;
-  const nextQuestion =
-    index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
   const label = difficultyLabels[question.difficulty];
-
-  const goTo = (id: number) => {
-    router.push(
-      window.location.pathname.replace(/\/question\/\d+$/, `/question/${id}`),
-    );
-  };
 
   return (
     <>
-      <Screen className="relative">
-        <header className="flex items-center justify-between px-4 pt-4">
-          <ChevronLeft
-            className="size-5 cursor-pointer"
-            strokeWidth={2}
-            onClick={() => router.back()}
-          />
-          <h1 className="text-[15px] font-medium">
-            {index >= 0 ? `Question ${index + 1} of ${total}` : "Question"}
-          </h1>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex items-center justify-center rounded-full p-2 hover:bg-tag transition-colors"
-            >
-              <Pencil className="size-4 text-ink" strokeWidth={1.75} />
-            </button>
-          </div>
-        </header>
+      <div className="px-5 pt-4 pb-28">
+        <Breadcrumb parts={[]} />
 
-        <div className="px-5 pt-4 pb-28">
-          <Breadcrumb parts={[]} />
+        <div className="mt-4 flex flex-wrap items-center gap-2.5">
+          <DifficultyPill level={label} />
+        </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2.5">
-            <DifficultyPill level={label} />
-          </div>
+        <div className="mt-6 flex items-center gap-3">
+          <span className="h-px w-5 bg-ink-faint" />
+          <p className="font-mono text-[12px] tracking-[0.18em] text-ink-soft uppercase">
+            Question
+          </p>
+        </div>
 
-          <div className="mt-6 flex items-center gap-3">
-            <span className="h-px w-5 bg-ink-faint" />
-            <p className="font-mono text-[12px] tracking-[0.18em] text-ink-soft uppercase">
-              Question
+        <h2 className="mt-4 border-l-2 border-ink/20 pl-4 font-display text-[18px] sm:text-[18px] leading-[1.4] text-ink whitespace-pre-wrap">
+          {question.text}
+        </h2>
+
+        <div className="mt-8 flex items-center gap-3">
+          <span className="h-px w-5 bg-ink-faint" />
+          <p className="font-mono text-[12px] tracking-[0.18em] text-ink-soft uppercase">
+            Answer
+          </p>
+        </div>
+
+        {revealed ? (
+          <div className="mt-3 rounded-2xl border border-rule bg-paper-card p-5">
+            <p className="text-[16px] leading-[1.6] whitespace-pre-wrap text-ink">
+              {question.answer}
             </p>
           </div>
+        ) : (
+          <button
+            onClick={toggleReveal}
+            className="mt-3 flex w-full items-center justify-center gap-2.5 rounded-2xl border border-dashed border-rule py-6 text-[16px] text-ink transition-colors hover:bg-tag/30"
+          >
+            <Eye className="size-4" strokeWidth={1.75} />
+            Tap to reveal answer
+          </button>
+        )}
 
-          <h2 className="mt-4 border-l-2 border-ink/20 pl-4 font-display text-[18px] sm:text-[18px] leading-[1.4] text-ink whitespace-pre-wrap">
-            {question.text}
-          </h2>
-
-          <div className="mt-8 flex items-center gap-3">
-            <span className="h-px w-5 bg-ink-faint" />
-            <p className="font-mono text-[12px] tracking-[0.18em] text-ink-soft uppercase">
-              Answer
+        {question.note && (
+          <>
+            <p className="mt-8 font-mono text-[12px] tracking-[0.18em] text-ink-faint uppercase">
+              Notes
             </p>
-          </div>
-
-          {revealed ? (
-            <div className="mt-3 rounded-2xl border border-rule bg-paper-card p-5">
-              <p className="text-[16px] leading-[1.6] whitespace-pre-wrap">
-                {question.answer}
+            <div className="mt-3 rounded-2xl border border-rule bg-paper p-5">
+              <p className="font-display text-[15px] leading-[1.6] italic text-ink-soft whitespace-pre-wrap">
+                {question.note}
               </p>
             </div>
-          ) : (
-            <button
-              onClick={() => setRevealed(true)}
-              className="mt-3 flex w-full items-center justify-center gap-2.5 rounded-2xl border border-dashed border-rule py-6 text-[16px] text-ink transition-colors hover:bg-tag/30"
-            >
-              <Eye className="size-4" strokeWidth={1.75} />
-              Tap to reveal answer
-            </button>
-          )}
+          </>
+        )}
+      </div>
 
-          {question.note && (
-            <>
-              <p className="mt-8 font-mono text-[12px] tracking-[0.18em] text-ink-faint uppercase">
-                Notes
-              </p>
-              <div className="mt-3 rounded-2xl border border-rule bg-[oklch(0.955_0.008_90)] p-5">
-                <p className="font-display text-[15px] leading-[1.6] italic text-ink-soft whitespace-pre-wrap">
-                  {question.note}
-                </p>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="fixed bottom-5 left-1/2 flex w-[280px] max-w-[90vw] -translate-x-1/2 items-center gap-2.5">
-          <button
-            disabled={!prevQuestion}
-            onClick={() => prevQuestion && goTo(prevQuestion.id)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-full border border-rule bg-paper-card py-2.5 text-[14px] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="size-4" strokeWidth={2} />
-            Prev
-          </button>
-          <button
-            disabled={!nextQuestion}
-            onClick={() => nextQuestion && goTo(nextQuestion.id)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-onyx py-2.5 text-[14px] font-medium text-paper disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Next
-            <ChevronRight className="size-4" strokeWidth={2} />
-          </button>
-        </div>
-      </Screen>
+      <div className="fixed bottom-5 left-1/2 flex w-[280px] max-w-[90vw] -translate-x-1/2 items-center gap-2.5">
+        <button
+          disabled={!prevQuestion}
+          onClick={() => prevQuestion && goTo(prevQuestion.id)}
+          className="flex flex-1 items-center justify-center gap-2 rounded-full border border-rule bg-paper-card py-2.5 text-[14px] font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="size-4" strokeWidth={2} />
+          Prev
+        </button>
+        <button
+          disabled={!nextQuestion}
+          onClick={() => nextQuestion && goTo(nextQuestion.id)}
+          className="flex flex-1 items-center justify-center gap-2 rounded-full bg-onyx py-2.5 text-[14px] font-medium text-paper disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Next
+          <ChevronRight className="size-4" strokeWidth={2} />
+        </button>
+      </div>
 
       {isEditing && (
         <EditQuestionModal
           question={question}
-          accessToken={session?.accessToken}
           onClose={() => setIsEditing(false)}
           onSave={handleUpdate}
         />

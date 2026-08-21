@@ -1,287 +1,169 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Plus,
-  RefreshCw,
-  X,
-  Loader2,
   ArrowRight,
-  LogOut,
   Trash2,
   Zap,
-  Menu,
-  User,
-  Settings,
-  Moon,
+  X,
+  Loader2,
 } from "lucide-react";
-import { Screen } from "@/components/misc/Screen";
 import { useRouter } from "next/navigation";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { Notification } from "@/components/misc/Notification";
 import { HomeSubjectsSkeleton } from "@/components/HomeSubjects/HomeSubjectsSkeleton";
+import { HomeSubjectsError } from "@/components/HomeSubjects/HomeSubjectsError";
 import { HomeEmptyState } from "@/components/HomeSubjects/HomeEmptyState";
 import { QuickCreateModal } from "@/components/HomeSubjects/QuickCreateModal";
-import { useTheme } from "next-themes";
-
-export interface Subject {
-  id: number;
-  name: string;
-  question_count?: number;
-  folder_count?: number;
-}
-
-export const CHIP_COLORS = [
-  "bg-[oklch(0.94_0.03_60)] text-brand",
-  "bg-[oklch(0.94_0.025_160)] text-easy",
-  "bg-[oklch(0.93_0.03_300)] text-[oklch(0.5_0.11_300)]",
-  "bg-[oklch(0.94_0.03_35)] text-hard",
-  "bg-[oklch(0.93_0.025_255)] text-[oklch(0.52_0.09_255)]",
-];
-
-export function getSubjectMeta(subjectId: number, name: string) {
-  const code = name.substring(0, 3).toUpperCase();
-  const chip = CHIP_COLORS[subjectId % CHIP_COLORS.length];
-  return { code, chip };
-}
-
-function greeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
-}
+import { CreateSubjectModal } from "./CreateSubjectModal";
+import { useSubjects } from "@/app/hooks/useSubjects";
+import { useNotification } from "@/app/hooks/useNotification";
+import { useLongPress } from "@/app/hooks/useLongPress";
+import { getSubjectMeta, getGreeting, getFormattedName } from "@/app/utils/subjectUtils";
+import { Subject } from "@/types/subject";
 
 export function HomeSubjects() {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [notification, setNotification] = useState<string | null>(null);
-  const [menuSubject, setMenuSubject] = useState<Subject | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [longPressSubjectId, setLongPressSubjectId] = useState<number | null>(
-    null,
-  );
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const { theme, setTheme } = useTheme()
-
-  const notificationTimeoutRef = useRef<
-    ReturnType<typeof setTimeout> | undefined
-  >(undefined);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  );
-  const isLongPressRef = useRef(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
-
   const router = useRouter();
   const { data: session } = useSession();
-  const [recentSubject, setRecentSubject] = useState<Subject | null>(null);
-  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const userName = session?.user?.name || "";
 
-  // Close user menu when clicking outside
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [menuSubject, setMenuSubject] = useState<Subject | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const {
+    subjects,
+    isLoading,
+    error,
+    recentSubject,
+    fetchSubjects,
+    deleteSubject,
+    addSubject,
+    updateSubjectCounts,
+  } = useSubjects();
+
+  const { notification, showNotification } = useNotification();
+  const {
+    longPressSubjectId,
+    isLongPressRef,
+    handlePointerDown,
+    handlePointerUpOrCancel,
+    resetLongPress,
+  } = useLongPress();
+
+  // Prevent scroll when menu is open
+  useEffect(() => {
+    if (menuSubject) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [menuSubject]);
+
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(event.target as Node)
-      ) {
-        setShowUserMenu(false);
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        closeMenu();
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+
+    if (menuSubject) {
+      // Use capture phase to catch the event before it bubbles
+      document.addEventListener('mousedown', handleClickOutside, true);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside, true);
+    };
+  }, [menuSubject]);
+
+  const handleSubjectCreated = (newSubject: Subject) => {
+    addSubject(newSubject);
+    showNotification(`"${newSubject.name}" created`);
+  };
 
   const handleQuickFolderCreated = (subjectId: number) => {
-    setSubjects((prev) =>
-      prev.map((s) =>
-        s.id === subjectId
-          ? { ...s, folder_count: (s.folder_count || 0) + 1 }
-          : s,
-      ),
-    );
+    updateSubjectCounts(subjectId, 'folder');
     showNotification("Folder created");
   };
 
   const handleQuickQuestionCreated = (subjectId: number) => {
-    setSubjects((prev) =>
-      prev.map((s) =>
-        s.id === subjectId
-          ? { ...s, question_count: (s.question_count || 0) + 1 }
-          : s,
-      ),
-    );
+    updateSubjectCounts(subjectId, 'question');
     showNotification("Question created");
-  };
-
-  const fetchRecentSubject = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/recent`,
-        { headers: { Authorization: `Bearer ${session?.accessToken}` } },
-      );
-      if (!res.ok) {
-        setRecentSubject(null);
-        return;
-      }
-      const data: Subject = await res.json();
-      setRecentSubject(data);
-    } catch (err) {
-      console.error("Failed to fetch recent subject:", err);
-      setRecentSubject(null);
-    }
-  };
-
-  const userName = session?.user?.name || "";
-  const userEmail = session?.user?.email || "";
-
-  const fetchSubjects = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/`,
-        {
-          headers: {
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-        },
-      );
-
-      if (!res.ok) {
-        throw new Error(`Failed to load subjects (${res.status})`);
-      }
-
-      const subjects: Subject[] = await res.json();
-      setSubjects(subjects);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
-      console.error("Failed to fetch subjects:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const showNotification = (message: string) => {
-    setNotification(message);
-    if (notificationTimeoutRef.current) {
-      clearTimeout(notificationTimeoutRef.current);
-    }
-    notificationTimeoutRef.current = setTimeout(() => {
-      setNotification(null);
-    }, 3000);
-  };
-
-  const handleSubjectCreated = (newSubject: Subject) => {
-    setSubjects((prev) => [...prev, newSubject]);
-    showNotification(`"${newSubject.name}" created`);
   };
 
   const handleDeleteSubject = async (subject: Subject) => {
     setIsDeleting(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/${subject.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-        },
-      );
-
-      if (!res.ok) {
-        throw new Error(`Failed to delete subject (${res.status})`);
-      }
-
-      setSubjects((prev) => prev.filter((s) => s.id !== subject.id));
-      if (recentSubject?.id === subject.id) {
-        setRecentSubject(null);
-      }
+    const result = await deleteSubject(subject.id);
+    if (result.success) {
       showNotification(`"${subject.name}" deleted`);
-      setMenuSubject(null);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Something went wrong";
-      showNotification(message);
-    } finally {
-      setIsDeleting(false);
+      closeMenu();
+    } else {
+      showNotification(result.error || "Failed to delete subject");
     }
+    setIsDeleting(false);
   };
 
-  const handlePointerDown = (subject: Subject, e: React.PointerEvent) => {
-    // Ignore right clicks, which open context menus natively
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-
-    isLongPressRef.current = false;
-    setLongPressSubjectId(subject.id);
-
-    longPressTimerRef.current = setTimeout(() => {
-      isLongPressRef.current = true;
-      setMenuSubject(subject);
-      setLongPressSubjectId(null);
-    }, 500); // 500ms long press
+  const handleSubjectClick = (e: React.MouseEvent, subjectId: number) => {
+    if (isLongPressRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      resetLongPress();
+      return;
+    }
+    router.push(`/subject/${subjectId}`);
   };
 
-  const handlePointerUpOrCancel = () => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = undefined;
-    }
-    setLongPressSubjectId(null);
+  const handleContextMenu = (e: React.MouseEvent, subject: Subject) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    // Position the menu near the click, but keep it in viewport
+    const menuWidth = 260;
+    const menuHeight = 150;
+    const adjustedX = Math.min(x, window.innerWidth - menuWidth - 10);
+    const adjustedY = Math.min(y, window.innerHeight - menuHeight - 10);
+    
+    setMenuPosition({ x: adjustedX, y: adjustedY });
+    setMenuSubject(subject);
   };
 
-  useEffect(() => {
-    if (session) {
-      fetchSubjects();
-      fetchRecentSubject();
-    }
-    return () => {
-      if (notificationTimeoutRef.current) {
-        clearTimeout(notificationTimeoutRef.current);
-      }
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-      }
-    };
-  }, [session]);
+  const handleLongPress = (subject: Subject) => {
+    // On mobile, center the menu
+    setMenuPosition(null);
+    setMenuSubject(subject);
+  };
+
+  const closeMenu = () => {
+    setMenuSubject(null);
+    setMenuPosition(null);
+  };
 
   if (isLoading) {
     return <HomeSubjectsSkeleton />;
   }
 
   if (error) {
-    return (
-      <Screen>
-        <header className="flex items-center justify-between px-6 pt-6">
-          <span className="font-display text-2xl leading-none">K</span>
-        </header>
-
-        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
-          <div className="flex size-16 items-center justify-center rounded-2xl bg-hard-soft">
-            <span className="text-2xl">!</span>
-          </div>
-          <h2 className="mt-6 font-display text-[24px] leading-tight text-center">
-            Couldn&apos;t load subjects
-          </h2>
-          <p className="mt-3 max-w-[19rem] text-center text-[16px] leading-relaxed text-ink-soft">
-            {error}
-          </p>
-          <button
-            onClick={fetchSubjects}
-            className="mt-8 inline-flex items-center gap-3 rounded-full border border-rule bg-paper-card px-8 py-3.5 text-[16px] text-ink hover:bg-tag transition-colors"
-          >
-            <RefreshCw className="size-4" strokeWidth={1.75} />
-            Try again
-          </button>
-        </div>
-      </Screen>
-    );
+    return <HomeSubjectsError error={error} onRetry={fetchSubjects} />;
   }
 
   if (subjects.length === 0) {
@@ -302,288 +184,204 @@ export function HomeSubjects() {
 
   return (
     <>
-      <Screen>
-        {/* Added global style for the SVG animation instead of relying on interval state */}
-        <style>{`
-          @keyframes drawBorder {
-            from { stroke-dashoffset: 100; }
-            to { stroke-dashoffset: 0; }
+      <style>{`
+        @keyframes drawBorder {
+          from { stroke-dashoffset: 100; }
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes popIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95) translateY(-8px);
           }
-          @keyframes slideDown {
-            from {
-              opacity: 0;
-              transform: translateY(-8px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
           }
-        `}</style>
+        }
+      `}</style>
 
-        {/* --- Header --- */}
-        <header className="flex items-center justify-between px-6 pt-6">
-          <span className="font-display text-2xl leading-none">K</span>
-          <div className="relative" ref={userMenuRef}>
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex size-9 items-center justify-center rounded-full transition-colors"
-            >
-              <Menu className="size-5 text-ink" strokeWidth={1.75} />
-            </button>
-
-            {/* Dropdown Menu */}
-            {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-56 z-10 rounded-2xl border border-rule bg-paper shadow-lg overflow-hidden animate-[slideDown_0.15s_ease-out]">
-                {/* User Info */}
-                <div className="px-4 py-3 border-b border-rule">
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-full bg-onyx/10">
-                      <User
-                        className="size-5 text-ink-soft"
-                        strokeWidth={1.75}
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[15px] font-medium truncate">
-                        {userName.charAt(0).toUpperCase() +
-                          userName.slice(1).toLowerCase()}
-                      </p>
-                      <p className="text-[12px] text-ink-faint truncate">
-                        {userEmail}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Menu Items */}
-                <div className="p-2">
-                  <button
-                    onClick={() => {
-                      setShowUserMenu(false);
-                      signOut();
-                    }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] text-hard hover:bg-hard-soft/20 transition-colors"
-                  >
-                    <LogOut className="size-4" strokeWidth={1.75} />
-                    Sign out
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowUserMenu(false);
-                      setTheme(theme === "dark" ? "light" : "dark");
-                    }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px]"
-                  >
-                    <Moon className="size-4" strokeWidth={1.75} />
-                    {theme === "dark" ? "Light mode" : "Dark mode"}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </header>
-
-        {/* --- Greeting Section --- */}
-        <div className="px-6 pt-6">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
-              {greeting()}
-            </span>
-          </div>
-          <h1 className="mt-2 font-display text-[48px] leading-[1.05]">
-            {userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase()}
-          </h1>
-          <p className="mt-2 text-[17px] text-ink-soft">
-            Ready to pick up where you left off?
-          </p>
+      <div className="px-6 pt-6">
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
+            {getGreeting()}
+          </span>
         </div>
+        <h1 className="mt-2 font-display text-[48px] leading-[1.05] text-ink">
+          {getFormattedName(userName)}
+        </h1>
+        <p className="mt-2 text-[17px] text-ink-soft">
+          Ready to pick up where you left off?
+        </p>
+      </div>
 
-        {/* --- Continue Studying --- */}
-        {recentSubject && (
-          <div className="mt-6 px-6">
-            <div className="relative overflow-hidden rounded-2xl border border-rule bg-onyx p-5 text-paper">
-              <div className="relative z-10">
-                <span className="font-mono text-[13px] tracking-[0.18em] text-paper/60 uppercase">
-                  Continue studying
-                </span>
-                <h2 className="mt-2 font-display text-[26px] leading-[1.15]">
-                  {recentSubject.name}
-                </h2>
-                <button
-                  onClick={() => router.push(`/subject/${recentSubject.id}`)}
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-paper px-5 py-2.5 text-[15px] font-medium text-onyx"
-                >
-                  Continue
-                  <ArrowRight className="size-4" strokeWidth={1.75} />
-                </button>
-              </div>
-              <div className="pointer-events-none absolute -right-6 -top-6 opacity-10">
-                <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
-                  <circle
-                    cx="80"
-                    cy="80"
-                    r="60"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <circle
-                    cx="80"
-                    cy="80"
-                    r="44"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <circle
-                    cx="80"
-                    cy="80"
-                    r="28"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                </svg>
-              </div>
+      {recentSubject && (
+        <div className="mt-6 px-6">
+          <div className="relative overflow-hidden rounded-2xl border border-rule bg-onyx p-5 text-paper">
+            <div className="relative z-10">
+              <span className="font-mono text-[13px] tracking-[0.18em] text-paper/60 uppercase">
+                Continue studying
+              </span>
+              <h2 className="mt-2 font-display text-[26px] leading-[1.15]">
+                {recentSubject.name}
+              </h2>
+              <button
+                onClick={() => router.push(`/subject/${recentSubject.id}`)}
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-paper px-5 py-2.5 text-[15px] font-medium text-onyx"
+              >
+                Continue
+                <ArrowRight className="size-4" strokeWidth={1.75} />
+              </button>
+            </div>
+            <div className="pointer-events-none absolute -right-6 -top-6 opacity-10">
+              <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
+                <circle cx="80" cy="80" r="60" stroke="currentColor" strokeWidth="1.5" />
+                <circle cx="80" cy="80" r="44" stroke="currentColor" strokeWidth="1.5" />
+                <circle cx="80" cy="80" r="28" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
             </div>
           </div>
-        )}
-
-        {/* --- Subjects Header --- */}
-        <div className="px-6 pt-8">
-          <h2 className="font-display text-[30px] leading-tight">Subjects</h2>
-          <p className="mt-1 text-[17px] text-ink-soft">
-            {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
-          </p>
         </div>
+      )}
 
-        {/* --- Subjects Grid --- */}
-        <div className="grid grid-cols-2 gap-4 px-6 py-6 pb-24">
-          {subjects.map((subject) => {
-            const { code, chip } = getSubjectMeta(subject.id, subject.name);
-            const isLongPressing = longPressSubjectId === subject.id;
+      <div className="px-6 pt-8">
+        <h2 className="font-display text-[30px] leading-tight text-ink">
+          Subjects
+        </h2>
+        <p className="mt-1 text-[17px] text-ink-soft">
+          {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
+        </p>
+      </div>
 
-            return (
-              <article
-                key={subject.id}
-                onPointerDown={(e) => handlePointerDown(subject, e)}
-                onPointerUp={handlePointerUpOrCancel}
-                onPointerCancel={handlePointerUpOrCancel}
-                onPointerLeave={handlePointerUpOrCancel}
-                onClick={(e) => {
-                  if (isLongPressRef.current) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    isLongPressRef.current = false;
-                    return;
-                  }
-                  router.push(`/subject/${subject.id}`);
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  setMenuSubject(subject);
-                }}
-                className="relative flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors select-none"
-              >
-                {/* Long press border overlay - Driven fully by CSS now */}
-                {isLongPressing && (
-                  <div className="absolute inset-0 rounded-2xl pointer-events-none">
-                    <svg className="absolute inset-0 w-full h-full">
-                      <rect
-                        x="1"
-                        y="1"
-                        rx="15"
-                        ry="15"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        className="text-brand"
-                        pathLength="100"
-                        strokeDasharray="100"
-                        style={{
-                          width: "calc(100% - 2px)",
-                          height: "calc(100% - 2px)",
-                          animation: "drawBorder 500ms linear forwards",
-                        }}
-                      />
-                    </svg>
-                  </div>
-                )}
+      <div className="grid grid-cols-2 gap-4 px-6 py-6 pb-24">
+        {subjects.map((subject) => {
+          const { code, chip } = getSubjectMeta(subject.id, subject.name);
+          const isLongPressing = longPressSubjectId === subject.id;
 
-                <span
-                  className={`inline-flex w-fit rounded-lg px-3 py-1.5 font-mono text-[13px] tracking-widest ${chip}`}
-                >
-                  {code}
-                </span>
-                <h2 className="mt-auto font-display text-[26px] leading-[1.15] truncate">
-                  {subject.name}
-                </h2>
-                <div className="mt-3 flex flex-col gap-2 font-mono text-[14px] text-ink-soft">
-                  <span className="flex flex-row items-center gap-2 leading-tight">
-                    <span>{subject.folder_count || 0}</span>
-                    <span>folders</span>
-                  </span>
-                  <span className="flex flex-row items-center gap-2 leading-tight">
-                    <span>{subject.question_count || 0}</span>
-                    <span>questions</span>
-                  </span>
+          return (
+            <article
+              key={subject.id}
+              onPointerDown={(e) => handlePointerDown(subject, e, handleLongPress)}
+              onPointerUp={handlePointerUpOrCancel}
+              onPointerCancel={handlePointerUpOrCancel}
+              onPointerLeave={handlePointerUpOrCancel}
+              onClick={(e) => handleSubjectClick(e, subject.id)}
+              onContextMenu={(e) => handleContextMenu(e, subject)}
+              className="relative flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors select-none"
+            >
+              {isLongPressing && (
+                <div className="absolute inset-0 rounded-2xl pointer-events-none">
+                  <svg className="absolute inset-0 w-full h-full">
+                    <rect
+                      x="1"
+                      y="1"
+                      rx="15"
+                      ry="15"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      className="text-brand"
+                      pathLength="100"
+                      strokeDasharray="100"
+                      style={{
+                        width: "calc(100% - 2px)",
+                        height: "calc(100% - 2px)",
+                        animation: "drawBorder 500ms linear forwards",
+                      }}
+                    />
+                  </svg>
                 </div>
-              </article>
-            );
-          })}
+              )}
 
-          {/* New Subject Card Button inside grid */}
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule hover:bg-tag/30 transition-colors"
-          >
-            <span className="flex size-12 items-center justify-center rounded-full border border-ink-faint">
-              <Plus className="size-5 text-ink-soft" strokeWidth={1.5} />
-            </span>
-            <span className="text-[16px] text-ink-soft">New subject</span>
-          </button>
-        </div>
+              <span
+                className={`inline-flex w-fit rounded-lg px-3 py-1.5 font-mono text-[13px] tracking-widest ${chip}`}
+              >
+                {code}
+              </span>
+              <h2 className="mt-auto font-display text-[26px] leading-[1.15] truncate text-ink">
+                {subject.name}
+              </h2>
+              <div className="mt-3 flex flex-col gap-2 font-mono text-[14px] text-ink-soft">
+                <span className="flex flex-row items-center gap-2 leading-tight">
+                  <span>{subject.folder_count || 0}</span>
+                  <span>folders</span>
+                </span>
+                <span className="flex flex-row items-center gap-2 leading-tight">
+                  <span>{subject.question_count || 0}</span>
+                  <span>questions</span>
+                </span>
+              </div>
+            </article>
+          );
+        })}
 
-        {/* Quick Add FAB - Bottom Right */}
         <button
-          onClick={() => setShowQuickCreate(true)}
-          className="fixed bottom-6 right-6 flex size-14 items-center justify-center rounded-full bg-onyx text-paper shadow-lg shadow-onyx/30 hover:bg-onyx/90 transition-all active:scale-95 border border-rule/20"
+          onClick={() => setShowCreateModal(true)}
+          className="flex h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule hover:bg-tag/30 transition-colors"
         >
-          <Zap className="size-6" strokeWidth={0} fill="currentColor" />
+          <span className="flex size-12 items-center justify-center rounded-full border border-ink-faint">
+            <Plus className="size-5 text-ink-soft" strokeWidth={1.5} />
+          </span>
+          <span className="text-[16px] text-ink-soft">New subject</span>
         </button>
-      </Screen>
+      </div>
 
-      {/* --- Context Action Popup Menu --- */}
+      <button
+        onClick={() => setShowQuickCreate(true)}
+        className="fixed bottom-6 right-6 flex size-14 items-center justify-center rounded-full bg-onyx text-paper shadow-lg shadow-onyx/30 hover:bg-onyx/90 transition-all active:scale-95 border border-rule/20"
+      >
+        <Zap className="size-6" strokeWidth={0} fill="currentColor" />
+      </button>
+
+      {/* Absolute positioned delete modal */}
       {menuSubject && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-onyx/40 backdrop-blur-sm"
+          className="fixed inset-0 z-50"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setMenuSubject(null);
+            // Close only if clicking the backdrop itself (not the menu)
+            if (e.target === e.currentTarget) {
+              closeMenu();
+            }
           }}
         >
-          <div className="w-full max-w-[420px] animate-[slideUp_0.25s_ease-out] rounded-t-3xl bg-paper px-6 pb-8 pt-5">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-[22px] text-ink">{menuSubject.name}</h2>
-              <button
-                onClick={() => setMenuSubject(null)}
-                className="flex size-9 items-center justify-center rounded-full hover:bg-tag transition-colors"
-              >
-                <X className="size-5" strokeWidth={1.75} />
-              </button>
-            </div>
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-onyx/20 backdrop-blur-sm" />
+          
+          {/* Menu positioned absolutely */}
+          <div
+            ref={menuRef}
+            className="absolute animate-[popIn_0.2s_ease-out]"
+            style={{
+              top: menuPosition ? menuPosition.y : '50%',
+              left: menuPosition ? menuPosition.x : '50%',
+              transform: menuPosition ? 'none' : 'translate(-50%, -50%)',
+              minWidth: '220px',
+              maxWidth: '280px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="rounded-2xl border border-rule bg-paper shadow-2xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-rule">
+                <h3 className="font-display text-[16px] text-ink truncate">
+                  {menuSubject.name}
+                </h3>
+              </div>
 
-            <div className="mt-5 flex flex-col gap-2">
-              <button
-                onClick={() => handleDeleteSubject(menuSubject)}
-                disabled={isDeleting}
-                className="flex w-full items-center gap-3 rounded-xl bg-hard-soft/50 px-4 py-3.5 text-[16px] font-medium text-hard transition-colors hover:bg-hard-soft disabled:opacity-40"
-              >
-                {isDeleting ? (
-                  <Loader2 className="size-5 animate-spin" strokeWidth={1.75} />
-                ) : (
-                  <Trash2 className="size-5" strokeWidth={1.75} />
-                )}
-                {isDeleting ? "Deleting..." : "Delete subject"}
-              </button>
+              <div className="p-2">
+                <button
+                  onClick={() => handleDeleteSubject(menuSubject)}
+                  disabled={isDeleting}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] text-hard hover:bg-hard-soft/20 transition-colors disabled:opacity-40"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
+                  ) : (
+                    <Trash2 className="size-4" strokeWidth={1.75} />
+                  )}
+                  {isDeleting ? "Deleting..." : "Delete subject"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -607,116 +405,5 @@ export function HomeSubjects() {
       )}
       <Notification message={notification} />
     </>
-  );
-}
-
-function CreateSubjectModal({
-  accessToken,
-  onClose,
-  onCreated,
-}: {
-  accessToken?: string;
-  onClose: () => void;
-  onCreated: (subject: Subject) => void;
-}) {
-  const [name, setName] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const trimmed = name.trim();
-    if (!trimmed) return;
-
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ name: trimmed }),
-        },
-      );
-
-      if (!res.ok) {
-        throw new Error(`Failed to create subject (${res.status})`);
-      }
-
-      const created: Subject = await res.json();
-      onCreated(created);
-      onClose();
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Something went wrong";
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-onyx/40 backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="w-full max-w-[420px] animate-[slideUp_0.25s_ease-out] rounded-t-3xl bg-paper px-6 pb-8 pt-5">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-[22px] text-ink">New subject</h2>
-          <button
-            onClick={onClose}
-            className="flex size-9 items-center justify-center rounded-full hover:bg-tag transition-colors"
-          >
-            <X className="size-5" strokeWidth={1.75} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="mt-5">
-          <label
-            htmlFor="subject-name"
-            className="font-mono text-[13px] tracking-[0.12em] text-ink-faint uppercase"
-          >
-            Subject name
-          </label>
-          <input
-            ref={inputRef}
-            id="subject-name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. English, Chemistry…"
-            className="mt-2 w-full rounded-xl border border-rule bg-paper-card px-4 py-3.5 text-[16px] text-ink placeholder:text-ink-faint outline-none focus:border-brand transition-colors"
-          />
-
-          {error && <p className="mt-3 text-[14px] text-hard">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={isSubmitting || !name.trim()}
-            className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-xl bg-onyx py-3.5 text-[16px] font-medium text-paper transition-colors hover:bg-onyx/90 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <Loader2 className="size-5 animate-spin" strokeWidth={1.75} />
-            ) : (
-              <Plus className="size-5" strokeWidth={1.75} />
-            )}
-            {isSubmitting ? "Creating…" : "Create subject"}
-          </button>
-        </form>
-      </div>
-    </div>
   );
 }
