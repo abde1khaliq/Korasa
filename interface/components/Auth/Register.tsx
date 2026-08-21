@@ -13,13 +13,14 @@ export function Register() {
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
   const router = useRouter();
 
   const handleRegister = async (e?: React.FormEvent) => {
     e?.preventDefault();
+
     setError("");
 
-    // Validation
     if (!username || !email || !password) {
       setError("Please fill in all fields.");
       return;
@@ -36,13 +37,22 @@ export function Register() {
     }
 
     setLoading(true);
+
     try {
-      // Call the backend register API (sends verification code)
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+          }),
+        }
+      );
 
       const data = await res.json();
 
@@ -52,19 +62,18 @@ export function Register() {
         return;
       }
 
-      // Store user credentials in localStorage for automatic login after verification
-      localStorage.setItem("pendingVerification", JSON.stringify({
-        username,
-        email,
-        password,
-      }));
-      
-      // Also store email separately for the verification page
-      sessionStorage.setItem("verificationEmail", email);
-      
-      // Redirect to verification page
+      // Store credentials temporarily so VerifyEmail can
+      // automatically sign the user in after verification.
+      sessionStorage.setItem(
+        "pendingVerification",
+        JSON.stringify({
+          username,
+          email,
+          password,
+        })
+      );
+
       router.push("/verify-email");
-      
     } catch (err) {
       console.error(err);
       setError("An unexpected error occurred.");
@@ -75,16 +84,20 @@ export function Register() {
   return (
     <>
       <header className="px-6 pt-6">
-        <span className="font-display text-2xl leading-none text-ink">Korasa</span>
+        <span className="font-display text-2xl leading-none text-ink">
+          Korasa
+        </span>
       </header>
 
       <div className="flex flex-1 flex-col px-6 pt-10 pb-16">
         <p className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
           Get started
         </p>
+
         <h1 className="mt-3 font-display text-[48px] leading-[1.05] text-ink">
           Create account
         </h1>
+
         <p className="mt-3 text-[17px] text-ink-soft">
           Subjects, folders and questions all in one quiet place.
         </p>
@@ -99,6 +112,7 @@ export function Register() {
           <p className="mt-6 font-mono text-[14px] tracking-[0.18em] text-ink-faint uppercase">
             Username
           </p>
+
           <div className="mt-3 rounded-2xl border border-rule bg-paper-card px-5 py-1">
             <input
               type="text"
@@ -113,6 +127,7 @@ export function Register() {
           <p className="mt-7 font-mono text-[14px] tracking-[0.18em] text-ink-faint uppercase">
             Email
           </p>
+
           <div className="mt-3 rounded-2xl border border-rule bg-paper-card px-5 py-1">
             <input
               type="email"
@@ -127,6 +142,7 @@ export function Register() {
           <p className="mt-7 font-mono text-[14px] tracking-[0.18em] text-ink-faint uppercase">
             Password
           </p>
+
           <div className="mt-3 flex items-center justify-between rounded-2xl border focus-within:border-brand border-rule bg-paper-card px-5 py-1">
             <input
               type={showPassword ? "text" : "password"}
@@ -136,6 +152,7 @@ export function Register() {
               className="w-full font-mono text-[20px] tracking-[0.1em] text-ink placeholder:tracking-normal placeholder:text-ink-faint bg-transparent outline-none py-3"
               disabled={loading}
             />
+
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -145,6 +162,7 @@ export function Register() {
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
+
           <p className="mt-2 text-[15px] text-ink-faint">
             At least 8 characters.
           </p>
@@ -154,16 +172,26 @@ export function Register() {
             onClick={() => !loading && setAgreed(!agreed)}
           >
             <span
-              className={`mt-0.5 flex size-6 items-center justify-center rounded-md border ${agreed ? "bg-onyx border-onyx" : "border-ink-faint bg-paper-card"} transition-colors`}
+              className={`mt-0.5 flex size-6 items-center justify-center rounded-md border ${
+                agreed
+                  ? "bg-onyx border-onyx"
+                  : "border-ink-faint bg-paper-card"
+              } transition-colors`}
             >
               {agreed && (
-                <Check className="size-4 text-paper" strokeWidth={2.25} />
+                <Check
+                  className="size-4 text-paper"
+                  strokeWidth={2.25}
+                />
               )}
             </span>
+
             <p className="text-[16px] leading-snug text-ink-soft select-none">
               I agree to the{" "}
               <span className="text-brand hover:underline">Terms</span> and{" "}
-              <span className="text-brand hover:underline">Privacy Policy</span>
+              <span className="text-brand hover:underline">
+                Privacy Policy
+              </span>
               .
             </p>
           </div>
@@ -174,13 +202,20 @@ export function Register() {
             className="mt-8 inline-flex items-center justify-center gap-3 rounded-full bg-onyx px-8 py-4 text-[17px] text-paper disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
           >
             {loading ? "Sending verification..." : "Create account"}
-            <ArrowRight className="size-5" strokeWidth={1.75} />
+
+            <ArrowRight
+              className="size-5"
+              strokeWidth={1.75}
+            />
           </button>
         </form>
 
         <p className="mt-auto pt-12 text-center text-[17px] text-ink-soft">
           Already have an account?{" "}
-          <Link href="/login" className="text-brand hover:underline">
+          <Link
+            href="/login"
+            className="text-brand hover:underline"
+          >
             Sign in
           </Link>
         </p>
