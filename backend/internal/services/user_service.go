@@ -1,7 +1,9 @@
 package services
 
 import (
+	"crypto/subtle"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/abde1khaliq/korasa/internal/models"
@@ -11,25 +13,79 @@ import (
 	"gorm.io/gorm"
 )
 
-var verificationCodes = make(map[string]VerificationData)
+const (
+	verificationCodeTTL  = 10 * time.Minute
+	verificationMaxTries = 5
+	verificationResendCD = 60 * time.Second
+)
 
 type VerificationData struct {
-	Code      string
-	UserData  models.RegisterInput
-	ExpiresAt time.Time
+	Code           string
+	Username       string
+	Email          string
+	HashedPassword string
+	Attempts       int
+	ExpiresAt      time.Time
+	LastSentAt     time.Time
 }
+
+type verificationStore struct {
+	mu   sync.Mutex
+	data map[string]VerificationData
+}
+
+func newVerificationStore() *verificationStore {
+	return &verificationStore{data: make(map[string]VerificationData)}
+}
+
+func (s *verificationStore) get(email string) (VerificationData, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	v, ok := s.data[email]
+	if !ok {
+		return VerificationData{}, false
+	}
+	if time.Now().After(v.ExpiresAt) {
+		delete(s.data, email)
+		return VerificationData{}, false
+	}
+	return v, true
+}
+
+func (s *verificationStore) set(email string, v VerificationData) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.data[email] = v
+}
+
+func (s *verificationStore) delete(email string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.data, email)
+}
+
+func (s *verificationStore) incrementAttempts(email string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if v, ok := s.data[email]; ok {
+		v.Attempts++
+		s.data[email] = v
+	}
+}
+
+var verificationCodes = newVerificationStore()
 
 func RegisterUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input models.RegisterInput
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		if err := validators.Validate(input); err != nil {
-			c.JSON(400, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -39,15 +95,29 @@ func RegisterUser(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		code := security.GenerateVerificationCode()
-
-		verificationCodes[input.Email] = VerificationData{
-			Code:      code,
-			UserData:  input,
-			ExpiresAt: time.Now().Add(10 * time.Minute),
+		hashed, err := security.HashPassword(input.Password)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not process password"})
+			return
 		}
 
+		code, err := security.GenerateVerificationCode()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate verification code"})
+			return
+		}
+
+		verificationCodes.set(input.Email, VerificationData{
+			Code:           code,
+			Username:       input.Username,
+			Email:          input.Email,
+			HashedPassword: hashed,
+			ExpiresAt:      time.Now().Add(verificationCodeTTL),
+			LastSentAt:     time.Now(),
+		})
+
 		if err := SendVerificationCode(input.Email, code); err != nil {
+			verificationCodes.delete(input.Email)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not send verification email"})
 			return
 		}
@@ -71,33 +141,28 @@ func VerifyEmail(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		verificationData, exists := verificationCodes[input.Email]
+		verificationData, exists := verificationCodes.get(input.Email)
 		if !exists {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "no verification code found for this email"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired verification code"})
 			return
 		}
 
-		if time.Now().After(verificationData.ExpiresAt) {
-			delete(verificationCodes, input.Email)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "verification code has expired"})
+		if verificationData.Attempts >= verificationMaxTries {
+			verificationCodes.delete(input.Email)
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "too many failed attempts, please register again"})
 			return
 		}
 
-		if verificationData.Code != input.Code {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid verification code"})
-			return
-		}
-
-		hashed, err := security.HashPassword(verificationData.UserData.Password)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not process password"})
+		if subtle.ConstantTimeCompare([]byte(verificationData.Code), []byte(input.Code)) != 1 {
+			verificationCodes.incrementAttempts(input.Email)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired verification code"})
 			return
 		}
 
 		user := models.User{
-			Username: verificationData.UserData.Username,
-			Email:    verificationData.UserData.Email,
-			Password: hashed,
+			Username: verificationData.Username,
+			Email:    verificationData.Email,
+			Password: verificationData.HashedPassword,
 		}
 
 		if err := db.Create(&user).Error; err != nil {
@@ -105,7 +170,7 @@ func VerifyEmail(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		delete(verificationCodes, input.Email)
+		verificationCodes.delete(input.Email)
 
 		c.JSON(http.StatusCreated, gin.H{
 			"message": "User successfully verified and registered!",
@@ -198,25 +263,36 @@ func ResendVerificationCode() gin.HandlerFunc {
 			return
 		}
 
-		verificationData, exists := verificationCodes[input.Email]
+		generic := gin.H{"message": "If that email has a pending verification, a new code has been sent."}
+
+		verificationData, exists := verificationCodes.get(input.Email)
 		if !exists {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "no pending verification found for this email"})
+			c.JSON(http.StatusOK, generic)
 			return
 		}
 
-		newCode := security.GenerateVerificationCode()
+		if time.Since(verificationData.LastSentAt) < verificationResendCD {
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "please wait before requesting another code"})
+			return
+		}
+
+		newCode, err := security.GenerateVerificationCode()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate verification code"})
+			return
+		}
 
 		verificationData.Code = newCode
-		verificationData.ExpiresAt = time.Now().Add(10 * time.Minute)
-		verificationCodes[input.Email] = verificationData
+		verificationData.Attempts = 0
+		verificationData.ExpiresAt = time.Now().Add(verificationCodeTTL)
+		verificationData.LastSentAt = time.Now()
+		verificationCodes.set(input.Email, verificationData)
 
 		if err := SendVerificationCode(input.Email, newCode); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not send verification email"})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"message": "New verification code sent to your email",
-		})
+		c.JSON(http.StatusOK, generic)
 	}
 }
