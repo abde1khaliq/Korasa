@@ -8,12 +8,17 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
+type ApiOptions = RequestInit & { token?: string };
+
+export async function apiFetch(path: string, options: ApiOptions = {}) {
+  const { token, headers, ...rest } = options;
+
   const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
+    ...rest,
     headers: {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
     },
   });
 

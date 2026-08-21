@@ -1,21 +1,11 @@
 import { Stack } from "expo-router";
-import { Pressable, Text } from "react-native";
-import { useAuth } from "@/context/AuthContext";
+import { Header } from "@/components/Header";
 
 export default function AppLayout() {
-  const { logout } = useAuth();
-
   return (
-    <Stack
-      screenOptions={{
-        headerRight: () => (
-          <Pressable onPress={logout}>
-            <Text className="text-brand text-[15px]">Sign out</Text>
-          </Pressable>
-        ),
-      }}
-    >
-      <Stack.Screen name="index" options={{ title: "Subjects" }} />
+    <Stack screenOptions={{ header: () => <Header /> }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="subject/[id]" />
     </Stack>
   );
 }
