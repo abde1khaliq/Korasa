@@ -52,7 +52,14 @@ export function Register() {
         return;
       }
 
-      // Store email in sessionStorage for verification page
+      // Store user credentials in localStorage for automatic login after verification
+      localStorage.setItem("pendingVerification", JSON.stringify({
+        username,
+        email,
+        password,
+      }));
+      
+      // Also store email separately for the verification page
       sessionStorage.setItem("verificationEmail", email);
       
       // Redirect to verification page

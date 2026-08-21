@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { ArrowRight, Check, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -17,7 +19,6 @@ export default function VerifyEmailPage() {
   const [canResend, setCanResend] = useState(false);
 
   useEffect(() => {
-    // Get email from session storage
     const storedEmail = sessionStorage.getItem("verificationEmail");
     if (storedEmail) {
       setEmail(storedEmail);
@@ -25,7 +26,11 @@ export default function VerifyEmailPage() {
       router.push("/register");
     }
 
-    // Start countdown timer
+    const storedPassword = sessionStorage.getItem("verificationPassword");
+    if (storedPassword) {
+      setPassword(storedPassword);
+    }
+
     const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
@@ -61,15 +66,37 @@ export default function VerifyEmailPage() {
         return;
       }
 
-      setSuccess("Email verified successfully! Redirecting to login...");
+      setSuccess("Email verified successfully! Logging you in...");
       
-      // Clear the stored email
-      sessionStorage.removeItem("verificationEmail");
+      const storedPassword = sessionStorage.getItem("verificationPassword");
       
-      // Redirect to login after a delay
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
+      if (storedPassword) {
+        const result = await signIn("credentials", {
+          email: email,
+          password: storedPassword,
+          redirect: false,
+        });
+
+        sessionStorage.removeItem("verificationEmail");
+        sessionStorage.removeItem("verificationPassword");
+
+        if (result?.error) {
+          console.error("Auto-login failed:", result.error);
+          setTimeout(() => {
+            router.push("/login");
+          }, 1500);
+        } else {
+          setTimeout(() => {
+            router.push("/");
+            router.refresh();
+          }, 1500);
+        }
+      } else {
+        sessionStorage.removeItem("verificationEmail");
+        setTimeout(() => {
+          router.push("/login");
+        }, 1500);
+      }
       
     } catch (err) {
       console.error(err);
@@ -102,7 +129,6 @@ export default function VerifyEmailPage() {
       setTimer(60);
       setCanResend(false);
       
-      // Restart timer
       const interval = setInterval(() => {
         setTimer((prev) => {
           if (prev <= 1) {
@@ -122,7 +148,6 @@ export default function VerifyEmailPage() {
     }
   };
 
-  // Handle code input (allow only numbers, 6 digits)
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 6);
     setCode(value);
