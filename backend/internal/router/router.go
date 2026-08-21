@@ -10,7 +10,7 @@ import (
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://www.korasa.study", "https://korasa.study", "http://localhost:3000", "http://localhost:8081"},
+		AllowOrigins:     []string{"https://www.korasa.study", "https://korasa.study", "http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "PUT"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
