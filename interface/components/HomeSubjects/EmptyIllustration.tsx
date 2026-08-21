@@ -11,4 +11,4 @@ export const EmptyIllustration = () => {
       </div>
     </div>
   );
-}
+};

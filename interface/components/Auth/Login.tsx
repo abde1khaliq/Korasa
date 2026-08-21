@@ -5,7 +5,6 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Screen } from "@/components/misc/Screen";
 
 export function Login() {
   const [email, setEmail] = useState("");
@@ -40,16 +39,16 @@ export function Login() {
   };
 
   return (
-    <Screen>
+    <>
       <header className="px-6 pt-6">
-        <span className="font-display text-2xl leading-none">K</span>
+        <span className="font-display text-2xl leading-none text-ink">Korasa</span>
       </header>
 
       <div className="flex flex-1 flex-col px-6 pt-10 pb-16">
         <p className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
           Welcome back
         </p>
-        <h1 className="mt-3 font-display text-[48px] leading-[1.05]">
+        <h1 className="mt-3 font-display text-[48px] leading-[1.05] text-ink">
           Sign in
         </h1>
         <p className="mt-3 text-[17px] text-ink-soft">
@@ -117,7 +116,7 @@ export function Login() {
           <span className="h-px flex-1 bg-rule" />
         </div>
 
-        <button className="mt-6 w-full rounded-full border border-rule bg-paper-card px-8 py-4 text-[17px] hover:bg-rule/50 transition-colors">
+        <button className="text-ink mt-6 w-full rounded-full border border-rule bg-paper-card px-8 py-4 text-[17px] hover:bg-rule/50 transition-colors">
           Continue with Google
         </button>
 
@@ -128,6 +127,6 @@ export function Login() {
           </Link>
         </p>
       </div>
-    </Screen>
+    </>
   );
 }

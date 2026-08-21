@@ -25,7 +25,7 @@ export function SubjectFoldersSkeleton() {
             <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-ink-faint/10">
               <Folder className="size-6 text-ink-faint/30" strokeWidth={1.5} />
             </span>
-            
+
             <div className="min-w-0 flex-1 space-y-2">
               <div className="h-5 w-32 rounded bg-ink-faint/20 animate-pulse" />
               <div className="flex items-center gap-2.5">
@@ -34,7 +34,7 @@ export function SubjectFoldersSkeleton() {
                 <div className="h-4 w-16 rounded bg-ink-faint/20 animate-pulse" />
               </div>
             </div>
-            
+
             <ChevronRight
               className="size-5 text-ink-faint/20"
               strokeWidth={2}

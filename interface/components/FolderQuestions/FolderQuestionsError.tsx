@@ -5,7 +5,10 @@ interface FolderQuestionsErrorProps {
   onRetry: () => void;
 }
 
-export function FolderQuestionsError({ error, onRetry }: FolderQuestionsErrorProps) {
+export function FolderQuestionsError({
+  error,
+  onRetry,
+}: FolderQuestionsErrorProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
       <div className="flex size-16 items-center justify-center rounded-2xl bg-hard-soft">

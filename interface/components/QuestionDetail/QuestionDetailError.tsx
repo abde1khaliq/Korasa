@@ -6,7 +6,11 @@ interface QuestionDetailErrorProps {
   onBack: () => void;
 }
 
-export function QuestionDetailError({ error, onRetry, onBack }: QuestionDetailErrorProps) {
+export function QuestionDetailError({
+  error,
+  onRetry,
+  onBack,
+}: QuestionDetailErrorProps) {
   return (
     <>
       <header className="flex items-center justify-between px-6 pt-5">

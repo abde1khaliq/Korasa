@@ -111,4 +111,4 @@ export const CreateSubjectModal = ({
       </div>
     </div>
   );
-}
+};

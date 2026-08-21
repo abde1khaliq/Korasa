@@ -41,10 +41,10 @@ export const Header = () => {
               <ChevronLeft className="size-5 text-ink" strokeWidth={1.75} />
             </button>
           )}
-          <span 
+          <span
             className="font-display text-2xl leading-none text-ink transition-all duration-300 ease-out"
             style={{
-              marginLeft: !isRoot ? '32px' : '0px',
+              marginLeft: !isRoot ? "32px" : "0px",
             }}
           >
             K

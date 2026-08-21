@@ -17,7 +17,7 @@ export const CreateFolderModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -114,4 +114,4 @@ export const CreateFolderModal = ({
       </div>
     </div>
   );
-}
+};

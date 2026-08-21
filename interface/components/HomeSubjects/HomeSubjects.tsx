@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-  Plus,
-  ArrowRight,
-  Trash2,
-  Zap,
-  X,
-  Loader2,
-} from "lucide-react";
+import { Plus, ArrowRight, Trash2, Zap, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Notification } from "@/components/misc/Notification";
@@ -20,7 +13,11 @@ import { CreateSubjectModal } from "./CreateSubjectModal";
 import { useSubjects } from "@/app/hooks/useSubjects";
 import { useNotification } from "@/app/hooks/useNotification";
 import { useLongPress } from "@/app/hooks/useLongPress";
-import { getSubjectMeta, getGreeting, getFormattedName } from "@/app/utils/subjectUtils";
+import {
+  getSubjectMeta,
+  getGreeting,
+  getFormattedName,
+} from "@/app/utils/subjectUtils";
 import { Subject } from "@/types/subject";
 
 export function HomeSubjects() {
@@ -32,7 +29,10 @@ export function HomeSubjects() {
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [menuSubject, setMenuSubject] = useState<Subject | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number } | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -58,19 +58,19 @@ export function HomeSubjects() {
   // Prevent scroll when menu is open
   useEffect(() => {
     if (menuSubject) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
     } else {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
     }
 
     return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
     };
   }, [menuSubject]);
 
@@ -84,11 +84,11 @@ export function HomeSubjects() {
 
     if (menuSubject) {
       // Use capture phase to catch the event before it bubbles
-      document.addEventListener('mousedown', handleClickOutside, true);
+      document.addEventListener("mousedown", handleClickOutside, true);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener("mousedown", handleClickOutside, true);
     };
   }, [menuSubject]);
 
@@ -98,12 +98,12 @@ export function HomeSubjects() {
   };
 
   const handleQuickFolderCreated = (subjectId: number) => {
-    updateSubjectCounts(subjectId, 'folder');
+    updateSubjectCounts(subjectId, "folder");
     showNotification("Folder created");
   };
 
   const handleQuickQuestionCreated = (subjectId: number) => {
-    updateSubjectCounts(subjectId, 'question');
+    updateSubjectCounts(subjectId, "question");
     showNotification("Question created");
   };
 
@@ -132,17 +132,17 @@ export function HomeSubjects() {
   const handleContextMenu = (e: React.MouseEvent, subject: Subject) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
-    
+
     // Position the menu near the click, but keep it in viewport
     const menuWidth = 260;
     const menuHeight = 150;
     const adjustedX = Math.min(x, window.innerWidth - menuWidth - 10);
     const adjustedY = Math.min(y, window.innerHeight - menuHeight - 10);
-    
+
     setMenuPosition({ x: adjustedX, y: adjustedY });
     setMenuSubject(subject);
   };
@@ -235,9 +235,27 @@ export function HomeSubjects() {
             </div>
             <div className="pointer-events-none absolute -right-6 -top-6 opacity-10">
               <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
-                <circle cx="80" cy="80" r="60" stroke="currentColor" strokeWidth="1.5" />
-                <circle cx="80" cy="80" r="44" stroke="currentColor" strokeWidth="1.5" />
-                <circle cx="80" cy="80" r="28" stroke="currentColor" strokeWidth="1.5" />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="60"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="44"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                />
               </svg>
             </div>
           </div>
@@ -261,7 +279,9 @@ export function HomeSubjects() {
           return (
             <article
               key={subject.id}
-              onPointerDown={(e) => handlePointerDown(subject, e, handleLongPress)}
+              onPointerDown={(e) =>
+                handlePointerDown(subject, e, handleLongPress)
+              }
               onPointerUp={handlePointerUpOrCancel}
               onPointerCancel={handlePointerUpOrCancel}
               onPointerLeave={handlePointerUpOrCancel}
@@ -347,17 +367,17 @@ export function HomeSubjects() {
         >
           {/* Backdrop */}
           <div className="absolute inset-0 bg-onyx/20 backdrop-blur-sm" />
-          
+
           {/* Menu positioned absolutely */}
           <div
             ref={menuRef}
             className="absolute animate-[popIn_0.2s_ease-out]"
             style={{
-              top: menuPosition ? menuPosition.y : '50%',
-              left: menuPosition ? menuPosition.x : '50%',
-              transform: menuPosition ? 'none' : 'translate(-50%, -50%)',
-              minWidth: '220px',
-              maxWidth: '280px',
+              top: menuPosition ? menuPosition.y : "50%",
+              left: menuPosition ? menuPosition.x : "50%",
+              transform: menuPosition ? "none" : "translate(-50%, -50%)",
+              minWidth: "220px",
+              maxWidth: "280px",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -375,7 +395,10 @@ export function HomeSubjects() {
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] text-hard hover:bg-hard-soft/20 transition-colors disabled:opacity-40"
                 >
                   {isDeleting ? (
-                    <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
+                    <Loader2
+                      className="size-4 animate-spin"
+                      strokeWidth={1.75}
+                    />
                   ) : (
                     <Trash2 className="size-4" strokeWidth={1.75} />
                   )}

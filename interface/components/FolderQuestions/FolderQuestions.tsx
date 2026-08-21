@@ -12,7 +12,11 @@ import { CreateQuestionModal } from "./CreateQuestionModal";
 import { useFolderQuestions } from "@/app/hooks/useFolderQuestions";
 import { useQuestionFilter } from "@/app/hooks/useQuestionFilter";
 import { useNotification } from "@/app/hooks/useNotification";
-import { difficultyLabels, highlightText, getQuestionMatchType } from "@/app/utils/questionUtils";
+import {
+  difficultyLabels,
+  highlightText,
+  getQuestionMatchType,
+} from "@/app/utils/questionUtils";
 import { Question } from "@/types/question";
 
 export function FolderQuestions() {
@@ -24,13 +28,8 @@ export function FolderQuestions() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const folderName = searchParams.get("name") ?? "Folder";
 
-  const {
-    questions,
-    isLoading,
-    error,
-    fetchQuestions,
-    addQuestion,
-  } = useFolderQuestions(folderId);
+  const { questions, isLoading, error, fetchQuestions, addQuestion } =
+    useFolderQuestions(folderId);
 
   const {
     filter,

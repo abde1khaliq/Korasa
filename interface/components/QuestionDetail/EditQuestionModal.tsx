@@ -21,7 +21,7 @@ export const EditQuestionModal = ({
   const [note, setNote] = useState(question.note || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

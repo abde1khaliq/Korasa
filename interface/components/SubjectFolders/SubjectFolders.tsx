@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  ChevronRight,
-  Folder,
-  Plus,
-} from "lucide-react";
+import { ChevronRight, Folder, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { Notification } from "@/components/misc/Notification";
 import { SubjectFoldersSkeleton } from "@/components/SubjectFolders/SubjectFolderSkeleton";
@@ -18,18 +14,12 @@ import { FolderItem } from "@/types/folder";
 export function SubjectFolders() {
   const { id: subjectID } = useParams();
   const router = useRouter();
-  
+
   const [showCreateModal, setShowCreateModal] = useState(false);
-  
-  const {
-    subject,
-    folders,
-    isLoading,
-    error,
-    fetchData,
-    addFolder,
-  } = useSubjectFolders(subjectID);
-  
+
+  const { subject, folders, isLoading, error, fetchData, addFolder } =
+    useSubjectFolders(subjectID);
+
   const { notification, showNotification } = useNotification();
 
   const handleFolderCreated = (newFolder: FolderItem) => {
@@ -53,8 +43,8 @@ export function SubjectFolders() {
         </h2>
         <p className="mt-3 font-mono text-[15px] text-ink-soft">
           {subject?.folder_count} folders{" "}
-          <span className="text-ink-faint">·</span>{" "}
-          {subject?.question_count} questions
+          <span className="text-ink-faint">·</span> {subject?.question_count}{" "}
+          questions
         </p>
       </div>
 
@@ -86,7 +76,9 @@ export function SubjectFolders() {
               <div className="mt-1 flex items-center gap-2.5 font-mono text-[13px] text-ink-soft">
                 <span>{folder.question_count || 0} questions</span>
                 <span className="h-[3px] w-[3px] rounded-full bg-ink-faint/50"></span>
-                <span className="capitalize">{folder.difficulty || "Mixed"}</span>
+                <span className="capitalize">
+                  {folder.difficulty || "Mixed"}
+                </span>
               </div>
             </div>
 

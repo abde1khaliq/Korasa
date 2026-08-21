@@ -1,23 +1,5 @@
 import type { ReactNode } from "react";
 
-export function Screen({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className="min-h-screen w-full bg-paper">
-      <div
-        className={`mx-auto flex min-h-screen w-full max-w-[420px] flex-col bg-paper font-sans text-ink ${className}`}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
 export const difficultyStyles: Record<

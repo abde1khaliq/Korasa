@@ -1,5 +1,4 @@
 import { RefreshCw } from "lucide-react";
-import { Screen } from "@/components/misc/Screen";
 
 interface HomeSubjectsErrorProps {
   error: string;
@@ -8,7 +7,7 @@ interface HomeSubjectsErrorProps {
 
 export function HomeSubjectsError({ error, onRetry }: HomeSubjectsErrorProps) {
   return (
-    <Screen>
+    <>
       <header className="flex items-center justify-between px-6 pt-6">
         <span className="font-display text-2xl leading-none">K</span>
       </header>
@@ -31,6 +30,6 @@ export function HomeSubjectsError({ error, onRetry }: HomeSubjectsErrorProps) {
           Try again
         </button>
       </div>
-    </Screen>
+    </>
   );
 }

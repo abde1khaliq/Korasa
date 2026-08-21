@@ -20,8 +20,15 @@ export function QuestionOCRCapture({
   const imgRef = useRef<HTMLImageElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
-  const [dragRect, setDragRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [dragRect, setDragRect] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -58,7 +65,13 @@ export function QuestionOCRCapture({
   };
 
   const handleConfirmCrop = async () => {
-    if (!imgRef.current || !overlayRef.current || !dragRect || dragRect.w < 10 || dragRect.h < 10) {
+    if (
+      !imgRef.current ||
+      !overlayRef.current ||
+      !dragRect ||
+      dragRect.w < 10 ||
+      dragRect.h < 10
+    ) {
       setError("Drag a box around the question text first.");
       return;
     }
@@ -91,7 +104,9 @@ export function QuestionOCRCapture({
 
       const text = data.text.trim();
       if (!text) {
-        setError("Couldn't read any text in that selection — try a tighter crop.");
+        setError(
+          "Couldn't read any text in that selection — try a tighter crop.",
+        );
         setStage("crop");
         return;
       }
@@ -120,8 +135,8 @@ export function QuestionOCRCapture({
         {stage === "capture" && (
           <>
             <p className="mb-6 max-w-[22rem] text-center text-[15px] text-paper/70">
-              Take a photo, then drag a box around just the question text —
-              not the answer.
+              Take a photo, then drag a box around just the question text — not
+              the answer.
             </p>
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -148,7 +163,9 @@ export function QuestionOCRCapture({
               className="relative w-full touch-none select-none overflow-hidden rounded-2xl"
               onPointerDown={stage === "crop" ? handlePointerDown : undefined}
               onPointerMove={stage === "crop" ? handlePointerMove : undefined}
-              onPointerUp={stage === "crop" ? () => setDragStart(null) : undefined}
+              onPointerUp={
+                stage === "crop" ? () => setDragStart(null) : undefined
+              }
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -161,17 +178,29 @@ export function QuestionOCRCapture({
               {dragRect && (
                 <div
                   className="pointer-events-none absolute border-2 border-brand bg-brand/10"
-                  style={{ left: dragRect.x, top: dragRect.y, width: dragRect.w, height: dragRect.h }}
+                  style={{
+                    left: dragRect.x,
+                    top: dragRect.y,
+                    width: dragRect.w,
+                    height: dragRect.h,
+                  }}
                 />
               )}
               {stage === "recognizing" && (
                 <div className="absolute inset-0 flex items-center justify-center bg-onyx/60">
-                  <Loader2 className="size-8 animate-spin text-paper" strokeWidth={1.75} />
+                  <Loader2
+                    className="size-8 animate-spin text-paper"
+                    strokeWidth={1.75}
+                  />
                 </div>
               )}
             </div>
 
-            {error && <p className="mt-4 text-center text-[14px] text-hard-soft">{error}</p>}
+            {error && (
+              <p className="mt-4 text-center text-[14px] text-hard-soft">
+                {error}
+              </p>
+            )}
 
             {stage === "crop" && (
               <div className="mt-6 flex w-full items-center gap-3">

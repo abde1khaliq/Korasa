@@ -1,16 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Breadcrumb,
-  DifficultyPill,
-} from "@/components/misc/Screen";
+import { Breadcrumb, DifficultyPill } from "@/components/misc/Screen";
 import { QuestionDetailSkeleton } from "@/components/QuestionDetail/QuestionDetailSkeleton";
 import { QuestionDetailError } from "@/components/QuestionDetail/QuestionDetailError";
 import { Notification } from "@/components/misc/Notification";
@@ -38,7 +31,7 @@ export function QuestionDetail() {
 
   const { prevQuestion, nextQuestion, goTo } = useQuestionNavigation(
     question,
-    siblings
+    siblings,
   );
 
   const { revealed, toggleReveal } = useReveal();

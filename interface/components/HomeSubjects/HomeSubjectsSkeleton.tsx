@@ -20,9 +20,27 @@ export function HomeSubjectsSkeleton() {
           </div>
           <div className="pointer-events-none absolute -right-6 -top-6 opacity-10">
             <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
-              <circle cx="80" cy="80" r="60" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="80" cy="80" r="44" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="80" cy="80" r="28" stroke="currentColor" strokeWidth="1.5" />
+              <circle
+                cx="80"
+                cy="80"
+                r="60"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <circle
+                cx="80"
+                cy="80"
+                r="44"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <circle
+                cx="80"
+                cy="80"
+                r="28"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
             </svg>
           </div>
         </div>
@@ -40,9 +58,9 @@ export function HomeSubjectsSkeleton() {
             className="flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4"
           >
             <div className="h-9 w-16 rounded-lg bg-ink-faint/20 animate-pulse" />
-            
+
             <div className="mt-auto h-[26px] w-32 rounded bg-ink-faint/20 animate-pulse" />
-            
+
             <div className="mt-3 flex flex-col gap-2">
               <div className="h-4 w-20 rounded bg-ink-faint/20 animate-pulse" />
               <div className="h-4 w-24 rounded bg-ink-faint/20 animate-pulse" />

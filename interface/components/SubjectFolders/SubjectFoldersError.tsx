@@ -5,7 +5,10 @@ interface SubjectFoldersErrorProps {
   onRetry: () => void;
 }
 
-export function SubjectFoldersError({ error, onRetry }: SubjectFoldersErrorProps) {
+export function SubjectFoldersError({
+  error,
+  onRetry,
+}: SubjectFoldersErrorProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
       <div className="flex size-16 items-center justify-center rounded-2xl bg-hard-soft">

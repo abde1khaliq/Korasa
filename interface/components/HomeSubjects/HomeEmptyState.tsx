@@ -1,7 +1,5 @@
-import { LayoutGrid, LogOut, Plus, Search } from "lucide-react";
-import { Screen } from "@/components/misc/Screen";
+import { Plus } from "lucide-react";
 import { EmptyIllustration } from "@/components/HomeSubjects/EmptyIllustration";
-import { signOut } from "next-auth/react";
 
 export const HomeEmptyState = ({
   onCreateClick,
@@ -11,7 +9,9 @@ export const HomeEmptyState = ({
   return (
     <>
       <div className="px-6 pt-8">
-        <h1 className="font-display text-[56px] leading-[1.05] text-ink">Subjects</h1>
+        <h1 className="font-display text-[56px] leading-[1.05] text-ink">
+          Subjects
+        </h1>
         <p className="mt-3 text-[17px] text-ink-soft">
           A quiet place for the questions worth remembering.
         </p>
@@ -35,6 +35,6 @@ export const HomeEmptyState = ({
           Create your first subject
         </button>
       </div>
-  </>
+    </>
   );
 };

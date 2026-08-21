@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
-import { Screen } from "@/components/misc/Screen";
 
 export function Register() {
   const [username, setUsername] = useState("");
@@ -74,7 +73,7 @@ export function Register() {
   };
 
   return (
-    <Screen>
+    <>
       <header className="px-6 pt-6">
         <span className="font-display text-2xl leading-none">K</span>
       </header>
@@ -182,6 +181,6 @@ export function Register() {
           </Link>
         </p>
       </div>
-    </Screen>
+    </>
   );
 }

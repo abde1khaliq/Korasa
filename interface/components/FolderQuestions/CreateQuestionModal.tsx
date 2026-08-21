@@ -32,7 +32,7 @@ export const CreateQuestionModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showOCR, setShowOCR] = useState(false);
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   const handleOCRText = (recognized: string) => {
     if (text.trim().length > 0) {
@@ -223,4 +223,4 @@ export const CreateQuestionModal = ({
       </div>
     </div>
   );
-}
+};
