@@ -23,7 +23,8 @@ export function Header() {
 
   return (
     <SafeAreaView edges={["top"]} className="bg-paper">
-      <View className="flex-row items-center justify-between px-6 pt-2">
+      {/* Reduced padding top from pt-2 to pt-1 or 0 to minimize gap */}
+      <View className="flex-row items-center justify-between px-6 py-1">
         <View className="flex-row items-center" style={{ gap: 8 }}>
           {canGoBack && (
             <Pressable onPress={() => router.back()} hitSlop={8}>
@@ -47,7 +48,7 @@ export function Header() {
         <Pressable className="flex-1" onPress={() => setShowUserMenu(false)}>
           <View
             className="absolute right-6 rounded-2xl border border-rule bg-paper overflow-hidden"
-            style={{ top: 60, width: 224, shadowOpacity: 0.15, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } }}
+            style={{ top: 50, width: 224, shadowOpacity: 0.15, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } }}
           >
             <Pressable onPress={(e) => e.stopPropagation()}>
               <View className="px-4 py-3 border-b border-rule">
