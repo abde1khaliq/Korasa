@@ -14,7 +14,7 @@ export default function RegisterScreen() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async () => {
+const handleRegister = async () => {
     setError("");
     if (!username || !email || !password) {
       setError("Please fill in all fields.");
@@ -27,9 +27,7 @@ export default function RegisterScreen() {
     setLoading(true);
     try {
       await register(username, email, password);
-      // Your backend flow requires email verification — that screen
-      // doesn't exist in RN yet. For now this just goes back to login.
-      router.replace("/(auth)/login");
+      router.replace("/(auth)/verify-email");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to create account.");
       setLoading(false);

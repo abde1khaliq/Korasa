@@ -8,10 +8,22 @@ export class ApiError extends Error {
   }
 }
 
-type ApiOptions = RequestInit & { token?: string };
+type ApiOptions = RequestInit & { token?: string; skipAuthRetry?: boolean };
 
-export async function apiFetch(path: string, options: ApiOptions = {}) {
-  const { token, headers, ...rest } = options;
+// Registered by AuthContext on mount. api.ts has no React context access,
+// so this is how a 401 in a plain fetch helper gets routed back to the
+// provider that actually owns the refresh token.
+type RefreshHandler = () => Promise<string>;
+let refreshHandler: RefreshHandler | null = null;
+let onRefreshFailed: (() => void) | null = null;
+
+export function registerAuthHandlers(refresh: RefreshHandler, onFail: () => void) {
+  refreshHandler = refresh;
+  onRefreshFailed = onFail;
+}
+
+async function doFetch(path: string, options: ApiOptions) {
+  const { token, headers, skipAuthRetry, ...rest } = options;
 
   const res = await fetch(`${BASE_URL}${path}`, {
     ...rest,
@@ -30,4 +42,27 @@ export async function apiFetch(path: string, options: ApiOptions = {}) {
   }
 
   return data;
+}
+
+export async function apiFetch(path: string, options: ApiOptions = {}) {
+  try {
+    return await doFetch(path, options);
+  } catch (err) {
+    const isAuthError = err instanceof ApiError && err.status === 401;
+
+    // Only attempt refresh for authenticated requests that haven't already
+    // been retried once (skipAuthRetry prevents infinite recursion when the
+    // refresh call itself, or the retried request, also comes back 401).
+    if (isAuthError && options.token && !options.skipAuthRetry && refreshHandler) {
+      try {
+        const newToken = await refreshHandler();
+        return await doFetch(path, { ...options, token: newToken, skipAuthRetry: true });
+      } catch {
+        onRefreshFailed?.();
+        throw err; // surface the original 401, not the refresh's internal error
+      }
+    }
+
+    throw err;
+  }
 }
