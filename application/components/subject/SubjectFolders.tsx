@@ -28,7 +28,7 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
   return (
     <View className="flex-1">
       <View className="px-6 pt-6">
-        <Text className="font-display text-[46px] leading-[50px] text-ink" style={{ fontWeight: "600" }}>
+        <Text className="font-display text-[46px] leading-[50px] text-ink">
           {subject?.name}
         </Text>
         <Text className="font-mono mt-3 text-[15px] text-ink-soft">

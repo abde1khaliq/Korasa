@@ -48,7 +48,7 @@ export function FolderQuestions({
         ListHeaderComponent={
           <View>
             <View className="pt-5">
-              <Text className="font-display text-[34px] leading-[38px] text-ink" style={{ fontWeight: "600" }}>
+              <Text className="font-display text-[34px] leading-[38px] text-ink">
                 {folderName}
               </Text>
               <Text className="mt-1 text-[15px] text-ink-soft">

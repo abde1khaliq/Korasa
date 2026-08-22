@@ -7,7 +7,7 @@ export function SubjectFoldersError({ error, onRetry }: { error: string; onRetry
       <View className="items-center justify-center rounded-2xl bg-hard-soft" style={{ width: 64, height: 64 }}>
         <Text className="text-2xl">!</Text>
       </View>
-      <Text className="mt-6 text-[24px] text-ink text-center" style={{ fontWeight: "600" }}>
+      <Text className="mt-6 text-[24px] text-ink text-center">
         Couldn't load this subject
       </Text>
       <Text className="mt-3 max-w-[19rem] text-center text-[16px] leading-relaxed text-ink-soft">

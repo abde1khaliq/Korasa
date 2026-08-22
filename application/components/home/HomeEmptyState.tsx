@@ -6,7 +6,7 @@ export function HomeEmptyState({ onCreateClick }: { onCreateClick: () => void })
   return (
     <View className="flex-1">
       <View className="px-6 pt-8">
-        <Text className="text-[48px] leading-[52px] text-ink" style={{ fontWeight: "600" }}>
+        <Text className="text-[48px] leading-[52px] text-ink">
           Subjects
         </Text>
         <Text className="mt-3 text-[17px] text-ink-soft">
@@ -16,7 +16,7 @@ export function HomeEmptyState({ onCreateClick }: { onCreateClick: () => void })
 
       <View className="flex-1 items-center justify-center px-6 pb-16">
         <EmptyIllustration />
-        <Text className="mt-10 text-[28px] text-ink text-center" style={{ fontWeight: "600" }}>
+        <Text className="mt-10 text-[28px] text-ink text-center">
           Begin with a subject
         </Text>
         <Text className="mt-3 max-w-[19rem] text-center text-[17px] leading-relaxed text-ink-soft">

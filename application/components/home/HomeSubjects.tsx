@@ -85,7 +85,7 @@ export function HomeSubjects() {
       >
         <View className="px-6">
           <Text className="font-mono text-[13px] tracking-widest text-ink-faint uppercase">{getGreeting()}</Text>
-          <Text className="font-display mt-2 text-[40px] leading-[44px] text-ink" style={{ fontWeight: "600" }}>
+          <Text className="font-display mt-2 text-[40px] leading-[44px] text-ink">
             {getFormattedName(userName)}
           </Text>
           <Text className="mt-2 text-[17px] text-ink-soft">Ready to pick up where you left off?</Text>
@@ -95,15 +95,15 @@ export function HomeSubjects() {
           <View className="mt-6 px-6">
             <View className="overflow-hidden rounded-2xl border border-rule bg-onyx p-5" style={{ position: "relative" }}>
               <Text className="font-mono text-[13px] tracking-widest text-paper/60 uppercase text-ink-faint">Continue studying</Text>
-              <Text className="font-display mt-2 text-[26px] leading-[30px] text-paper" style={{ fontWeight: "600" }}>
+              <Text className="font-display mt-2 text-[26px] leading-[30px] text-paper">
                 {recentSubject.name}
               </Text>
               <Pressable
                 onPress={() => router.push(`/subject/${recentSubject.id}`)}
                 className="mt-4 flex-row items-center gap-2 self-start rounded-full bg-paper px-5 py-2.5"
               >
-                <Text className="text-[15px] text-onyx" style={{ fontWeight: "600" }}>Continue</Text>
-                <ArrowRight size={16} color="#2A2724" strokeWidth={1.75} />
+                <Text className="text-[15px] text-onyx">Continue</Text>
+                <ArrowRight size={16} color="text-ink" strokeWidth={1.75} />
               </Pressable>
               <View style={{ position: "absolute", right: -24, top: -24, opacity: 0.1 }} pointerEvents="none">
                 <Svg width={160} height={160} viewBox="0 0 160 160">
@@ -117,7 +117,7 @@ export function HomeSubjects() {
         )}
 
         <View className="px-6 pt-8">
-          <Text className="font-display text-[30px] leading-[34px] text-ink" style={{ fontWeight: "600" }}>Subjects</Text>
+          <Text className="font-display text-[30px] leading-[34px] text-ink">Subjects</Text>
           <Text className="mt-1 text-[17px] text-ink-soft">
             {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
           </Text>
@@ -141,7 +141,7 @@ export function HomeSubjects() {
                   <Text style={{ color: chip.text, fontSize: 13, letterSpacing: 1 }}>{code}</Text>
                 </View>
                 <View style={{ flex: 1 }} />
-                <Text className="font-display text-[26px] leading-[30px] text-ink" numberOfLines={1} style={{ fontWeight: "600" }}>
+                <Text className="font-display text-[26px] leading-[30px] text-ink" numberOfLines={1}>
                   {subject.name}
                 </Text>
                 <View className="mt-3" style={{ gap: 4 }}>

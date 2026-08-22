@@ -43,7 +43,7 @@ export function CreateSubjectModal({
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <Pressable onPress={(e) => e.stopPropagation()} className="rounded-t-3xl bg-paper px-6 pb-8 pt-5">
             <View className="flex-row items-center justify-between">
-              <Text className="text-[22px] text-ink" style={{ fontWeight: "600" }}>New subject</Text>
+              <Text className="text-[22px] text-ink">New subject</Text>
               <Pressable onPress={onClose} className="items-center justify-center rounded-full" style={{ width: 36, height: 36 }}>
                 <X size={20} color="#2B2724" strokeWidth={1.75} />
               </Pressable>
@@ -69,7 +69,7 @@ export function CreateSubjectModal({
                 style={{ opacity: isSubmitting || !name.trim() ? 0.4 : 1 }}
               >
                 {isSubmitting ? <ActivityIndicator color="#F7F5F1" /> : <Plus size={20} color="#F7F5F1" strokeWidth={1.75} />}
-                <Text className="text-[16px] text-paper" style={{ fontWeight: "600" }}>
+                <Text className="text-[16px] text-paper">
                   {isSubmitting ? "Creating…" : "Create subject"}
                 </Text>
               </Pressable>

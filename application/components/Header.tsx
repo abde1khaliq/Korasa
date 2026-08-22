@@ -40,7 +40,7 @@ export function Header() {
           style={{ width: 36, height: 36 }}
           hitSlop={8}
         >
-          <Menu size={20} color="#2B2724" strokeWidth={1.75} />
+          <Menu size={20} color="white" strokeWidth={1.75} />
         </Pressable>
       </View>
 
@@ -57,7 +57,7 @@ export function Header() {
                     <User size={20} color="#6E655C" strokeWidth={1.75} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text className="text-[15px] text-ink" numberOfLines={1} style={{ fontWeight: "600" }}>
+                    <Text className="text-[15px] text-ink" numberOfLines={1}>
                       {userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase()}
                     </Text>
                     <Text className="text-[12px] text-ink-faint" numberOfLines={1}>{userEmail}</Text>
