@@ -6,7 +6,11 @@ import Svg, { Circle } from "react-native-svg";
 import { useAuth } from "@/context/AuthContext";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useNotification } from "@/hooks/useNotification";
-import { getSubjectMeta, getGreeting, getFormattedName } from "@/lib/subjectUtils";
+import {
+  getSubjectMeta,
+  getGreeting,
+  getFormattedName,
+} from "@/lib/subjectUtils";
 import { Notification } from "@/components/Notification";
 import { HomeSubjectsSkeleton } from "./HomeSubjectsSkeleton";
 import { HomeSubjectsError } from "./HomeSubjectsError";
@@ -14,20 +18,30 @@ import { HomeEmptyState } from "./HomeEmptyState";
 import { CreateSubjectModal } from "./CreateSubjectModal";
 import { Subject } from "@/types/subject";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { QuickCreateModal } from "./QuickCreateModal";
 
 export function HomeSubjects() {
-  const ink = useThemeColor("#2B2724", "#F1EFEC")
-  const ink2 = useThemeColor("#F1EFEC", "#2B2724")
-  const paper = useThemeColor("#F7F5F1", "#211D1A")
+  const ink = useThemeColor("#2B2724", "#F1EFEC");
+  const ink2 = useThemeColor("#F1EFEC", "#2B2724");
+  const paper = useThemeColor("#F7F5F1", "#211D1A");
 
   const router = useRouter();
   const { user } = useAuth();
   const userName = user?.username ?? "";
 
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const { subjects, isLoading, error, recentSubject, fetchSubjects, deleteSubject, addSubject, updateSubjectCounts } =
-    useSubjects();
+  const {
+    subjects,
+    isLoading,
+    error,
+    recentSubject,
+    fetchSubjects,
+    deleteSubject,
+    addSubject,
+    updateSubjectCounts,
+  } = useSubjects();
   const { notification, showNotification } = useNotification();
 
   const handleSubjectCreated = (newSubject: Subject) => {
@@ -35,22 +49,32 @@ export function HomeSubjects() {
     showNotification(`"${newSubject.name}" created`);
   };
 
+  const handleQuickFolderCreated = (subjectId: number) => {
+    updateSubjectCounts(subjectId, "folder");
+    showNotification("Folder created");
+  };
+
+  const handleQuickQuestionCreated = (subjectId: number) => {
+    updateSubjectCounts(subjectId, "question");
+    showNotification("Question created");
+  };
+
   const confirmDelete = (subject: Subject) => {
-    Alert.alert(
-      subject.name,
-      "Delete this subject? This can't be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            const result = await deleteSubject(subject.id);
-            showNotification(result.success ? `"${subject.name}" deleted` : result.error || "Failed to delete subject");
-          },
+    Alert.alert(subject.name, "Delete this subject? This can't be undone.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          const result = await deleteSubject(subject.id);
+          showNotification(
+            result.success
+              ? `"${subject.name}" deleted`
+              : result.error || "Failed to delete subject",
+          );
         },
-      ],
-    );
+      },
+    ]);
   };
 
   if (isLoading) {
@@ -74,7 +98,10 @@ export function HomeSubjects() {
       <View className="flex-1 bg-paper">
         <HomeEmptyState onCreateClick={() => setShowCreateModal(true)} />
         {showCreateModal && (
-          <CreateSubjectModal onClose={() => setShowCreateModal(false)} onCreated={handleSubjectCreated} />
+          <CreateSubjectModal
+            onClose={() => setShowCreateModal(false)}
+            onCreated={handleSubjectCreated}
+          />
         )}
         <Notification message={notification} />
       </View>
@@ -83,23 +110,32 @@ export function HomeSubjects() {
 
   return (
     <View className="flex-1 bg-paper">
-      <ScrollView 
-        className="flex-1" 
+      <ScrollView
+        className="flex-1"
         contentContainerStyle={{ paddingTop: 12, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
         <View className="px-6">
-          <Text className="font-mono text-[13px] tracking-widest text-ink-faint uppercase">{getGreeting()}</Text>
+          <Text className="font-mono text-[13px] tracking-widest text-ink-faint uppercase">
+            {getGreeting()}
+          </Text>
           <Text className="font-display mt-2 text-[40px] leading-[44px] text-ink">
             {getFormattedName(userName)}
           </Text>
-          <Text className="mt-2 text-[17px] text-ink-soft">Ready to pick up where you left off?</Text>
+          <Text className="mt-2 text-[17px] text-ink-soft">
+            Ready to pick up where you left off?
+          </Text>
         </View>
 
         {recentSubject && (
           <View className="mt-6 px-6">
-            <View className="overflow-hidden rounded-2xl border border-rule bg-onyx p-5" style={{ position: "relative" }}>
-              <Text className="font-mono text-[13px] tracking-widest text-paper/60 uppercase text-ink-faint">Continue studying</Text>
+            <View
+              className="overflow-hidden rounded-2xl border border-rule bg-onyx p-5"
+              style={{ position: "relative" }}
+            >
+              <Text className="font-mono text-[13px] tracking-widest text-paper/60 uppercase text-ink-faint">
+                Continue studying
+              </Text>
               <Text className="font-display mt-2 text-[26px] leading-[30px] text-paper">
                 {recentSubject.name}
               </Text>
@@ -110,11 +146,40 @@ export function HomeSubjects() {
                 <Text className="text-[15px] text-onyx">Continue</Text>
                 <ArrowRight size={16} color={ink} strokeWidth={1.75} />
               </Pressable>
-              <View style={{ position: "absolute", right: -24, top: -24, opacity: 0.1 }} pointerEvents="none">
+              <View
+                style={{
+                  position: "absolute",
+                  right: -24,
+                  top: -24,
+                  opacity: 0.1,
+                }}
+                pointerEvents="none"
+              >
                 <Svg width={160} height={160} viewBox="0 0 160 160">
-                  <Circle cx={80} cy={80} r={60} stroke={paper} strokeWidth={1.5} fill="none" />
-                  <Circle cx={80} cy={80} r={44} stroke={paper} strokeWidth={1.5} fill="none" />
-                  <Circle cx={80} cy={80} r={28} stroke={paper} strokeWidth={1.5} fill="none" />
+                  <Circle
+                    cx={80}
+                    cy={80}
+                    r={60}
+                    stroke={paper}
+                    strokeWidth={1.5}
+                    fill="none"
+                  />
+                  <Circle
+                    cx={80}
+                    cy={80}
+                    r={44}
+                    stroke={paper}
+                    strokeWidth={1.5}
+                    fill="none"
+                  />
+                  <Circle
+                    cx={80}
+                    cy={80}
+                    r={28}
+                    stroke={paper}
+                    strokeWidth={1.5}
+                    fill="none"
+                  />
                 </Svg>
               </View>
             </View>
@@ -122,13 +187,18 @@ export function HomeSubjects() {
         )}
 
         <View className="px-6 pt-8">
-          <Text className="font-display text-[30px] leading-[34px] text-ink">Subjects</Text>
+          <Text className="font-display text-[30px] leading-[34px] text-ink">
+            Subjects
+          </Text>
           <Text className="mt-1 text-[17px] text-ink-soft">
             {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
           </Text>
         </View>
 
-        <View className="flex-row flex-wrap justify-between px-6 py-6" style={{ rowGap: 16 }}>
+        <View
+          className="flex-row flex-wrap justify-between px-6 py-6"
+          style={{ rowGap: 16 }}
+        >
           {subjects.map((subject) => {
             const { code, chip } = getSubjectMeta(subject.id, subject.name);
             return (
@@ -143,15 +213,26 @@ export function HomeSubjects() {
                   className="self-start rounded-lg px-3 py-1.5"
                   style={{ backgroundColor: chip.bg }}
                 >
-                  <Text style={{ color: chip.text, fontSize: 13, letterSpacing: 1 }}>{code}</Text>
+                  <Text
+                    style={{ color: chip.text, fontSize: 13, letterSpacing: 1 }}
+                  >
+                    {code}
+                  </Text>
                 </View>
                 <View style={{ flex: 1 }} />
-                <Text className="font-display text-[26px] leading-[30px] text-ink" numberOfLines={1}>
+                <Text
+                  className="font-display text-[26px] leading-[30px] text-ink"
+                  numberOfLines={1}
+                >
                   {subject.name}
                 </Text>
                 <View className="mt-3" style={{ gap: 4 }}>
-                  <Text className="text-[14px] text-ink-soft">{subject.folder_count || 0} folders</Text>
-                  <Text className="text-[14px] text-ink-soft">{subject.question_count || 0} questions</Text>
+                  <Text className="text-[14px] text-ink-soft">
+                    {subject.folder_count || 0} folders
+                  </Text>
+                  <Text className="text-[14px] text-ink-soft">
+                    {subject.question_count || 0} questions
+                  </Text>
                 </View>
               </Pressable>
             );
@@ -162,7 +243,10 @@ export function HomeSubjects() {
             style={{ width: "48%", height: 190 }}
             className="items-center justify-center gap-3 rounded-2xl border border-dashed border-rule"
           >
-            <View className="items-center justify-center rounded-full border border-ink-faint" style={{ width: 48, height: 48 }}>
+            <View
+              className="items-center justify-center rounded-full border border-ink-faint"
+              style={{ width: 48, height: 48 }}
+            >
               <Plus size={20} color="#6E655C" strokeWidth={1.5} />
             </View>
             <Text className="text-[16px] text-ink-soft">New subject</Text>
@@ -171,7 +255,7 @@ export function HomeSubjects() {
       </ScrollView>
 
       <Pressable
-        onPress={() => Alert.alert("Quick create", "Folder/question quick-add isn't built yet.")}
+        onPress={() => setShowQuickCreate(true)}
         className="absolute bottom-6 right-6 items-center justify-center rounded-full bg-onyx z-10"
         style={{ width: 56, height: 56 }}
       >
@@ -179,7 +263,18 @@ export function HomeSubjects() {
       </Pressable>
 
       {showCreateModal && (
-        <CreateSubjectModal onClose={() => setShowCreateModal(false)} onCreated={handleSubjectCreated} />
+        <CreateSubjectModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={handleSubjectCreated}
+        />
+      )}
+      {showQuickCreate && (
+        <QuickCreateModal
+          subjects={subjects}
+          onClose={() => setShowQuickCreate(false)}
+          onFolderCreated={handleQuickFolderCreated}
+          onQuestionCreated={handleQuickQuestionCreated}
+        />
       )}
       <Notification message={notification} />
     </View>
