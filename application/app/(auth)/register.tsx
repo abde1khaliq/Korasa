@@ -43,7 +43,7 @@ export default function RegisterScreen() {
         className="flex-1"
       >
         <View className="px-6 pt-6">
-          <Text className="text-2xl text-ink" style={{ fontWeight: "600" }}>
+          <Text className="font-display text-2xl text-ink" style={{ fontWeight: "600" }}>
             Korasa
           </Text>
         </View>
@@ -52,7 +52,7 @@ export default function RegisterScreen() {
           <Text className="text-[13px] tracking-widest text-ink-faint uppercase">
             Get started
           </Text>
-          <Text className="mt-3 text-[40px] leading-tight text-ink" style={{ fontWeight: "600" }}>
+          <Text className="font-display mt-3 text-[40px] leading-tight text-ink" style={{ fontWeight: "600" }}>
             Create account
           </Text>
 

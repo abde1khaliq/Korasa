@@ -48,7 +48,7 @@ export function FolderQuestions({
         ListHeaderComponent={
           <View>
             <View className="pt-5">
-              <Text className="text-[34px] leading-[38px] text-ink" style={{ fontWeight: "600" }}>
+              <Text className="font-display text-[34px] leading-[38px] text-ink" style={{ fontWeight: "600" }}>
                 {folderName}
               </Text>
               <Text className="mt-1 text-[15px] text-ink-soft">
@@ -62,7 +62,6 @@ export function FolderQuestions({
               <View className="flex-row items-center rounded-xl border border-rule bg-paper-card px-3 py-2" style={{ gap: 8 }}>
                 <Search size={16} color="#9C9086" strokeWidth={1.75} />
                 <TextInput
-                  autoFocus
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   placeholder="Search questions..."

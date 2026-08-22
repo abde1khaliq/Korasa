@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { View, Text, Pressable, Modal, Alert } from "react-native";
+import { View, Text, Pressable, Modal } from "react-native";
 import { useRouter } from "expo-router";
-import { ChevronLeft, LogOut, Menu, Moon, User } from "lucide-react-native";
+import { ChevronLeft, LogOut, Moon, Sun, Menu, User } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { scheme, toggle } = useTheme();
 
   const userEmail = user?.email ?? "";
   const userName = user?.username ?? "";
@@ -21,14 +23,14 @@ export function Header() {
 
   return (
     <SafeAreaView edges={["top"]} className="bg-paper">
-      <View className="flex-row items-center justify-between px-6 pt-2 pb-2">
+      <View className="flex-row items-center justify-between px-6 pt-2">
         <View className="flex-row items-center" style={{ gap: 8 }}>
           {canGoBack && (
             <Pressable onPress={() => router.back()} hitSlop={8}>
               <ChevronLeft size={22} color="#2B2724" strokeWidth={1.75} />
             </Pressable>
           )}
-          <Text className="text-2xl text-ink" style={{ fontWeight: "600" }}>K</Text>
+          <Text className="font-display text-2xl text-ink">K</Text>
         </View>
 
         <Pressable
@@ -74,13 +76,19 @@ export function Header() {
                 <Pressable
                   onPress={() => {
                     setShowUserMenu(false);
-                    Alert.alert("Dark mode", "Not implemented yet.");
+                    toggle();
                   }}
                   className="flex-row items-center rounded-xl px-3 py-2.5"
                   style={{ gap: 12 }}
                 >
-                  <Moon size={16} color="#2B2724" strokeWidth={1.75} />
-                  <Text className="text-[14px] text-ink">Dark mode</Text>
+                  {scheme === "dark" ? (
+                    <Sun size={16} color="#2B2724" strokeWidth={1.75} />
+                  ) : (
+                    <Moon size={16} color="#2B2724" strokeWidth={1.75} />
+                  )}
+                  <Text className="text-[14px] text-ink">
+                    {scheme === "dark" ? "Light mode" : "Dark mode"}
+                  </Text>
                 </Pressable>
               </View>
             </Pressable>

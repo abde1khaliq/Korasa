@@ -79,9 +79,9 @@ export function HomeSubjects() {
 
   return (
     <SafeAreaView className="flex-1 bg-paper">
-      <View className="px-6 pt-6">
-        <Text className="text-[13px] tracking-widest text-ink-faint uppercase">{getGreeting()}</Text>
-        <Text className="mt-2 text-[40px] leading-[44px] text-ink" style={{ fontWeight: "600" }}>
+      <View className="px-6">
+        <Text className="font-mono text-[13px] tracking-widest text-ink-faint uppercase">{getGreeting()}</Text>
+        <Text className="font-display mt-2 text-[40px] leading-[44px] text-ink" style={{ fontWeight: "600" }}>
           {getFormattedName(userName)}
         </Text>
         <Text className="mt-2 text-[17px] text-ink-soft">Ready to pick up where you left off?</Text>
@@ -90,8 +90,8 @@ export function HomeSubjects() {
       {recentSubject && (
         <View className="mt-6 px-6">
           <View className="overflow-hidden rounded-2xl border border-rule bg-onyx p-5" style={{ position: "relative" }}>
-            <Text className="text-[13px] tracking-widest text-paper/60 uppercase">Continue studying</Text>
-            <Text className="mt-2 text-[26px] leading-[30px] text-paper" style={{ fontWeight: "600" }}>
+            <Text className="font-mono text-[13px] tracking-widest text-paper/60 uppercase text-ink-faint">Continue studying</Text>
+            <Text className="font-display mt-2 text-[26px] leading-[30px] text-paper" style={{ fontWeight: "600" }}>
               {recentSubject.name}
             </Text>
             <Pressable
@@ -113,7 +113,7 @@ export function HomeSubjects() {
       )}
 
       <View className="px-6 pt-8">
-        <Text className="text-[30px] leading-[34px] text-ink" style={{ fontWeight: "600" }}>Subjects</Text>
+        <Text className="font-display text-[30px] leading-[34px] text-ink" style={{ fontWeight: "600" }}>Subjects</Text>
         <Text className="mt-1 text-[17px] text-ink-soft">
           {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
         </Text>
@@ -137,7 +137,7 @@ export function HomeSubjects() {
                 <Text style={{ color: chip.text, fontSize: 13, letterSpacing: 1 }}>{code}</Text>
               </View>
               <View style={{ flex: 1 }} />
-              <Text className="text-[26px] leading-[30px] text-ink" numberOfLines={1} style={{ fontWeight: "600" }}>
+              <Text className="font-display text-[26px] leading-[30px] text-ink" numberOfLines={1} style={{ fontWeight: "600" }}>
                 {subject.name}
               </Text>
               <View className="mt-3" style={{ gap: 4 }}>

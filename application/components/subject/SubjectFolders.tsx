@@ -28,10 +28,10 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
   return (
     <View className="flex-1">
       <View className="px-6 pt-6">
-        <Text className="text-[46px] leading-[50px] text-ink" style={{ fontWeight: "600" }}>
+        <Text className="font-display text-[46px] leading-[50px] text-ink" style={{ fontWeight: "600" }}>
           {subject?.name}
         </Text>
-        <Text className="mt-3 text-[15px] text-ink-soft">
+        <Text className="font-mono mt-3 text-[15px] text-ink-soft">
           {subject?.folder_count ?? 0} folders <Text className="text-ink-faint">·</Text> {subject?.question_count ?? 0} questions
         </Text>
       </View>
