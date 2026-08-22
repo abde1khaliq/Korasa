@@ -1,16 +1,17 @@
-import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
+import { QuestionDetail } from "@/components/QuestionDetail/QuestionDetail";
 
 export default function QuestionScreen() {
-  const { questionId } = useLocalSearchParams<{ questionId: string }>();
+  const { id, folderId, questionId } = useLocalSearchParams<{
+    id: string;
+    folderId: string;
+    questionId: string;
+  }>();
 
   return (
-    <SafeAreaView className="flex-1 bg-paper items-center justify-center" edges={["bottom"]}>
-      <View>
-        <Text className="text-ink text-[20px]">Question {questionId}</Text>
-        <Text className="text-ink-soft mt-2">Detail screen not built yet.</Text>
-      </View>
+    <SafeAreaView className="flex-1 bg-paper" edges={["bottom"]}>
+      <QuestionDetail subjectId={id} folderId={folderId} questionId={questionId} />
     </SafeAreaView>
   );
 }
