@@ -33,17 +33,29 @@ func CreateQuestion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var input models.QuestionInput
-		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		fileHeader, err := c.FormFile("image")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "image file is required"})
+			return
+		}
+		file, err := fileHeader.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not read image"})
+			return
+		}
+		defer file.Close()
+
+		imageURL, err := UploadQuestionImage(c.Request.Context(), file)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not upload image"})
 			return
 		}
 
 		question := models.Question{
-			Text:       input.Text,
-			Answer:     input.Answer,
-			Difficulty: input.Difficulty,
-			Note:       input.Note,
+			ImageURL:   imageURL,
+			Answer:     c.PostForm("answer"),
+			Difficulty: c.PostForm("difficulty"),
+			Note:       c.PostForm("note"),
 			FolderID:   folderID,
 		}
 
@@ -57,17 +69,10 @@ func CreateQuestion(db *gorm.DB) gin.HandlerFunc {
 				return err
 			}
 			now := time.Now()
-			if err := tx.Model(&models.Folder{}).
-				Where("id = ?", folderID).
-				Update("updated_at", now).Error; err != nil {
+			if err := tx.Model(&models.Folder{}).Where("id = ?", folderID).Update("updated_at", now).Error; err != nil {
 				return err
 			}
-			if err := tx.Model(&models.Subject{}).
-				Where("id = ?", folder.SubjectID).
-				Update("updated_at", now).Error; err != nil {
-				return err
-			}
-			return nil
+			return tx.Model(&models.Subject{}).Where("id = ?", folder.SubjectID).Update("updated_at", now).Error
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create question"})
@@ -136,55 +141,55 @@ func GetQuestionByID(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func UpdateQuestion(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		userID := c.GetInt("userID")
+// func UpdateQuestion(db *gorm.DB) gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		userID := c.GetInt("userID")
 
-		questionID, err := strconv.Atoi(c.Param("questionID"))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid question id"})
-			return
-		}
+// 		questionID, err := strconv.Atoi(c.Param("questionID"))
+// 		if err != nil {
+// 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid question id"})
+// 			return
+// 		}
 
-		var question models.Question
-		if err := db.First(&question, questionID).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
-			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			}
-			return
-		}
+// 		var question models.Question
+// 		if err := db.First(&question, questionID).Error; err != nil {
+// 			if errors.Is(err, gorm.ErrRecordNotFound) {
+// 				c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
+// 			} else {
+// 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 			}
+// 			return
+// 		}
 
-		if _, err := validators.UserOwnFolder(db, question.FolderID, userID); err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
-			return
-		}
+// 		if _, err := validators.UserOwnFolder(db, question.FolderID, userID); err != nil {
+// 			c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
+// 			return
+// 		}
 
-		var input models.QuestionInput
-		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+// 		var input models.QuestionInput
+// 		if err := c.ShouldBindJSON(&input); err != nil {
+// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 			return
+// 		}
 
-		if err := validators.Validate(input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+// 		if err := validators.Validate(input); err != nil {
+// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+// 			return
+// 		}
 
-		question.Text = input.Text
-		question.Answer = input.Answer
-		question.Difficulty = input.Difficulty
-		question.Note = input.Note
+// 		question.Text = input.Text
+// 		question.Answer = input.Answer
+// 		question.Difficulty = input.Difficulty
+// 		question.Note = input.Note
 
-		if err := db.Save(&question).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update question"})
-			return
-		}
+// 		if err := db.Save(&question).Error; err != nil {
+// 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update question"})
+// 			return
+// 		}
 
-		c.JSON(http.StatusOK, dto.ToQuestionResponse(question))
-	}
-}
+// 		c.JSON(http.StatusOK, dto.ToQuestionResponse(question))
+// 	}
+// }
 
 func DeleteQuestion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {

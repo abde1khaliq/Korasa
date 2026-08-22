@@ -1,6 +1,6 @@
 export interface Question {
   id: number;
-  text: string;
+  image_url: string;
   answer: string;
   difficulty: "easy" | "medium" | "hard";
   note: string;

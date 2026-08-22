@@ -38,7 +38,13 @@
         }
       ],
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow Korasa to access your camera to photograph questions."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

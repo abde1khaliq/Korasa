@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, FlatList } from "react-native";
+import { View, Text, TextInput, Pressable, FlatList, Image } from "react-native";
 import { Search, Plus, X } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import { difficultyStyles, difficultyHex } from "@/components/misc/Screen";
+import { difficultyStyles } from "@/components/misc/Screen";
 import { Notification } from "@/components/Notification";
 import { FolderQuestionsSkeleton } from "./FolderQuestionsSkeleton";
 import { FolderQuestionsError } from "./FolderQuestionsError";
@@ -11,7 +11,10 @@ import { CreateQuestionModal } from "./CreateQuestionModal";
 import { useFolderQuestions } from "@/hooks/useFolderQuestions";
 import { useQuestionFilter } from "@/hooks/useQuestionFilter";
 import { useNotification } from "@/hooks/useNotification";
-import { difficultyLabels, highlightText, getQuestionMatchType } from "@/lib/questionUtils";
+import {
+  difficultyLabels,
+  getQuestionMatchType,
+} from "@/lib/questionUtils";
 import { Question } from "@/types/question";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
@@ -24,14 +27,22 @@ export function FolderQuestions({
   folderId: string;
   folderName: string;
 }) {
-  const ink = useThemeColor("#F1EFEC", "#2B2724")
-  const paper = useThemeColor("#F7F5F1", "#211D1A")
+  const ink = useThemeColor("#F1EFEC", "#2B2724");
+  const paper = useThemeColor("#F7F5F1", "#211D1A");
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const { questions, isLoading, error, fetchQuestions, addQuestion } = useFolderQuestions(folderId);
-  const { filter, setFilter, searchQuery, setSearchQuery, counts, visibleQuestions, hasActiveSearch } =
-    useQuestionFilter(questions);
+  const { questions, isLoading, error, fetchQuestions, addQuestion } =
+    useFolderQuestions(folderId);
+  const {
+    filter,
+    setFilter,
+    searchQuery,
+    setSearchQuery,
+    counts,
+    visibleQuestions,
+    hasActiveSearch,
+  } = useQuestionFilter(questions);
   const { notification, showNotification } = useNotification();
 
   const handleQuestionCreated = (newQuestion: Question) => {
@@ -40,7 +51,8 @@ export function FolderQuestions({
   };
 
   if (isLoading) return <FolderQuestionsSkeleton />;
-  if (error) return <FolderQuestionsError error={error} onRetry={fetchQuestions} />;
+  if (error)
+    return <FolderQuestionsError error={error} onRetry={fetchQuestions} />;
 
   return (
     <View className="flex-1">
@@ -57,12 +69,20 @@ export function FolderQuestions({
               <Text className="mt-1 text-[15px] text-ink-soft">
                 {visibleQuestions.length} of {questions.length}{" "}
                 {questions.length === 1 ? "question" : "questions"}
-                {searchQuery && <Text className="text-ink-faint">  matching "{searchQuery}"</Text>}
+                {searchQuery && (
+                  <Text className="text-ink-faint">
+                    {" "}
+                    matching "{searchQuery}"
+                  </Text>
+                )}
               </Text>
             </View>
 
             <View className="mt-4">
-              <View className="flex-row items-center rounded-xl border border-rule bg-paper-card px-3 py-2" style={{ gap: 8 }}>
+              <View
+                className="flex-row items-center rounded-xl border border-rule bg-paper-card px-3 py-2"
+                style={{ gap: 8 }}
+              >
                 <Search size={16} color="#9C9086" strokeWidth={1.75} />
                 <TextInput
                   value={searchQuery}
@@ -88,7 +108,10 @@ export function FolderQuestions({
                   borderColor: filter === "All" ? ink : ink,
                 }}
               >
-                <Text className="text-[12px]" style={{ color: filter === "All" ? ink : ink }}>
+                <Text
+                  className="text-[12px]"
+                  style={{ color: filter === "All" ? ink : ink }}
+                >
                   All
                 </Text>
               </Pressable>
@@ -119,43 +142,79 @@ export function FolderQuestions({
         renderItem={({ item: q, index }) => {
           const label = difficultyLabels[q.difficulty];
           const s = difficultyStyles[label];
-          const highlighted = hasActiveSearch ? highlightText(q.text, searchQuery) : q.text;
           const matchType = getQuestionMatchType(q, searchQuery);
 
           return (
             <Pressable
               onPress={() =>
                 router.push({
-                  pathname: "/subject/[id]/folder/[folderId]/question/[questionId]",
+                  pathname:
+                    "/subject/[id]/folder/[folderId]/question/[questionId]",
                   params: { id: subjectId, folderId, questionId: String(q.id) },
                 })
               }
-              className="flex-row rounded-xl px-2 py-4"
+              className="flex-row items-center rounded-xl px-2 py-4"
               style={{ gap: 16 }}
             >
-              <Text className="pt-0.5 text-[13px] text-ink-faint" style={{ minWidth: 20 }}>
+              <Text
+                className="text-[13px] text-ink-faint"
+                style={{ minWidth: 20 }}
+              >
                 {String(index + 1).padStart(2, "0")}
               </Text>
+              <Image
+                source={{ uri: q.image_url }}
+                style={{ width: 56, height: 56, borderRadius: 12 }}
+                resizeMode="cover"
+              />
               <View style={{ flex: 1 }}>
-                <Text className="text-[15px] leading-[22px] text-ink" numberOfLines={2}>
-                  {highlighted}
-                </Text>
-
-                <View className="mt-3 flex-row flex-wrap items-center" style={{ gap: 10 }}>
-                  <View className={`flex-row items-center rounded-full px-3 py-1 ${s.pillBg}`} style={{ gap: 6 }}>
-                    <View className={`rounded-full ${s.dot}`} style={{ width: 5, height: 5 }} />
-                    <Text className={`text-[12px] ${s.pillText}`} style={{ fontWeight: "500" }}>{label}</Text>
+                <View
+                  className="flex-row flex-wrap items-center"
+                  style={{ gap: 10 }}
+                >
+                  <View
+                    className={`flex-row items-center rounded-full px-3 py-1 ${s.pillBg}`}
+                    style={{ gap: 6 }}
+                  >
+                    <View
+                      className={`rounded-full ${s.dot}`}
+                      style={{ width: 5, height: 5 }}
+                    />
+                    <Text
+                      className={`text-[12px] ${s.pillText}`}
+                      style={{ fontWeight: "500" }}
+                    >
+                      {label}
+                    </Text>
                   </View>
                   {q.note ? (
                     <>
-                      <View style={{ width: 3, height: 3, borderRadius: 999, backgroundColor: "rgba(156,144,134,0.5)" }} />
-                      <Text className="text-[12px] text-ink-faint">Has notes</Text>
+                      <View
+                        style={{
+                          width: 3,
+                          height: 3,
+                          borderRadius: 999,
+                          backgroundColor: "rgba(156,144,134,0.5)",
+                        }}
+                      />
+                      <Text className="text-[12px] text-ink-faint">
+                        Has notes
+                      </Text>
                     </>
                   ) : null}
                   {matchType ? (
                     <>
-                      <View style={{ width: 3, height: 3, borderRadius: 999, backgroundColor: "rgba(156,144,134,0.5)" }} />
-                      <Text className="text-[12px] text-ink-faint">Match in {matchType}</Text>
+                      <View
+                        style={{
+                          width: 3,
+                          height: 3,
+                          borderRadius: 999,
+                          backgroundColor: "rgba(156,144,134,0.5)",
+                        }}
+                      />
+                      <Text className="text-[12px] text-ink-faint">
+                        Match in {matchType}
+                      </Text>
                     </>
                   ) : null}
                 </View>
@@ -168,7 +227,12 @@ export function FolderQuestions({
       <Pressable
         onPress={() => setShowCreateModal(true)}
         className="absolute self-center flex-row items-center rounded-full bg-onyx"
-        style={{ bottom: 24, gap: 8, paddingHorizontal: 24, paddingVertical: 14 }}
+        style={{
+          bottom: 24,
+          gap: 8,
+          paddingHorizontal: 24,
+          paddingVertical: 14,
+        }}
       >
         <Plus size={20} color={ink} strokeWidth={2} />
         <Text className="text-[16px] text-paper">Add question</Text>

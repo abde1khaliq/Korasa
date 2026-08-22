@@ -1,0 +1,8 @@
+ALTER TABLE questions
+  ADD COLUMN image_url TEXT NOT NULL DEFAULT '';
+
+ALTER TABLE questions
+  DROP COLUMN text;
+
+ALTER TABLE questions
+  ALTER COLUMN image_url DROP DEFAULT;

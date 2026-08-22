@@ -8,11 +8,14 @@ import (
 )
 
 type Config struct {
-	Port             string
-	JWTSecret        string
-	JWTRefreshSecret string
-	PostgresDBUrl    string
-	ResendAPIKey     string
+	Port                string
+	JWTSecret           string
+	JWTRefreshSecret    string
+	PostgresDBUrl       string
+	ResendAPIKey        string
+	CloudinaryCloudName string
+	CloudinaryAPIKey    string
+	CloudinaryAPISecret string
 }
 
 var App Config
@@ -23,11 +26,14 @@ func Load() {
 	}
 
 	App = Config{
-		Port:             getEnv("PORT", "8080"),
-		JWTSecret:        getEnv("JWT_SECRET", ""),
-		JWTRefreshSecret: getEnv("JWT_REFRESH_SECRET", ""),
-		PostgresDBUrl:    getEnv("POSTGRES_DATABASE_URL", ""),
-		ResendAPIKey:     getEnv("RESEND_API_KEY", ""),
+		Port:                getEnv("PORT", "8080"),
+		JWTSecret:           getEnv("JWT_SECRET", ""),
+		JWTRefreshSecret:    getEnv("JWT_REFRESH_SECRET", ""),
+		PostgresDBUrl:       getEnv("POSTGRES_DATABASE_URL", ""),
+		ResendAPIKey:        getEnv("RESEND_API_KEY", ""),
+		CloudinaryCloudName: getEnv("CLOUDINARY_CLOUD_NAME", ""),
+		CloudinaryAPIKey:    getEnv("CLOUDINARY_API_KEY", ""),
+		CloudinaryAPISecret: getEnv("CLOUDINARY_API_SECRET", ""),
 	}
 }
 
