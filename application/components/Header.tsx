@@ -5,8 +5,12 @@ import { ChevronLeft, LogOut, Moon, Sun, Menu, User } from "lucide-react-native"
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export function Header() {
+
+  const ink = useThemeColor("#2B2724", "#F1EFEC")
+
   const [showUserMenu, setShowUserMenu] = useState(false);
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -28,7 +32,7 @@ export function Header() {
         <View className="flex-row items-center" style={{ gap: 8 }}>
           {canGoBack && (
             <Pressable onPress={() => router.back()} hitSlop={8}>
-              <ChevronLeft size={22} color="#2B2724" strokeWidth={1.75} />
+              <ChevronLeft size={22} color={ink} strokeWidth={1.75} />
             </Pressable>
           )}
           <Text className="font-display text-2xl text-ink">K</Text>
@@ -40,7 +44,7 @@ export function Header() {
           style={{ width: 36, height: 36 }}
           hitSlop={8}
         >
-          <Menu size={20} color="white" strokeWidth={1.75} />
+          <Menu size={20} color={ink} strokeWidth={1.75} />
         </Pressable>
       </View>
 
@@ -54,7 +58,7 @@ export function Header() {
               <View className="px-4 py-3 border-b border-rule">
                 <View className="flex-row items-center" style={{ gap: 12 }}>
                   <View className="items-center justify-center rounded-full" style={{ width: 40, height: 40, backgroundColor: "rgba(42,39,36,0.1)" }}>
-                    <User size={20} color="#6E655C" strokeWidth={1.75} />
+                    <User size={20} color={ink} strokeWidth={1.75} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text className="text-[15px] text-ink" numberOfLines={1}>
@@ -83,9 +87,9 @@ export function Header() {
                   style={{ gap: 12 }}
                 >
                   {scheme === "dark" ? (
-                    <Sun size={16} color="#2B2724" strokeWidth={1.75} />
+                    <Sun size={16} color={ink} strokeWidth={1.75} />
                   ) : (
-                    <Moon size={16} color="#2B2724" strokeWidth={1.75} />
+                    <Moon size={16} color={ink} strokeWidth={1.75} />
                   )}
                   <Text className="text-[14px] text-ink">
                     {scheme === "dark" ? "Light mode" : "Dark mode"}

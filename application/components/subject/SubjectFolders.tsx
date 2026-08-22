@@ -9,8 +9,10 @@ import { SubjectFoldersSkeleton } from "./SubjectFoldersSkeleton";
 import { SubjectFoldersError } from "./SubjectFoldersError";
 import { CreateFolderModal } from "./CreateFolderModal";
 import { FolderItem } from "@/types/folder";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export function SubjectFolders({ subjectID }: { subjectID: string }) {
+  const ink = useThemeColor("#F1EFEC", "#2B2724")
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -82,8 +84,8 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
         className="absolute self-center flex-row items-center rounded-full bg-onyx"
         style={{ bottom: 24, gap: 8, paddingHorizontal: 24, paddingVertical: 14 }}
       >
-        <Plus size={20} color="#F7F5F1" strokeWidth={2} />
-        <Text className="text-[16px] text-paper" style={{ fontWeight: "500" }}>Add Folder</Text>
+        <Plus size={20} color={ink} strokeWidth={2} />
+        <Text className="text-[16px] text-paper">Add Folder</Text>
       </Pressable>
 
       {showCreateModal && (

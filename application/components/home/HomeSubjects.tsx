@@ -13,8 +13,13 @@ import { HomeSubjectsError } from "./HomeSubjectsError";
 import { HomeEmptyState } from "./HomeEmptyState";
 import { CreateSubjectModal } from "./CreateSubjectModal";
 import { Subject } from "@/types/subject";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export function HomeSubjects() {
+  const ink = useThemeColor("#2B2724", "#F1EFEC")
+  const ink2 = useThemeColor("#F1EFEC", "#2B2724")
+  const paper = useThemeColor("#F7F5F1", "#211D1A")
+
   const router = useRouter();
   const { user } = useAuth();
   const userName = user?.username ?? "";
@@ -103,13 +108,13 @@ export function HomeSubjects() {
                 className="mt-4 flex-row items-center gap-2 self-start rounded-full bg-paper px-5 py-2.5"
               >
                 <Text className="text-[15px] text-onyx">Continue</Text>
-                <ArrowRight size={16} color="text-ink" strokeWidth={1.75} />
+                <ArrowRight size={16} color={ink} strokeWidth={1.75} />
               </Pressable>
               <View style={{ position: "absolute", right: -24, top: -24, opacity: 0.1 }} pointerEvents="none">
                 <Svg width={160} height={160} viewBox="0 0 160 160">
-                  <Circle cx={80} cy={80} r={60} stroke="#F7F5F1" strokeWidth={1.5} fill="none" />
-                  <Circle cx={80} cy={80} r={44} stroke="#F7F5F1" strokeWidth={1.5} fill="none" />
-                  <Circle cx={80} cy={80} r={28} stroke="#F7F5F1" strokeWidth={1.5} fill="none" />
+                  <Circle cx={80} cy={80} r={60} stroke={paper} strokeWidth={1.5} fill="none" />
+                  <Circle cx={80} cy={80} r={44} stroke={paper} strokeWidth={1.5} fill="none" />
+                  <Circle cx={80} cy={80} r={28} stroke={paper} strokeWidth={1.5} fill="none" />
                 </Svg>
               </View>
             </View>
@@ -170,7 +175,7 @@ export function HomeSubjects() {
         className="absolute bottom-6 right-6 items-center justify-center rounded-full bg-onyx z-10"
         style={{ width: 56, height: 56 }}
       >
-        <Zap size={24} color="#F7F5F1" fill="#F7F5F1" />
+        <Zap size={24} color={ink} fill={ink2} />
       </Pressable>
 
       {showCreateModal && (

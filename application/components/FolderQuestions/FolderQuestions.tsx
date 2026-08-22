@@ -13,6 +13,7 @@ import { useQuestionFilter } from "@/hooks/useQuestionFilter";
 import { useNotification } from "@/hooks/useNotification";
 import { difficultyLabels, highlightText, getQuestionMatchType } from "@/lib/questionUtils";
 import { Question } from "@/types/question";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export function FolderQuestions({
   subjectId,
@@ -23,6 +24,8 @@ export function FolderQuestions({
   folderId: string;
   folderName: string;
 }) {
+  const ink = useThemeColor("#F1EFEC", "#2B2724")
+  const paper = useThemeColor("#F7F5F1", "#211D1A")
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -81,11 +84,11 @@ export function FolderQuestions({
                 onPress={() => setFilter("All")}
                 className="rounded-full border px-3 py-1.5"
                 style={{
-                  backgroundColor: filter === "All" ? "#2A2724" : "transparent",
-                  borderColor: filter === "All" ? "#2A2724" : "#E4DED4",
+                  backgroundColor: filter === "All" ? paper : paper,
+                  borderColor: filter === "All" ? ink : ink,
                 }}
               >
-                <Text className="text-[12px]" style={{ color: filter === "All" ? "#F7F5F1" : "#2B2724" }}>
+                <Text className="text-[12px]" style={{ color: filter === "All" ? ink : ink }}>
                   All
                 </Text>
               </Pressable>
@@ -167,8 +170,8 @@ export function FolderQuestions({
         className="absolute self-center flex-row items-center rounded-full bg-onyx"
         style={{ bottom: 24, gap: 8, paddingHorizontal: 24, paddingVertical: 14 }}
       >
-        <Plus size={20} color="#F7F5F1" strokeWidth={2} />
-        <Text className="text-[16px] text-paper" style={{ fontWeight: "500" }}>Add question</Text>
+        <Plus size={20} color={ink} strokeWidth={2} />
+        <Text className="text-[16px] text-paper">Add question</Text>
       </Pressable>
 
       {showCreateModal && (

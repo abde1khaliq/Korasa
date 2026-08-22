@@ -10,6 +10,7 @@ import { useQuestionNavigation } from "@/hooks/useQuestionNavigation";
 import { useReveal } from "@/hooks/useReveal";
 import { useNotification } from "@/hooks/useNotification";
 import { difficultyLabels } from "@/lib/questionUtils";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export function QuestionDetail({
   subjectId,
@@ -21,6 +22,8 @@ export function QuestionDetail({
   questionId: string;
 }) {
   const router = useRouter();
+  const ink = useThemeColor("#2B2724", "#F1EFEC")
+  const ink2 = useThemeColor("#F1EFEC", "#2B2724")
 
   const { question, siblings, isLoading, error, fetchQuestion } = useQuestionDetail(questionId);
   const { prevQuestion, nextQuestion, goTo } = useQuestionNavigation(subjectId, folderId, question, siblings);
@@ -94,7 +97,7 @@ export function QuestionDetail({
           className="flex-1 flex-row items-center justify-center rounded-full border border-rule bg-paper-card py-2.5"
           style={{ gap: 6, opacity: prevQuestion ? 1 : 0.4 }}
         >
-          <ChevronLeft size={16} color="#2B2724" strokeWidth={2} />
+          <ChevronLeft size={16} color={ink} strokeWidth={2} />
           <Text className="text-[14px] text-ink" style={{ fontWeight: "500" }}>Prev</Text>
         </Pressable>
         <Pressable
@@ -104,7 +107,7 @@ export function QuestionDetail({
           style={{ gap: 6, opacity: nextQuestion ? 1 : 0.4 }}
         >
           <Text className="text-[14px] text-paper" style={{ fontWeight: "500" }}>Next</Text>
-          <ChevronRight size={16} color="#F7F5F1" strokeWidth={2} />
+          <ChevronRight size={16} color={ink2} strokeWidth={2} />
         </Pressable>
       </View>
 

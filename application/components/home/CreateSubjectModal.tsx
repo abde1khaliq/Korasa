@@ -4,6 +4,7 @@ import { X, Plus } from "lucide-react-native";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
 import { Subject } from "@/types/subject";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export function CreateSubjectModal({
   onClose,
@@ -12,6 +13,8 @@ export function CreateSubjectModal({
   onClose: () => void;
   onCreated: (subject: Subject) => void;
 }) {
+  const ink = useThemeColor("#F1EFEC", "#2B2724")
+  const ink2 = useThemeColor("#2B2724", "#F1EFEC")
   const { accessToken } = useAuth();
   const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,7 +48,7 @@ export function CreateSubjectModal({
             <View className="flex-row items-center justify-between">
               <Text className="text-[22px] text-ink">New subject</Text>
               <Pressable onPress={onClose} className="items-center justify-center rounded-full" style={{ width: 36, height: 36 }}>
-                <X size={20} color="#2B2724" strokeWidth={1.75} />
+                <X size={20} color={ink2} strokeWidth={1.75} />
               </Pressable>
             </View>
 
@@ -68,7 +71,7 @@ export function CreateSubjectModal({
                 className="mt-5 flex-row items-center justify-center gap-2.5 rounded-xl bg-onyx py-3.5"
                 style={{ opacity: isSubmitting || !name.trim() ? 0.4 : 1 }}
               >
-                {isSubmitting ? <ActivityIndicator color="#F7F5F1" /> : <Plus size={20} color="#F7F5F1" strokeWidth={1.75} />}
+                {isSubmitting ? <ActivityIndicator color={"#F7F5F1"} /> : <Plus size={20} color={ink} strokeWidth={1.75} />}
                 <Text className="text-[16px] text-paper">
                   {isSubmitting ? "Creating…" : "Create subject"}
                 </Text>
