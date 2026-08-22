@@ -6,6 +6,7 @@ export default function AppLayout() {
     <Stack screenOptions={{ header: () => <Header /> }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="subject/[id]" />
+      <Stack.Screen name="subject/[id]/folder/[folderId]" />
     </Stack>
   );
 }
