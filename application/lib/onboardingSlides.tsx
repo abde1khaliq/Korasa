@@ -1,8 +1,8 @@
-import { BookOpen, Camera, Filter, Sparkles, LucideIcon } from "lucide-react-native";
+import { ImageSourcePropType } from "react-native";
 
 export interface OnboardingSlide {
   key: string;
-  Icon: LucideIcon;
+  image: ImageSourcePropType;
   title: string;
   description: string;
 }
@@ -10,30 +10,30 @@ export interface OnboardingSlide {
 export const onboardingSlides: OnboardingSlide[] = [
   {
     key: "welcome",
-    Icon: Sparkles,
-    title: "A quiet place to remember",
+    image: require("@/assets/images/mockup1.png"),
+    title: "Create Subjects.",
     description:
-      "Korasa keeps the questions worth remembering, organized and ready whenever you sit down to study.",
+      "Korasa stores school subjects to revise on later using it's features.",
   },
   {
     key: "organize",
-    Icon: BookOpen,
+    image: require("@/assets/images/mockup2.png"),
     title: "Subjects, then folders",
     description:
-      "Group your material into subjects, then split each one into folders — chapters, topics, whatever makes sense to you.",
+      "Categorize your subject using folders.",
   },
   {
     key: "capture",
-    Icon: Camera,
-    title: "Snap a question, add the answer",
+    image: require("@/assets/images/mockup3.png"),
+    title: "Save a question",
     description:
-      "Photograph a question from your notes or textbook, write the answer, and reveal it later to test yourself.",
+      "Photograph a question from your notes or textbook, write the answer.",
   },
   {
     key: "filter",
-    Icon: Filter,
-    title: "Study by difficulty",
+    image: require("@/assets/images/icon.png"),
+    title: "You're all set!",
     description:
-      "Filter and search within a folder to focus on the questions that actually need the work.",
+      "Start Exploring Korasa's features now!",
   },
 ];
