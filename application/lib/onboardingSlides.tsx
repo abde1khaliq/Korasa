@@ -10,21 +10,21 @@ export interface OnboardingSlide {
 export const onboardingSlides: OnboardingSlide[] = [
   {
     key: "welcome",
-    image: require("@/assets/images/mockup1.png"),
+    image: require("@/assets/images/mockup1.jpeg"),
     title: "Create Subjects.",
     description:
       "Korasa stores school subjects to revise on later using it's features.",
   },
   {
     key: "organize",
-    image: require("@/assets/images/mockup2.png"),
+    image: require("@/assets/images/mockup2.jpeg"),
     title: "Subjects, then folders",
     description:
       "Categorize your subject using folders.",
   },
   {
     key: "capture",
-    image: require("@/assets/images/mockup3.png"),
+    image: require("@/assets/images/mockup3.jpeg"),
     title: "Save a question",
     description:
       "Photograph a question from your notes or textbook, write the answer.",
