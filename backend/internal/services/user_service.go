@@ -215,9 +215,10 @@ func LoginUser(db *gorm.DB) gin.HandlerFunc {
 			"accessToken":  accessToken,
 			"refreshToken": refreshToken,
 			"user": gin.H{
-				"id":       user.ID,
-				"email":    user.Email,
-				"username": user.Username,
+				"id":                       user.ID,
+				"email":                    user.Email,
+				"username":                 user.Username,
+				"has_completed_onboarding": user.HasCompletedOnboarding,
 			},
 		})
 	}
@@ -294,5 +295,20 @@ func ResendVerificationCode() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, generic)
+	}
+}
+
+func CompleteOnboarding(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.GetInt("userID")
+
+		if err := db.Model(&models.User{}).
+			Where("id = ?", userID).
+			Update("has_completed_onboarding", true).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update onboarding status"})
+			return
+		}
+
+		c.Status(http.StatusNoContent)
 	}
 }

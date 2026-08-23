@@ -12,23 +12,33 @@ import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
     if (isLoading) return;
+
     const inAuthGroup = segments[0] === "(auth)";
+    const inOnboarding = segments[0] === "onboarding";
+
     if (!isAuthenticated && !inAuthGroup) {
       router.replace("/(auth)/login");
-    } else if (isAuthenticated && inAuthGroup) {
+      return;
+    }
+    if (isAuthenticated && !user?.has_completed_onboarding && !inOnboarding) {
+      router.replace("/onboarding");
+      return;
+    }
+    if (isAuthenticated && user?.has_completed_onboarding && (inAuthGroup || inOnboarding)) {
       router.replace("/(app)");
     }
-  }, [isAuthenticated, isLoading, segments]);
+  }, [isAuthenticated, isLoading, segments, user?.has_completed_onboarding]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(auth)" />
+      <Stack.Screen name="onboarding" />
       <Stack.Screen name="(app)" />
     </Stack>
   );

@@ -1,9 +1,25 @@
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import * as SecureStore from "expo-secure-store";
 import { apiFetch, registerAuthHandlers } from "@/lib/api";
 
-type User = { id: string; username: string; email: string };
-type PendingVerification = { username: string; email: string; password: string };
+type User = {
+  id: string;
+  username: string;
+  email: string;
+  has_completed_onboarding: boolean;
+};
+type PendingVerification = {
+  username: string;
+  email: string;
+  password: string;
+};
 
 type AuthState = {
   user: User | null;
@@ -12,11 +28,16 @@ type AuthState = {
   isAuthenticated: boolean;
   pendingVerification: PendingVerification | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (
+    username: string,
+    email: string,
+    password: string,
+  ) => Promise<void>;
   verifyEmail: (code: string) => Promise<void>;
   resendVerification: () => Promise<void>;
   clearPendingVerification: () => void;
   logout: () => Promise<void>;
+  completeOnboarding: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -29,7 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [pendingVerification, setPendingVerification] = useState<PendingVerification | null>(null);
+  const [pendingVerification, setPendingVerification] =
+    useState<PendingVerification | null>(null);
 
   // Not React state on purpose — always read/written straight to SecureStore
   // so there's no stale-closure risk between cold start, refresh, and logout.
@@ -71,6 +93,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setAccessToken(null);
   }, []);
+
+  const completeOnboarding = useCallback(async () => {
+    if (!user || !accessToken) return;
+
+    // Optimistic — the tutorial is already dismissed on screen, don't make
+    // the person wait on a network round trip to get into the app. Worst
+    // case on failure: they see the tutorial once more next login.
+    const updated = { ...user, has_completed_onboarding: true };
+    setUser(updated);
+    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(updated));
+
+    try {
+      await apiFetch("/auth/onboarding-complete", {
+        method: "PATCH",
+        token: accessToken,
+      });
+    } catch {
+      // non-fatal
+    }
+  }, [user, accessToken]);
 
   // Deduped: if three requests all get 401 within the same tick, they share
   // one in-flight /auth/refresh call instead of firing three.
@@ -129,13 +171,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await persistSession(data.user, data.accessToken, data.refreshToken);
   }, []);
 
-  const register = useCallback(async (username: string, email: string, password: string) => {
-    await apiFetch("/auth/register", {
-      method: "POST",
-      body: JSON.stringify({ username, email, password }),
-    });
-    setPendingVerification({ username, email, password });
-  }, []);
+  const register = useCallback(
+    async (username: string, email: string, password: string) => {
+      await apiFetch("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ username, email, password }),
+      });
+      setPendingVerification({ username, email, password });
+    },
+    [],
+  );
 
   const verifyEmail = useCallback(
     async (code: string) => {
@@ -180,6 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         resendVerification,
         clearPendingVerification,
         logout,
+        completeOnboarding
       }}
     >
       {children}
