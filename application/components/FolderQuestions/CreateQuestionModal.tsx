@@ -9,7 +9,6 @@ import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
 import { Difficulty, difficultyStyles, difficultyHex } from "@/components/misc/Screen";
 import { Question } from "@/types/question";
-import { ImageCropModal, CroppedImage } from "./ImageCropModal";
 
 const levels: Difficulty[] = ["Easy", "Medium", "Hard"];
 const difficultyToApi: Record<Difficulty, "easy" | "medium" | "hard"> = {
@@ -21,8 +20,7 @@ export function CreateQuestionModal({
   folderId, onClose, onCreated,
 }: { folderId: string; onClose: () => void; onCreated: (q: Question) => void }) {
   const { accessToken } = useAuth();
-  const [image, setImage] = useState<CroppedImage | null>(null);
-  const [pendingImage, setPendingImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [answer, setAnswer] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const [note, setNote] = useState("");
@@ -41,13 +39,12 @@ export function CreateQuestionModal({
       setError("Permission is required to add a photo.");
       return;
     }
-    // No allowsEditing here — the crop step is our own, next.
     const result =
       source === "camera"
-        ? await ImagePicker.launchCameraAsync({ quality: 1 })
-        : await ImagePicker.launchImageLibraryAsync({ quality: 1 });
+        ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 })
+        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.8 });
     if (!result.canceled && result.assets[0]) {
-      setPendingImage(result.assets[0]);
+      setImage(result.assets[0]);
       setError(null);
     }
   };
@@ -60,8 +57,8 @@ export function CreateQuestionModal({
       const formData = new FormData();
       formData.append("image", {
         uri: image.uri,
-        name: "question.jpg",
-        type: "image/jpeg",
+        name: image.fileName ?? "question.jpg",
+        type: image.mimeType ?? "image/jpeg",
       } as any);
       formData.append("answer", trimmedAnswer);
       formData.append("difficulty", difficultyToApi[difficulty]);
@@ -167,19 +164,6 @@ export function CreateQuestionModal({
           </Pressable>
         </KeyboardAvoidingView>
       </Pressable>
-
-      {pendingImage && (
-        <ImageCropModal
-          imageUri={pendingImage.uri}
-          imageWidth={pendingImage.width}
-          imageHeight={pendingImage.height}
-          onCancel={() => setPendingImage(null)}
-          onCropped={(cropped) => {
-            setImage(cropped);
-            setPendingImage(null);
-          }}
-        />
-      )}
     </Modal>
   );
 }
