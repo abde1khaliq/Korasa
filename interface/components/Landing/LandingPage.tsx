@@ -1,9 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Apple,
-  Smartphone,
-} from "lucide-react";
+import { ArrowRight, Apple, Smartphone } from "lucide-react";
 
 interface ChangelogEntry {
   date: string;
@@ -30,13 +26,17 @@ const tagStyles: Record<ChangelogEntry["tag"], string> = {
 
 export function LandingPage({ isAuthenticated }: { isAuthenticated: boolean }) {
   const primaryHref = isAuthenticated ? "/app" : "/login";
-  const primaryLabel = isAuthenticated ? "Go to your subjects" : "Open in browser";
+  const primaryLabel = isAuthenticated
+    ? "Go to your subjects"
+    : "Open in browser";
 
   return (
     <div className="flex flex-1 flex-col bg-paper">
       {/* Nav */}
       <nav className="flex items-center justify-between px-6 py-5 sm:px-10">
-        <span className="font-display text-2xl leading-none text-ink">Korasa</span>
+        <span className="font-display text-2xl leading-none text-ink">
+          Korasa
+        </span>
         <div className="flex items-center gap-6">
           <Link
             href={primaryHref}
@@ -67,6 +67,12 @@ export function LandingPage({ isAuthenticated }: { isAuthenticated: boolean }) {
               {primaryLabel}
               <ArrowRight className="size-4" strokeWidth={1.75} />
             </Link>
+            <a
+              href="#download"
+              className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-rule bg-paper-card px-8 py-4 text-[16px] text-ink hover:bg-tag/50 transition-colors sm:w-auto"
+            >
+              Get the app
+            </a>
           </div>
         </div>
       </section>
@@ -154,19 +160,18 @@ export function LandingPage({ isAuthenticated }: { isAuthenticated: boolean }) {
             Get the mobile application
           </h2>
           <p className="mt-3 text-[15px] text-paper/70">
-            The native app is in progress. Continue in your browser for now,
-            we'll add real store links here once it ships.
+            Download the Korasa mobile app and take your studies anywhere.
+            Available now for Android devices.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-<a 
-  href="https://mega.nz/file/w2QSTKpL#6uvafOjPHLumIb4dLbbOQQk9U-WpIuKBHjo_JLHUzEU" 
-  className="inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-paper px-6 py-3.5 text-[15px] text-onyx hover:bg-paper/90 transition-colors sm:w-auto"
->
-  <Smartphone className="size-4" strokeWidth={1.75} />
-  Korasa App (90MBs)
-</a>
-
+            <a
+              href="https://mega.nz/file/w2QSTKpL#6uvafOjPHLumIb4dLbbOQQk9U-WpIuKBHjo_JLHUzEU"
+              className="inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-paper px-6 py-3.5 text-[15px] text-onyx hover:bg-paper/90 transition-colors sm:w-auto"
+            >
+              <Smartphone className="size-4" strokeWidth={1.75} />
+              Korasa App (90MBs)
+            </a>
           </div>
         </div>
       </section>
