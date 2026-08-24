@@ -1,6 +1,20 @@
 import { useState } from "react";
-import { View, Text, Pressable, ScrollView, Image, Alert } from "react-native";
-import { ChevronLeft, ChevronRight, Eye, Pencil, Trash2 } from "lucide-react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  Image,
+  Alert,
+  RefreshControl,
+} from "react-native";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Pencil,
+  Trash2,
+} from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { DifficultyPill } from "@/components/misc/Screen";
 import { QuestionDetailSkeleton } from "./QuestionDetailSkeleton";
@@ -30,8 +44,16 @@ export function QuestionDetail({
   const ink = useThemeColor("#2B2724", "#F1EFEC");
   const ink2 = useThemeColor("#F1EFEC", "#2B2724");
 
-  const { question, siblings, isLoading, error, fetchQuestion, updateQuestion } =
-    useQuestionDetail(questionId);
+  const {
+    question,
+    siblings,
+    isLoading,
+    isRefreshing,
+    error,
+    fetchQuestion,
+    onRefresh,
+    updateQuestion,
+  } = useQuestionDetail(questionId);
   const { prevQuestion, nextQuestion, goTo } = useQuestionNavigation(
     subjectId,
     folderId,
@@ -74,7 +96,9 @@ export function QuestionDetail({
           } catch (err) {
             setIsDeleting(false);
             showNotification(
-              err instanceof ApiError ? err.message : "Failed to delete question",
+              err instanceof ApiError
+                ? err.message
+                : "Failed to delete question",
             );
           }
         },
@@ -87,11 +111,22 @@ export function QuestionDetail({
       <ScrollView
         className="px-5 pt-4"
         contentContainerStyle={{ paddingBottom: 112 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={ink}
+          />
+        }
       >
         <View className="mt-4 flex-row items-center justify-between">
           <DifficultyPill level={label} />
           <View className="flex-row items-center" style={{ gap: 20 }}>
-            <Pressable onPress={() => setShowEditModal(true)} hitSlop={8} disabled={isDeleting}>
+            <Pressable
+              onPress={() => setShowEditModal(true)}
+              hitSlop={8}
+              disabled={isDeleting}
+            >
               <Pencil size={18} color={ink} strokeWidth={1.75} />
             </Pressable>
             <Pressable onPress={handleDelete} hitSlop={8} disabled={isDeleting}>
@@ -120,7 +155,9 @@ export function QuestionDetail({
 
         {question.text ? (
           <View className="mt-3 rounded-2xl border border-rule bg-paper-card p-5">
-            <Text className="text-[15px] leading-[24px] text-ink">{question.text}</Text>
+            <Text className="text-[15px] leading-[24px] text-ink">
+              {question.text}
+            </Text>
           </View>
         ) : null}
 

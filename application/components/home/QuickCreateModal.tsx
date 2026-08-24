@@ -9,8 +9,10 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
-import { X, Plus, ChevronDown, Check } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
+import { X, Plus, ChevronDown, Check, Camera, ImagePlus } from "lucide-react-native";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
 import { Difficulty, difficultyStyles, difficultyHex } from "@/components/misc/Screen";
@@ -30,11 +32,6 @@ const difficultyToApi: Record<Difficulty, "easy" | "medium" | "hard"> = {
   Hard: "hard",
 };
 
-// Inline expand/collapse in place of a native <select> — no picker
-// dependency is installed in this project, and this project's other
-// modals already use pressable-list selection (see difficulty buttons
-// in CreateQuestionModal), so this stays consistent with that pattern
-// rather than introducing a new UI primitive.
 function SelectField<T extends string | number>({
   label,
   value,
@@ -132,7 +129,7 @@ export function QuickCreateModal({
   const [loadingFolders, setLoadingFolders] = useState(false);
   const [folderId, setFolderId] = useState<number | "new" | "">("");
   const [newFolderName, setNewFolderName] = useState("");
-  const [text, setText] = useState("");
+  const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [answer, setAnswer] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const [note, setNote] = useState("");
@@ -162,12 +159,31 @@ export function QuickCreateModal({
   }, [tab, subjectId, accessToken]);
 
   const resetQuestionFields = () => {
-    setText("");
+    setImage(null);
     setAnswer("");
     setDifficulty("Medium");
     setNote("");
     setFolderId("");
     setNewFolderName("");
+  };
+
+  const pickImage = async (source: "camera" | "library") => {
+    const permission =
+      source === "camera"
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError("Permission is required to add a photo.");
+      return;
+    }
+    const result =
+      source === "camera"
+        ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 })
+        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.8 });
+    if (!result.canceled && result.assets[0]) {
+      setImage(result.assets[0]);
+      setError(null);
+    }
   };
 
   const handleCreateFolder = async () => {
@@ -191,19 +207,17 @@ export function QuickCreateModal({
     }
   };
 
-  const trimmedText = text.trim();
   const trimmedAnswer = answer.trim();
   const questionValid =
     !!subjectId &&
     (folderId === "new" ? newFolderName.trim().length > 0 : !!folderId) &&
-    trimmedText.length > 0 &&
-    trimmedText.length <= MAX_LEN &&
+    !!image &&
     trimmedAnswer.length > 0 &&
     trimmedAnswer.length <= MAX_LEN &&
     note.length <= MAX_LEN;
 
   const handleCreateQuestion = async () => {
-    if (!questionValid || isSubmitting || !accessToken) return;
+    if (!questionValid || isSubmitting || !accessToken || !image) return;
 
     setIsSubmitting(true);
     setError(null);
@@ -219,14 +233,19 @@ export function QuickCreateModal({
         targetFolderId = createdFolder.id;
       }
 
+      const formData = new FormData();
+      formData.append("image", {
+        uri: image.uri,
+        name: image.fileName ?? "question.jpg",
+        type: image.mimeType ?? "image/jpeg",
+      } as any);
+      formData.append("answer", trimmedAnswer);
+      formData.append("difficulty", difficultyToApi[difficulty]);
+      formData.append("note", note.trim());
+
       await apiFetch(`/api/folders/${targetFolderId}/questions`, {
         method: "POST",
-        body: JSON.stringify({
-          text: trimmedText,
-          answer: trimmedAnswer,
-          difficulty: difficultyToApi[difficulty],
-          note: note.trim(),
-        }),
+        body: formData,
         token: accessToken,
       });
 
@@ -367,17 +386,38 @@ export function QuickCreateModal({
                   )}
 
                   <View>
-                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">Question</Text>
-                    <View className="mt-2 rounded-xl border border-rule bg-paper-card p-4">
-                      <TextInput
-                        value={text}
-                        onChangeText={setText}
-                        placeholder="Type the question…"
-                        maxLength={MAX_LEN}
-                        multiline
-                        className="text-[15px] text-ink"
-                      />
-                    </View>
+                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">Question photo</Text>
+                    {image ? (
+                      <View className="mt-2">
+                        <Image
+                          source={{ uri: image.uri }}
+                          style={{ width: "100%", height: 200, borderRadius: 16 }}
+                          resizeMode="cover"
+                        />
+                        <Pressable onPress={() => setImage(null)} className="mt-2 self-start">
+                          <Text className="text-[13px] text-hard">Remove photo</Text>
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <View className="mt-2 flex-row" style={{ gap: 8 }}>
+                        <Pressable
+                          onPress={() => pickImage("camera")}
+                          className="flex-1 flex-row items-center justify-center rounded-2xl border border-dashed border-rule py-6"
+                          style={{ gap: 8 }}
+                        >
+                          <Camera size={18} color="#2B2724" strokeWidth={1.75} />
+                          <Text className="text-[14px] text-ink">Camera</Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => pickImage("library")}
+                          className="flex-1 flex-row items-center justify-center rounded-2xl border border-dashed border-rule py-6"
+                          style={{ gap: 8 }}
+                        >
+                          <ImagePlus size={18} color="#2B2724" strokeWidth={1.75} />
+                          <Text className="text-[14px] text-ink">Gallery</Text>
+                        </Pressable>
+                      </View>
+                    )}
                   </View>
 
                   <View>

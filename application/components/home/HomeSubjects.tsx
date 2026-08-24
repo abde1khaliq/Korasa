@@ -6,6 +6,7 @@ import Svg, { Circle } from "react-native-svg";
 import { useAuth } from "@/context/AuthContext";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useNotification } from "@/hooks/useNotification";
+import { RefreshControl } from "react-native";
 import {
   getSubjectMeta,
   getGreeting,
@@ -35,9 +36,11 @@ export function HomeSubjects() {
   const {
     subjects,
     isLoading,
+    isRefreshing,
     error,
     recentSubject,
     fetchSubjects,
+    onRefresh,
     deleteSubject,
     addSubject,
     updateSubjectCounts,
@@ -114,6 +117,13 @@ export function HomeSubjects() {
         className="flex-1"
         contentContainerStyle={{ paddingTop: 12, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={ink}
+          />
+        }
       >
         <View className="px-6">
           <Text className="font-mono text-[13px] tracking-widest text-ink-faint uppercase">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { Subject } from "@/types/subject";
@@ -7,32 +7,36 @@ export function useSubjects() {
   const { accessToken } = useAuth();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recentSubject, setRecentSubject] = useState<Subject | null>(null);
 
-  const fetchSubjects = async () => {
+  const load = async () => {
     if (!accessToken) return;
-    setIsLoading(true);
     setError(null);
     try {
-      const data: Subject[] = await apiFetch("/api/subjects/", { token: accessToken });
-      setSubjects(data);
+      const [subjectsData, recentData] = await Promise.all([
+        apiFetch("/api/subjects/", { token: accessToken }),
+        apiFetch("/api/subjects/recent", { token: accessToken }).catch(() => null),
+      ]);
+      setSubjects(subjectsData);
+      setRecentSubject(recentData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const fetchRecentSubject = async () => {
-    if (!accessToken) return;
-    try {
-      const data: Subject = await apiFetch("/api/subjects/recent", { token: accessToken });
-      setRecentSubject(data);
-    } catch {
-      setRecentSubject(null);
-    }
+  const fetchSubjects = async () => {
+    setIsLoading(true);
+    await load();
+    setIsLoading(false);
   };
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await load();
+    setIsRefreshing(false);
+  }, [accessToken]);
 
   const deleteSubject = async (subjectId: number) => {
     try {
@@ -62,18 +66,17 @@ export function useSubjects() {
   };
 
   useEffect(() => {
-    if (accessToken) {
-      fetchSubjects();
-      fetchRecentSubject();
-    }
+    if (accessToken) fetchSubjects();
   }, [accessToken]);
 
   return {
     subjects,
     isLoading,
+    isRefreshing,
     error,
     recentSubject,
     fetchSubjects,
+    onRefresh,
     deleteSubject,
     addSubject,
     updateSubjectCounts,

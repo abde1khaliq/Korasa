@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { Subject } from "@/types/subject";
@@ -9,11 +9,11 @@ export function useSubjectFolders(subjectID: string | undefined) {
   const [subject, setSubject] = useState<Subject | null>(null);
   const [folders, setFolders] = useState<FolderItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const load = async () => {
     if (!accessToken || !subjectID) return;
-    setIsLoading(true);
     setError(null);
     try {
       const [subjectData, foldersData] = await Promise.all([
@@ -24,10 +24,20 @@ export function useSubjectFolders(subjectID: string | undefined) {
       setFolders(foldersData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    await load();
+    setIsLoading(false);
+  };
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await load();
+    setIsRefreshing(false);
+  }, [accessToken, subjectID]);
 
   const addFolder = (newFolder: FolderItem) => setFolders((prev) => [...prev, newFolder]);
 
@@ -52,5 +62,16 @@ export function useSubjectFolders(subjectID: string | undefined) {
     if (accessToken && subjectID) fetchData();
   }, [accessToken, subjectID]);
 
-  return { subject, folders, isLoading, error, fetchData, addFolder, updateFolderState, deleteFolder };
+  return {
+    subject,
+    folders,
+    isLoading,
+    isRefreshing,
+    error,
+    fetchData,
+    onRefresh,
+    addFolder,
+    updateFolderState,
+    deleteFolder,
+  };
 }

@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { View, Text, Pressable, FlatList, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  FlatList,
+  Alert,
+  RefreshControl,
+} from "react-native";
 import { ChevronRight, Folder, Plus } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useSubjectFolders } from "@/hooks/useSubjectFolders";
@@ -13,13 +20,23 @@ import { FolderItem } from "@/types/folder";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 export function SubjectFolders({ subjectID }: { subjectID: string }) {
-  const ink = useThemeColor("#F1EFEC", "#2B2724")
+  const ink = useThemeColor("#F1EFEC", "#2B2724");
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingFolder, setEditingFolder] = useState<FolderItem | null>(null);
 
-  const { subject, folders, isLoading, error, fetchData, addFolder, updateFolderState, deleteFolder } =
-    useSubjectFolders(subjectID);
+  const {
+    subject,
+    folders,
+    isLoading,
+    isRefreshing,
+    error,
+    fetchData,
+    onRefresh,
+    addFolder,
+    updateFolderState,
+    deleteFolder,
+  } = useSubjectFolders(subjectID);
   const { notification, showNotification } = useNotification();
 
   const handleFolderCreated = (newFolder: FolderItem) => {
@@ -36,7 +53,9 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
         onPress: async () => {
           const result = await deleteFolder(item.id);
           showNotification(
-            result.success ? `"${item.name}" deleted` : result.error || "Failed to delete folder",
+            result.success
+              ? `"${item.name}" deleted`
+              : result.error || "Failed to delete folder",
           );
         },
       },
@@ -54,42 +73,80 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
           {subject?.name}
         </Text>
         <Text className="font-mono mt-3 text-[15px] text-ink-soft">
-          {subject?.folder_count ?? 0} folders <Text className="text-ink-faint">·</Text> {subject?.question_count ?? 0} questions
+          {subject?.folder_count ?? 0} folders{" "}
+          <Text className="text-ink-faint">·</Text>{" "}
+          {subject?.question_count ?? 0} questions
         </Text>
       </View>
 
       <View className="mt-8 px-6">
-        <Text className="text-[13px] tracking-widest text-ink-faint uppercase">Folders</Text>
+        <Text className="text-[13px] tracking-widest text-ink-faint uppercase">
+          Folders
+        </Text>
       </View>
 
       <FlatList
         data={folders}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 112 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 12,
+          paddingBottom: 112,
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={ink}
+          />
+        }
         renderItem={({ item }) => (
           <Pressable
             onPress={() =>
               router.push({
                 pathname: "/subject/[id]/folder/[folderId]",
-                params: { id: subjectID, folderId: String(item.id), name: item.name },
+                params: {
+                  id: subjectID,
+                  folderId: String(item.id),
+                  name: item.name,
+                },
               })
             }
             onLongPress={() => handleLongPress(item)}
             className="flex-row items-center rounded-xl px-2 py-4"
             style={{ gap: 16 }}
           >
-            <View className="items-center justify-center rounded-2xl bg-tag" style={{ width: 56, height: 56 }}>
+            <View
+              className="items-center justify-center rounded-2xl bg-tag"
+              style={{ width: 56, height: 56 }}
+            >
               <Folder size={24} color="#A8703F" strokeWidth={1.5} />
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text className="text-[18px] text-ink" numberOfLines={1} style={{ fontWeight: "500" }}>
+              <Text
+                className="text-[18px] text-ink"
+                numberOfLines={1}
+                style={{ fontWeight: "500" }}
+              >
                 {item.name}
               </Text>
               <View className="mt-1 flex-row items-center" style={{ gap: 10 }}>
-                <Text className="text-[13px] text-ink-soft">{item.question_count || 0} questions</Text>
-                <View style={{ width: 3, height: 3, borderRadius: 999, backgroundColor: "#9C9086" }} />
-                <Text className="text-[13px] text-ink-soft" style={{ textTransform: "capitalize" }}>
+                <Text className="text-[13px] text-ink-soft">
+                  {item.question_count || 0} questions
+                </Text>
+                <View
+                  style={{
+                    width: 3,
+                    height: 3,
+                    borderRadius: 999,
+                    backgroundColor: "#9C9086",
+                  }}
+                />
+                <Text
+                  className="text-[13px] text-ink-soft"
+                  style={{ textTransform: "capitalize" }}
+                >
                   {item.difficulty || "Mixed"}
                 </Text>
               </View>
@@ -103,7 +160,12 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
       <Pressable
         onPress={() => setShowCreateModal(true)}
         className="absolute self-center flex-row items-center rounded-full bg-onyx"
-        style={{ bottom: 24, gap: 8, paddingHorizontal: 24, paddingVertical: 14 }}
+        style={{
+          bottom: 24,
+          gap: 8,
+          paddingHorizontal: 24,
+          paddingVertical: 14,
+        }}
       >
         <Plus size={20} color={ink} strokeWidth={2} />
         <Text className="text-[16px] text-paper">Add Folder</Text>

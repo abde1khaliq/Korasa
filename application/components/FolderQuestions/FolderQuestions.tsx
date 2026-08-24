@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, FlatList, Image } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  FlatList,
+  Image,
+  RefreshControl,
+} from "react-native";
 import { Search, Plus, X } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { difficultyStyles } from "@/components/misc/Screen";
@@ -11,10 +19,7 @@ import { CreateQuestionModal } from "./CreateQuestionModal";
 import { useFolderQuestions } from "@/hooks/useFolderQuestions";
 import { useQuestionFilter } from "@/hooks/useQuestionFilter";
 import { useNotification } from "@/hooks/useNotification";
-import {
-  difficultyLabels,
-  getQuestionMatchType,
-} from "@/lib/questionUtils";
+import { difficultyLabels, getQuestionMatchType } from "@/lib/questionUtils";
 import { Question } from "@/types/question";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
@@ -31,9 +36,15 @@ export function FolderQuestions({
   const paper = useThemeColor("#F7F5F1", "#211D1A");
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
-
-  const { questions, isLoading, error, fetchQuestions, addQuestion } =
-    useFolderQuestions(folderId);
+  const {
+    questions,
+    isLoading,
+    isRefreshing,
+    error,
+    fetchQuestions,
+    onRefresh,
+    addQuestion,
+  } = useFolderQuestions(folderId);
   const {
     filter,
     setFilter,
@@ -60,6 +71,13 @@ export function FolderQuestions({
         data={visibleQuestions}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 112 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={ink}
+          />
+        }
         ListHeaderComponent={
           <View>
             <View className="pt-5">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { Question } from "@/types/question";
@@ -8,29 +8,37 @@ export function useQuestionDetail(questionId: string | undefined) {
   const [question, setQuestion] = useState<Question | null>(null);
   const [siblings, setSiblings] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchQuestion = async () => {
+  const load = async () => {
     if (!accessToken || !questionId) return;
-    setIsLoading(true);
     setError(null);
     try {
       const q: Question = await apiFetch(`/api/questions/${questionId}`, { token: accessToken });
       setQuestion(q);
-
       try {
         const list: Question[] = await apiFetch(`/api/folders/${q.folder_id}/questions`, { token: accessToken });
         setSiblings(list);
       } catch {
-        // Non-fatal: prev/next nav just won't work if this fails.
         setSiblings([]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const fetchQuestion = async () => {
+    setIsLoading(true);
+    await load();
+    setIsLoading(false);
+  };
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await load();
+    setIsRefreshing(false);
+  }, [accessToken, questionId]);
 
   const updateQuestion = (updated: Question) => {
     setQuestion(updated);
@@ -41,5 +49,5 @@ export function useQuestionDetail(questionId: string | undefined) {
     if (accessToken && questionId) fetchQuestion();
   }, [accessToken, questionId]);
 
-  return { question, siblings, isLoading, error, fetchQuestion, updateQuestion };
+  return { question, siblings, isLoading, isRefreshing, error, fetchQuestion, onRefresh, updateQuestion };
 }
