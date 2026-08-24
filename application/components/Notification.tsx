@@ -10,13 +10,29 @@ export function Notification({ message }: { message: string | null }) {
     if (message) {
       setDisplayMessage(message);
       Animated.parallel([
-        Animated.timing(translateY, { toValue: 0, duration: 250, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(translateY, { toValue: 20, duration: 250, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0, duration: 250, useNativeDriver: true }),
+        Animated.timing(translateY, {
+          toValue: 20,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
       ]).start(() => setDisplayMessage(null));
     }
   }, [message]);

@@ -17,7 +17,9 @@ export function useSubjects() {
     try {
       const [subjectsData, recentData] = await Promise.all([
         apiFetch("/api/subjects/", { token: accessToken }),
-        apiFetch("/api/subjects/recent", { token: accessToken }).catch(() => null),
+        apiFetch("/api/subjects/recent", { token: accessToken }).catch(
+          () => null,
+        ),
       ]);
       setSubjects(subjectsData);
       setRecentSubject(recentData);
@@ -40,25 +42,36 @@ export function useSubjects() {
 
   const deleteSubject = async (subjectId: number) => {
     try {
-      await apiFetch(`/api/subjects/${subjectId}`, { method: "DELETE", token: accessToken! });
+      await apiFetch(`/api/subjects/${subjectId}`, {
+        method: "DELETE",
+        token: accessToken!,
+      });
       setSubjects((prev) => prev.filter((s) => s.id !== subjectId));
       if (recentSubject?.id === subjectId) setRecentSubject(null);
       return { success: true };
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : "Something went wrong" };
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Something went wrong",
+      };
     }
   };
 
-  const addSubject = (newSubject: Subject) => setSubjects((prev) => [...prev, newSubject]);
+  const addSubject = (newSubject: Subject) =>
+    setSubjects((prev) => [...prev, newSubject]);
 
-  const updateSubjectCounts = (subjectId: number, type: "folder" | "question") => {
+  const updateSubjectCounts = (
+    subjectId: number,
+    type: "folder" | "question",
+  ) => {
     setSubjects((prev) =>
       prev.map((s) =>
         s.id === subjectId
           ? {
               ...s,
               [type === "folder" ? "folder_count" : "question_count"]:
-                (s[type === "folder" ? "folder_count" : "question_count"] || 0) + 1,
+                (s[type === "folder" ? "folder_count" : "question_count"] ||
+                  0) + 1,
             }
           : s,
       ),

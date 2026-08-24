@@ -19,8 +19,7 @@ export const onboardingSlides: OnboardingSlide[] = [
     key: "organize",
     image: require("@/assets/images/mockup2.jpeg"),
     title: "Subjects, then folders",
-    description:
-      "Categorize your subject using folders.",
+    description: "Categorize your subject using folders.",
   },
   {
     key: "capture",
@@ -33,7 +32,6 @@ export const onboardingSlides: OnboardingSlide[] = [
     key: "filter",
     image: require("@/assets/images/icon.png"),
     title: "You're all set!",
-    description:
-      "Start Exploring Korasa's features now!",
+    description: "Start Exploring Korasa's features now!",
   },
 ];

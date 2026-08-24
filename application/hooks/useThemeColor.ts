@@ -7,7 +7,7 @@ import { useTheme } from "@/context/ThemeContext";
  */
 export function useThemeColor(lightHex: string, darkHex: string) {
   const { scheme } = useTheme();
-  
+
   // Default to lightHex if scheme is somehow undefined
   return scheme === "dark" ? darkHex : lightHex;
 }

@@ -1,30 +1,53 @@
 import { useState } from "react";
 import {
-  View, Text, TextInput, Pressable, Modal, ActivityIndicator,
-  ScrollView, KeyboardAvoidingView, Platform,
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Modal,
+  ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { X, Check } from "lucide-react-native";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
-import { Difficulty, difficultyStyles, difficultyHex } from "@/components/misc/Screen";
+import {
+  Difficulty,
+  difficultyStyles,
+  difficultyHex,
+} from "@/components/misc/Screen";
 import { Question } from "@/types/question";
 
 const levels: Difficulty[] = ["Easy", "Medium", "Hard"];
 const difficultyToApi: Record<Difficulty, "easy" | "medium" | "hard"> = {
-  Easy: "easy", Medium: "medium", Hard: "hard",
+  Easy: "easy",
+  Medium: "medium",
+  Hard: "hard",
 };
 const difficultyFromApi: Record<Question["difficulty"], Difficulty> = {
-  easy: "Easy", medium: "Medium", hard: "Hard",
+  easy: "Easy",
+  medium: "Medium",
+  hard: "Hard",
 };
 const MAX_LEN = 2000;
 
 export function EditQuestionModal({
-  question, onClose, onUpdated,
-}: { question: Question; onClose: () => void; onUpdated: (q: Question) => void }) {
+  question,
+  onClose,
+  onUpdated,
+}: {
+  question: Question;
+  onClose: () => void;
+  onUpdated: (q: Question) => void;
+}) {
   const { accessToken } = useAuth();
   const [text, setText] = useState(question.text ?? "");
   const [answer, setAnswer] = useState(question.answer);
-  const [difficulty, setDifficulty] = useState<Difficulty>(difficultyFromApi[question.difficulty]);
+  const [difficulty, setDifficulty] = useState<Difficulty>(
+    difficultyFromApi[question.difficulty],
+  );
   const [note, setNote] = useState(question.note ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,29 +64,44 @@ export function EditQuestionModal({
     setIsSubmitting(true);
     setError(null);
     try {
-      const updated: Question = await apiFetch(`/api/questions/${question.id}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          text: text.trim(),
-          answer: trimmedAnswer,
-          difficulty: difficultyToApi[difficulty],
-          note: note.trim(),
-        }),
-        token: accessToken!,
-      });
+      const updated: Question = await apiFetch(
+        `/api/questions/${question.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            text: text.trim(),
+            answer: trimmedAnswer,
+            difficulty: difficultyToApi[difficulty],
+            note: note.trim(),
+          }),
+          token: accessToken!,
+        },
+      );
       onUpdated(updated);
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to update question");
+      setError(
+        err instanceof ApiError ? err.message : "Failed to update question",
+      );
       setIsSubmitting(false);
     }
   };
 
   return (
     <Modal transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable className="flex-1 justify-end" style={{ backgroundColor: "rgba(42,39,36,0.4)" }} onPress={onClose}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ maxHeight: "90%" }}>
-          <Pressable onPress={(e) => e.stopPropagation()} className="rounded-t-3xl bg-paper">
+      <Pressable
+        className="flex-1 justify-end"
+        style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
+        onPress={onClose}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ maxHeight: "90%" }}
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="rounded-t-3xl bg-paper"
+          >
             <View className="flex-row items-center justify-between px-6 py-5 border-b border-rule">
               <Pressable onPress={onClose}>
                 <X size={22} color="#6E655C" strokeWidth={1.75} />
@@ -80,15 +118,23 @@ export function EditQuestionModal({
                 ) : (
                   <Check size={16} color="#F7F5F1" strokeWidth={1.75} />
                 )}
-                <Text className="text-[14px] text-paper" style={{ fontWeight: "500" }}>
+                <Text
+                  className="text-[14px] text-paper"
+                  style={{ fontWeight: "500" }}
+                >
                   {isSubmitting ? "Saving…" : "Save"}
                 </Text>
               </Pressable>
             </View>
 
-            <ScrollView className="px-6" contentContainerStyle={{ paddingVertical: 24, gap: 24 }}>
+            <ScrollView
+              className="px-6"
+              contentContainerStyle={{ paddingVertical: 24, gap: 24 }}
+            >
               {error && (
-                <Text className="rounded-xl bg-hard-soft px-4 py-3 text-[14px] text-hard">{error}</Text>
+                <Text className="rounded-xl bg-hard-soft px-4 py-3 text-[14px] text-hard">
+                  {error}
+                </Text>
               )}
 
               <View>
@@ -96,7 +142,9 @@ export function EditQuestionModal({
                   <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
                     Question text (optional)
                   </Text>
-                  <Text className="text-[12px] text-ink-faint">{text.length}/{MAX_LEN}</Text>
+                  <Text className="text-[12px] text-ink-faint">
+                    {text.length}/{MAX_LEN}
+                  </Text>
                 </View>
                 <View className="mt-2 rounded-2xl border border-rule bg-paper-card p-4">
                   <TextInput
@@ -112,8 +160,12 @@ export function EditQuestionModal({
 
               <View>
                 <View className="flex-row justify-between">
-                  <Text className="text-[12px] tracking-widest text-ink-faint uppercase">Answer</Text>
-                  <Text className="text-[12px] text-ink-faint">{answer.length}/{MAX_LEN}</Text>
+                  <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                    Answer
+                  </Text>
+                  <Text className="text-[12px] text-ink-faint">
+                    {answer.length}/{MAX_LEN}
+                  </Text>
                 </View>
                 <View className="mt-2 rounded-2xl border border-rule bg-paper-card p-4">
                   <TextInput
@@ -128,7 +180,9 @@ export function EditQuestionModal({
               </View>
 
               <View>
-                <Text className="text-[12px] tracking-widest text-ink-faint uppercase">Difficulty</Text>
+                <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                  Difficulty
+                </Text>
                 <View className="mt-2 flex-row" style={{ gap: 8 }}>
                   {levels.map((l) => {
                     const s = difficultyStyles[l];
@@ -138,9 +192,15 @@ export function EditQuestionModal({
                         key={l}
                         onPress={() => setDifficulty(l)}
                         className={`flex-1 items-center rounded-xl border py-3.5 ${on ? s.pillBg : "bg-paper-card"}`}
-                        style={{ borderColor: on ? difficultyHex[l] : "#E4DED4" }}
+                        style={{
+                          borderColor: on ? difficultyHex[l] : "#E4DED4",
+                        }}
                       >
-                        <Text className={`text-[14px] ${on ? s.pillText : "text-ink"}`}>{l}</Text>
+                        <Text
+                          className={`text-[14px] ${on ? s.pillText : "text-ink"}`}
+                        >
+                          {l}
+                        </Text>
                       </Pressable>
                     );
                   })}
@@ -149,8 +209,12 @@ export function EditQuestionModal({
 
               <View>
                 <View className="flex-row justify-between">
-                  <Text className="text-[12px] tracking-widest text-ink-faint uppercase">Notes</Text>
-                  <Text className="text-[12px] text-ink-faint">{note.length}/{MAX_LEN}</Text>
+                  <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                    Notes
+                  </Text>
+                  <Text className="text-[12px] text-ink-faint">
+                    {note.length}/{MAX_LEN}
+                  </Text>
                 </View>
                 <View className="mt-2 rounded-2xl border border-rule bg-paper-card p-4">
                   <TextInput

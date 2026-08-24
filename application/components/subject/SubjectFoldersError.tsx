@@ -1,10 +1,19 @@
 import { View, Text, Pressable } from "react-native";
 import { RefreshCw } from "lucide-react-native";
 
-export function SubjectFoldersError({ error, onRetry }: { error: string; onRetry: () => void }) {
+export function SubjectFoldersError({
+  error,
+  onRetry,
+}: {
+  error: string;
+  onRetry: () => void;
+}) {
   return (
     <View className="flex-1 items-center justify-center px-6 pb-16">
-      <View className="items-center justify-center rounded-2xl bg-hard-soft" style={{ width: 64, height: 64 }}>
+      <View
+        className="items-center justify-center rounded-2xl bg-hard-soft"
+        style={{ width: 64, height: 64 }}
+      >
         <Text className="text-2xl">!</Text>
       </View>
       <Text className="mt-6 text-[24px] text-ink text-center">

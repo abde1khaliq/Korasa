@@ -14,7 +14,10 @@ export function useFolderQuestions(folderId: string | undefined) {
     if (!accessToken || !folderId) return;
     setError(null);
     try {
-      const data: Question[] = await apiFetch(`/api/folders/${folderId}/questions`, { token: accessToken });
+      const data: Question[] = await apiFetch(
+        `/api/folders/${folderId}/questions`,
+        { token: accessToken },
+      );
       setQuestions(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -33,11 +36,20 @@ export function useFolderQuestions(folderId: string | undefined) {
     setIsRefreshing(false);
   }, [accessToken, folderId]);
 
-  const addQuestion = (newQuestion: Question) => setQuestions((prev) => [...prev, newQuestion]);
+  const addQuestion = (newQuestion: Question) =>
+    setQuestions((prev) => [...prev, newQuestion]);
 
   useEffect(() => {
     if (accessToken && folderId) fetchQuestions();
   }, [accessToken, folderId]);
 
-  return { questions, isLoading, isRefreshing, error, fetchQuestions, onRefresh, addQuestion };
+  return {
+    questions,
+    isLoading,
+    isRefreshing,
+    error,
+    fetchQuestions,
+    onRefresh,
+    addQuestion,
+  };
 }

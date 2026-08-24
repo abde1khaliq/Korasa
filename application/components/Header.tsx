@@ -1,15 +1,21 @@
 import { useState } from "react";
 import { View, Text, Pressable, Modal } from "react-native";
 import { useRouter } from "expo-router";
-import { ChevronLeft, LogOut, Moon, Sun, Menu, User } from "lucide-react-native";
+import {
+  ChevronLeft,
+  LogOut,
+  Moon,
+  Sun,
+  Menu,
+  User,
+} from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 export function Header() {
-
-  const ink = useThemeColor("#2B2724", "#F1EFEC")
+  const ink = useThemeColor("#2B2724", "#F1EFEC");
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const router = useRouter();
@@ -48,23 +54,47 @@ export function Header() {
         </Pressable>
       </View>
 
-      <Modal transparent visible={showUserMenu} animationType="fade" onRequestClose={() => setShowUserMenu(false)}>
+      <Modal
+        transparent
+        visible={showUserMenu}
+        animationType="fade"
+        onRequestClose={() => setShowUserMenu(false)}
+      >
         <Pressable className="flex-1" onPress={() => setShowUserMenu(false)}>
           <View
             className="absolute right-6 rounded-2xl border border-rule bg-paper overflow-hidden"
-            style={{ top: 50, width: 224, shadowOpacity: 0.15, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } }}
+            style={{
+              top: 50,
+              width: 224,
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              shadowOffset: { width: 0, height: 4 },
+            }}
           >
             <Pressable onPress={(e) => e.stopPropagation()}>
               <View className="px-4 py-3 border-b border-rule">
                 <View className="flex-row items-center" style={{ gap: 12 }}>
-                  <View className="items-center justify-center rounded-full" style={{ width: 40, height: 40, backgroundColor: "rgba(42,39,36,0.1)" }}>
+                  <View
+                    className="items-center justify-center rounded-full"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      backgroundColor: "rgba(42,39,36,0.1)",
+                    }}
+                  >
                     <User size={20} color={ink} strokeWidth={1.75} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text className="text-[15px] text-ink" numberOfLines={1}>
-                      {userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase()}
+                      {userName.charAt(0).toUpperCase() +
+                        userName.slice(1).toLowerCase()}
                     </Text>
-                    <Text className="text-[12px] text-ink-faint" numberOfLines={1}>{userEmail}</Text>
+                    <Text
+                      className="text-[12px] text-ink-faint"
+                      numberOfLines={1}
+                    >
+                      {userEmail}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -76,7 +106,9 @@ export function Header() {
                   style={{ gap: 12 }}
                 >
                   <LogOut size={16} color="#A34A34" strokeWidth={1.75} />
-                  <Text className="text-[14px]" style={{ color: "#A34A34" }}>Sign out</Text>
+                  <Text className="text-[14px]" style={{ color: "#A34A34" }}>
+                    Sign out
+                  </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => {

@@ -225,7 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         resendVerification,
         clearPendingVerification,
         logout,
-        completeOnboarding
+        completeOnboarding,
       }}
     >
       {children}

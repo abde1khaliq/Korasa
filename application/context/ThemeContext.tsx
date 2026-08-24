@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { useColorScheme as useSystemColorScheme } from "react-native";
 import { vars, useColorScheme as useNativeWindColorScheme } from "nativewind";
 import * as SecureStore from "expo-secure-store";
@@ -31,7 +37,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  const scheme: ColorScheme = preference === "system" ? (systemScheme ?? "light") : preference;
+  const scheme: ColorScheme =
+    preference === "system" ? (systemScheme ?? "light") : preference;
 
   useEffect(() => {
     if (!loaded) return;
@@ -49,7 +56,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   if (!loaded) return null;
 
   return (
-    <ThemeContext.Provider value={{ scheme, themeVars: vars(varsFor(scheme)), toggle }}>
+    <ThemeContext.Provider
+      value={{ scheme, themeVars: vars(varsFor(scheme)), toggle }}
+    >
       {children}
     </ThemeContext.Provider>
   );

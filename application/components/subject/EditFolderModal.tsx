@@ -1,7 +1,13 @@
 import { useState } from "react";
 import {
-  View, Text, TextInput, Pressable, Modal, ActivityIndicator,
-  KeyboardAvoidingView, Platform,
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Modal,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { X, Check } from "lucide-react-native";
 import { useAuth } from "@/context/AuthContext";
@@ -44,7 +50,9 @@ export function EditFolderModal({
       onUpdated(updated);
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to update folder");
+      setError(
+        err instanceof ApiError ? err.message : "Failed to update folder",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -57,7 +65,9 @@ export function EditFolderModal({
         style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
         onPress={onClose}
       >
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <Pressable
             onPress={(e) => e.stopPropagation()}
             className="rounded-t-3xl bg-paper px-6 pb-8 pt-5"
@@ -85,7 +95,9 @@ export function EditFolderModal({
                 className="mt-2 rounded-xl border border-rule bg-paper-card px-4 text-[16px] text-ink"
                 style={{ paddingVertical: 14 }}
               />
-              {error && <Text className="mt-3 text-[14px] text-hard">{error}</Text>}
+              {error && (
+                <Text className="mt-3 text-[14px] text-hard">{error}</Text>
+              )}
 
               <Pressable
                 onPress={handleSubmit}

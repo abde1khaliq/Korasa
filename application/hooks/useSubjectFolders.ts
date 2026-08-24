@@ -39,10 +39,13 @@ export function useSubjectFolders(subjectID: string | undefined) {
     setIsRefreshing(false);
   }, [accessToken, subjectID]);
 
-  const addFolder = (newFolder: FolderItem) => setFolders((prev) => [...prev, newFolder]);
+  const addFolder = (newFolder: FolderItem) =>
+    setFolders((prev) => [...prev, newFolder]);
 
   const updateFolderState = (updated: FolderItem) =>
-    setFolders((prev) => prev.map((f) => (f.id === updated.id ? { ...f, ...updated } : f)));
+    setFolders((prev) =>
+      prev.map((f) => (f.id === updated.id ? { ...f, ...updated } : f)),
+    );
 
   const deleteFolder = async (folderId: number) => {
     if (!subjectID) return { success: false, error: "Missing subject" };
@@ -54,7 +57,10 @@ export function useSubjectFolders(subjectID: string | undefined) {
       setFolders((prev) => prev.filter((f) => f.id !== folderId));
       return { success: true };
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : "Something went wrong" };
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Something went wrong",
+      };
     }
   };
 

@@ -15,10 +15,15 @@ export function useQuestionDetail(questionId: string | undefined) {
     if (!accessToken || !questionId) return;
     setError(null);
     try {
-      const q: Question = await apiFetch(`/api/questions/${questionId}`, { token: accessToken });
+      const q: Question = await apiFetch(`/api/questions/${questionId}`, {
+        token: accessToken,
+      });
       setQuestion(q);
       try {
-        const list: Question[] = await apiFetch(`/api/folders/${q.folder_id}/questions`, { token: accessToken });
+        const list: Question[] = await apiFetch(
+          `/api/folders/${q.folder_id}/questions`,
+          { token: accessToken },
+        );
         setSiblings(list);
       } catch {
         setSiblings([]);
@@ -49,5 +54,14 @@ export function useQuestionDetail(questionId: string | undefined) {
     if (accessToken && questionId) fetchQuestion();
   }, [accessToken, questionId]);
 
-  return { question, siblings, isLoading, isRefreshing, error, fetchQuestion, onRefresh, updateQuestion };
+  return {
+    question,
+    siblings,
+    isLoading,
+    isRefreshing,
+    error,
+    fetchQuestion,
+    onRefresh,
+    updateQuestion,
+  };
 }

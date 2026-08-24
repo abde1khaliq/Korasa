@@ -12,10 +12,21 @@ import {
   Image,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { X, Plus, ChevronDown, Check, Camera, ImagePlus } from "lucide-react-native";
+import {
+  X,
+  Plus,
+  ChevronDown,
+  Check,
+  Camera,
+  ImagePlus,
+} from "lucide-react-native";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
-import { Difficulty, difficultyStyles, difficultyHex } from "@/components/misc/Screen";
+import {
+  Difficulty,
+  difficultyStyles,
+  difficultyHex,
+} from "@/components/misc/Screen";
 import type { Subject } from "@/types/subject";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
@@ -54,23 +65,36 @@ function SelectField<T extends string | number>({
 
   return (
     <View>
-      <Text className="text-[12px] tracking-widest text-ink-faint uppercase">{label}</Text>
+      <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+        {label}
+      </Text>
       <Pressable
         onPress={() => !disabled && setOpen((o) => !o)}
         disabled={disabled}
         className="mt-2 flex-row items-center justify-between rounded-xl border border-rule bg-paper-card px-4 py-3.5"
         style={{ opacity: disabled ? 0.5 : 1 }}
       >
-        <Text className={value === "" ? "text-[15px] text-ink-faint" : "text-[15px] text-ink"}>
+        <Text
+          className={
+            value === "" ? "text-[15px] text-ink-faint" : "text-[15px] text-ink"
+          }
+        >
           {value === "" ? placeholder : getLabel(value)}
         </Text>
-        <ChevronDown size={18} color={ink} strokeWidth={1.75} style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }} />
+        <ChevronDown
+          size={18}
+          color={ink}
+          strokeWidth={1.75}
+          style={{ transform: [{ rotate: open ? "180deg" : "0deg" }] }}
+        />
       </Pressable>
 
       {open && (
         <View className="mt-1.5 overflow-hidden rounded-xl border border-rule bg-paper-card">
           {options.length === 0 ? (
-            <Text className="px-4 py-3 text-[14px] text-ink-faint">No options available</Text>
+            <Text className="px-4 py-3 text-[14px] text-ink-faint">
+              No options available
+            </Text>
           ) : (
             options.map((opt, i) => {
               const selected = opt.value === value;
@@ -86,13 +110,24 @@ function SelectField<T extends string | number>({
                     gap: 8,
                     borderTopWidth: i === 0 ? 0 : 1,
                     borderTopColor: "#E4DED4",
-                    backgroundColor: selected ? "rgba(168,112,63,0.08)" : "transparent",
+                    backgroundColor: selected
+                      ? "rgba(168,112,63,0.08)"
+                      : "transparent",
                   }}
                 >
-                  <Text className={selected ? "text-brand text-[15px]" : "text-ink text-[15px]"} style={{ flex: 1 }}>
+                  <Text
+                    className={
+                      selected
+                        ? "text-brand text-[15px]"
+                        : "text-ink text-[15px]"
+                    }
+                    style={{ flex: 1 }}
+                  >
                     {opt.label}
                   </Text>
-                  {selected && <Check size={16} color="#A8703F" strokeWidth={2} />}
+                  {selected && (
+                    <Check size={16} color="#A8703F" strokeWidth={2} />
+                  )}
                 </Pressable>
               );
             })
@@ -119,7 +154,9 @@ export function QuickCreateModal({
   const ink2 = useThemeColor("#2B2724", "#F1EFEC");
 
   const [tab, setTab] = useState<"folder" | "question">("folder");
-  const [subjectId, setSubjectId] = useState<number | "">(subjects[0]?.id ?? "");
+  const [subjectId, setSubjectId] = useState<number | "">(
+    subjects[0]?.id ?? "",
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -178,8 +215,14 @@ export function QuickCreateModal({
     }
     const result =
       source === "camera"
-        ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 })
-        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.8 });
+        ? await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            quality: 0.8,
+          })
+        : await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: true,
+            quality: 0.8,
+          });
     if (!result.canceled && result.assets[0]) {
       setImage(result.assets[0]);
       setError(null);
@@ -225,11 +268,14 @@ export function QuickCreateModal({
       let targetFolderId: number | "new" | "" = folderId;
 
       if (folderId === "new") {
-        const createdFolder = await apiFetch(`/api/subjects/${subjectId}/folders`, {
-          method: "POST",
-          body: JSON.stringify({ name: newFolderName.trim() }),
-          token: accessToken,
-        });
+        const createdFolder = await apiFetch(
+          `/api/subjects/${subjectId}/folders`,
+          {
+            method: "POST",
+            body: JSON.stringify({ name: newFolderName.trim() }),
+            token: accessToken,
+          },
+        );
         targetFolderId = createdFolder.id;
       }
 
@@ -260,20 +306,33 @@ export function QuickCreateModal({
   };
 
   const subjectOptions = subjects.map((s) => ({ value: s.id, label: s.name }));
-  const subjectLabelById = (id: number) => subjects.find((s) => s.id === id)?.name ?? "";
+  const subjectLabelById = (id: number) =>
+    subjects.find((s) => s.id === id)?.name ?? "";
 
   const folderOptions: { value: number | "new"; label: string }[] = [
     ...folders.map((f) => ({ value: f.id as number | "new", label: f.name })),
     { value: "new" as const, label: "+ New folder…" },
   ];
   const folderLabelById = (v: number | "new") =>
-    v === "new" ? "+ New folder…" : folders.find((f) => f.id === v)?.name ?? "";
+    v === "new"
+      ? "+ New folder…"
+      : (folders.find((f) => f.id === v)?.name ?? "");
 
   return (
     <Modal transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable className="flex-1 justify-end" style={{ backgroundColor: "rgba(42,39,36,0.4)" }} onPress={onClose}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ maxHeight: "90%" }}>
-          <Pressable onPress={(e) => e.stopPropagation()} className="rounded-t-3xl bg-paper">
+      <Pressable
+        className="flex-1 justify-end"
+        style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
+        onPress={onClose}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ maxHeight: "90%" }}
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="rounded-t-3xl bg-paper"
+          >
             <View className="flex-row items-center justify-between px-6 py-5 border-b border-rule">
               <Pressable onPress={onClose}>
                 <X size={22} color="#6E655C" strokeWidth={1.75} />
@@ -290,7 +349,10 @@ export function QuickCreateModal({
                 }}
                 className={`flex-1 items-center rounded-full border py-2 ${tab === "folder" ? "bg-onyx border-onyx" : "border-rule"}`}
               >
-                <Text className={`text-[14px] ${tab === "folder" ? "text-paper" : "text-ink-soft"}`} style={{ fontWeight: "500" }}>
+                <Text
+                  className={`text-[14px] ${tab === "folder" ? "text-paper" : "text-ink-soft"}`}
+                  style={{ fontWeight: "500" }}
+                >
                   Folder
                 </Text>
               </Pressable>
@@ -301,13 +363,23 @@ export function QuickCreateModal({
                 }}
                 className={`flex-1 items-center rounded-full border py-2 ${tab === "question" ? "bg-onyx border-onyx" : "border-rule"}`}
               >
-                <Text className={`text-[14px] ${tab === "question" ? "text-paper" : "text-ink-soft"}`} style={{ fontWeight: "500" }}>
+                <Text
+                  className={`text-[14px] ${tab === "question" ? "text-paper" : "text-ink-soft"}`}
+                  style={{ fontWeight: "500" }}
+                >
                   Question
                 </Text>
               </Pressable>
             </View>
 
-            <ScrollView className="px-6" contentContainerStyle={{ paddingTop: 20, paddingBottom: 32, gap: 16 }}>
+            <ScrollView
+              className="px-6"
+              contentContainerStyle={{
+                paddingTop: 20,
+                paddingBottom: 32,
+                gap: 16,
+              }}
+            >
               {subjects.length === 0 ? (
                 <Text className="text-[15px] text-ink-soft">
                   Create a subject first before adding folders or questions.
@@ -324,7 +396,9 @@ export function QuickCreateModal({
                   />
 
                   <View>
-                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">Folder name</Text>
+                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                      Folder name
+                    </Text>
                     <TextInput
                       value={folderName}
                       onChangeText={setFolderName}
@@ -334,16 +408,28 @@ export function QuickCreateModal({
                     />
                   </View>
 
-                  {error && <Text className="text-[14px] text-hard">{error}</Text>}
+                  {error && (
+                    <Text className="text-[14px] text-hard">{error}</Text>
+                  )}
 
                   <Pressable
                     onPress={handleCreateFolder}
                     disabled={isSubmitting || !folderName.trim()}
                     className="mt-1 flex-row items-center justify-center rounded-xl bg-onyx py-3.5"
-                    style={{ gap: 8, opacity: isSubmitting || !folderName.trim() ? 0.4 : 1 }}
+                    style={{
+                      gap: 8,
+                      opacity: isSubmitting || !folderName.trim() ? 0.4 : 1,
+                    }}
                   >
-                    {isSubmitting ? <ActivityIndicator color="#F7F5F1" /> : <Plus size={18} color={ink} strokeWidth={1.75} />}
-                    <Text className="text-[15px] text-paper" style={{ fontWeight: "500" }}>
+                    {isSubmitting ? (
+                      <ActivityIndicator color="#F7F5F1" />
+                    ) : (
+                      <Plus size={18} color={ink} strokeWidth={1.75} />
+                    )}
+                    <Text
+                      className="text-[15px] text-paper"
+                      style={{ fontWeight: "500" }}
+                    >
                       {isSubmitting ? "Creating…" : "Create folder"}
                     </Text>
                   </Pressable>
@@ -362,7 +448,9 @@ export function QuickCreateModal({
                   {loadingFolders ? (
                     <View className="flex-row items-center" style={{ gap: 8 }}>
                       <ActivityIndicator size="small" color="#6E655C" />
-                      <Text className="text-[14px] text-ink-soft">Loading folders…</Text>
+                      <Text className="text-[14px] text-ink-soft">
+                        Loading folders…
+                      </Text>
                     </View>
                   ) : (
                     <SelectField
@@ -386,16 +474,27 @@ export function QuickCreateModal({
                   )}
 
                   <View>
-                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">Question photo</Text>
+                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                      Question photo
+                    </Text>
                     {image ? (
                       <View className="mt-2">
                         <Image
                           source={{ uri: image.uri }}
-                          style={{ width: "100%", height: 200, borderRadius: 16 }}
+                          style={{
+                            width: "100%",
+                            height: 200,
+                            borderRadius: 16,
+                          }}
                           resizeMode="cover"
                         />
-                        <Pressable onPress={() => setImage(null)} className="mt-2 self-start">
-                          <Text className="text-[13px] text-hard">Remove photo</Text>
+                        <Pressable
+                          onPress={() => setImage(null)}
+                          className="mt-2 self-start"
+                        >
+                          <Text className="text-[13px] text-hard">
+                            Remove photo
+                          </Text>
                         </Pressable>
                       </View>
                     ) : (
@@ -405,7 +504,11 @@ export function QuickCreateModal({
                           className="flex-1 flex-row items-center justify-center rounded-2xl border border-dashed border-rule py-6"
                           style={{ gap: 8 }}
                         >
-                          <Camera size={18} color="#2B2724" strokeWidth={1.75} />
+                          <Camera
+                            size={18}
+                            color="#2B2724"
+                            strokeWidth={1.75}
+                          />
                           <Text className="text-[14px] text-ink">Camera</Text>
                         </Pressable>
                         <Pressable
@@ -413,7 +516,11 @@ export function QuickCreateModal({
                           className="flex-1 flex-row items-center justify-center rounded-2xl border border-dashed border-rule py-6"
                           style={{ gap: 8 }}
                         >
-                          <ImagePlus size={18} color="#2B2724" strokeWidth={1.75} />
+                          <ImagePlus
+                            size={18}
+                            color="#2B2724"
+                            strokeWidth={1.75}
+                          />
                           <Text className="text-[14px] text-ink">Gallery</Text>
                         </Pressable>
                       </View>
@@ -421,7 +528,9 @@ export function QuickCreateModal({
                   </View>
 
                   <View>
-                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">Answer</Text>
+                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                      Answer
+                    </Text>
                     <View className="mt-2 rounded-xl border border-rule bg-paper-card p-4">
                       <TextInput
                         value={answer}
@@ -435,7 +544,9 @@ export function QuickCreateModal({
                   </View>
 
                   <View>
-                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase mb-1.5">Difficulty</Text>
+                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase mb-1.5">
+                      Difficulty
+                    </Text>
                     <View className="flex-row" style={{ gap: 8 }}>
                       {levels.map((l) => {
                         const on = l === difficulty;
@@ -444,9 +555,21 @@ export function QuickCreateModal({
                             key={l}
                             onPress={() => setDifficulty(l)}
                             className="flex-1 items-center rounded-xl border py-2.5"
-                            style={{ borderColor: on ? difficultyHex[l] : "#E4DED4", backgroundColor: on ? "rgba(168,112,63,0.08)" : "transparent" }}
+                            style={{
+                              borderColor: on ? difficultyHex[l] : "#E4DED4",
+                              backgroundColor: on
+                                ? "rgba(168,112,63,0.08)"
+                                : "transparent",
+                            }}
                           >
-                            <Text className={on ? difficultyStyles[l].pillText : "text-ink-soft"} style={{ fontSize: 14, fontWeight: "500" }}>
+                            <Text
+                              className={
+                                on
+                                  ? difficultyStyles[l].pillText
+                                  : "text-ink-soft"
+                              }
+                              style={{ fontSize: 14, fontWeight: "500" }}
+                            >
                               {l}
                             </Text>
                           </Pressable>
@@ -456,7 +579,9 @@ export function QuickCreateModal({
                   </View>
 
                   <View>
-                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">Notes (optional)</Text>
+                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                      Notes (optional)
+                    </Text>
                     <View className="mt-2 rounded-xl border border-rule bg-paper-card p-4">
                       <TextInput
                         value={note}
@@ -469,16 +594,28 @@ export function QuickCreateModal({
                     </View>
                   </View>
 
-                  {error && <Text className="text-[14px] text-hard">{error}</Text>}
+                  {error && (
+                    <Text className="text-[14px] text-hard">{error}</Text>
+                  )}
 
                   <Pressable
                     onPress={handleCreateQuestion}
                     disabled={!questionValid || isSubmitting}
                     className="mt-1 flex-row items-center justify-center rounded-xl bg-onyx py-3.5"
-                    style={{ gap: 8, opacity: !questionValid || isSubmitting ? 0.4 : 1 }}
+                    style={{
+                      gap: 8,
+                      opacity: !questionValid || isSubmitting ? 0.4 : 1,
+                    }}
                   >
-                    {isSubmitting ? <ActivityIndicator color="#F7F5F1" /> : <Plus size={18} color={ink} strokeWidth={1.75} />}
-                    <Text className="text-[15px] text-paper" style={{ fontWeight: "500" }}>
+                    {isSubmitting ? (
+                      <ActivityIndicator color="#F7F5F1" />
+                    ) : (
+                      <Plus size={18} color={ink} strokeWidth={1.75} />
+                    )}
+                    <Text
+                      className="text-[15px] text-paper"
+                      style={{ fontWeight: "500" }}
+                    >
                       {isSubmitting ? "Creating…" : "Create question"}
                     </Text>
                   </Pressable>

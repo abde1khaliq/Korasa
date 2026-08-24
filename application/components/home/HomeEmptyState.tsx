@@ -3,8 +3,12 @@ import { Plus } from "lucide-react-native";
 import { EmptyIllustration } from "./EmptyIllustration";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
-export function HomeEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
-  const ink = useThemeColor("#F1EFEC", "#2B2724")
+export function HomeEmptyState({
+  onCreateClick,
+}: {
+  onCreateClick: () => void;
+}) {
+  const ink = useThemeColor("#F1EFEC", "#2B2724");
   return (
     <View className="flex-1">
       <View className="px-6 pt-8">
@@ -29,7 +33,9 @@ export function HomeEmptyState({ onCreateClick }: { onCreateClick: () => void })
           className="mt-8 flex-row items-center gap-3 rounded-full bg-onyx px-8 py-4"
         >
           <Plus size={20} color={ink} strokeWidth={1.75} />
-          <Text className="text-[17px] text-paper">Create your first subject</Text>
+          <Text className="text-[17px] text-paper">
+            Create your first subject
+          </Text>
         </Pressable>
       </View>
     </View>

@@ -1,5 +1,9 @@
 import { Pressable, Text } from "react-native";
-import { Difficulty, difficultyStyles, difficultyHex } from "@/components/misc/Screen";
+import {
+  Difficulty,
+  difficultyStyles,
+  difficultyHex,
+} from "@/components/misc/Screen";
 
 export function FilterChip({
   level,

@@ -20,7 +20,11 @@ export function highlightText(text: string, query: string) {
 
   return parts.map((part, i) =>
     i % 2 === 1 ? (
-      <Text key={i} style={{ backgroundColor: "rgba(250,204,21,0.4)" }} className="text-ink">
+      <Text
+        key={i}
+        style={{ backgroundColor: "rgba(250,204,21,0.4)" }}
+        className="text-ink"
+      >
         {part}
       </Text>
     ) : (
@@ -35,7 +39,8 @@ export function getQuestionMatchType(
 ): "text" | "answer" | "notes" | null {
   const query = searchQuery.toLowerCase().trim();
   if (!query) return null;
-  if (question.text && question.text.toLowerCase().includes(query)) return "text";
+  if (question.text && question.text.toLowerCase().includes(query))
+    return "text";
   if (question.answer.toLowerCase().includes(query)) return "answer";
   if (question.note.toLowerCase().includes(query)) return "notes";
   return null;

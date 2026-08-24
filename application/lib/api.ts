@@ -13,7 +13,10 @@ type RefreshHandler = () => Promise<string>;
 let refreshHandler: RefreshHandler | null = null;
 let onRefreshFailed: (() => void) | null = null;
 
-export function registerAuthHandlers(refresh: RefreshHandler, onFail: () => void) {
+export function registerAuthHandlers(
+  refresh: RefreshHandler,
+  onFail: () => void,
+) {
   refreshHandler = refresh;
   onRefreshFailed = onFail;
 }
@@ -35,7 +38,10 @@ async function doFetch(path: string, options: ApiOptions) {
   const data = text ? JSON.parse(text) : {};
 
   if (!res.ok) {
-    throw new ApiError(data.error || `Request failed (${res.status})`, res.status);
+    throw new ApiError(
+      data.error || `Request failed (${res.status})`,
+      res.status,
+    );
   }
 
   return data;
@@ -47,10 +53,19 @@ export async function apiFetch(path: string, options: ApiOptions = {}) {
   } catch (err) {
     const isAuthError = err instanceof ApiError && err.status === 401;
 
-    if (isAuthError && options.token && !options.skipAuthRetry && refreshHandler) {
+    if (
+      isAuthError &&
+      options.token &&
+      !options.skipAuthRetry &&
+      refreshHandler
+    ) {
       try {
         const newToken = await refreshHandler();
-        return await doFetch(path, { ...options, token: newToken, skipAuthRetry: true });
+        return await doFetch(path, {
+          ...options,
+          token: newToken,
+          skipAuthRetry: true,
+        });
       } catch {
         onRefreshFailed?.();
         throw err;

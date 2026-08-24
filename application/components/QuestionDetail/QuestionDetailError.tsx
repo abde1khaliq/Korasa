@@ -20,7 +20,10 @@ export function QuestionDetailError({
         <View style={{ width: 24 }} />
       </View>
       <View className="flex-1 items-center justify-center px-6 pb-16">
-        <View className="items-center justify-center rounded-2xl bg-hard-soft" style={{ width: 48, height: 48 }}>
+        <View
+          className="items-center justify-center rounded-2xl bg-hard-soft"
+          style={{ width: 48, height: 48 }}
+        >
           <Text className="text-xl">!</Text>
         </View>
         <Text className="mt-5 text-[20px] text-ink text-center">

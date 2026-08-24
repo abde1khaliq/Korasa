@@ -10,9 +10,12 @@ export function useNotification() {
     timeoutRef.current = setTimeout(() => setNotification(null), 3000);
   };
 
-  useEffect(() => () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    },
+    [],
+  );
 
   return { notification, showNotification };
 }

@@ -15,7 +15,8 @@ export function useQuestionNavigation(
 
   const index = siblings.findIndex((s) => s.id === question.id);
   const prevQuestion = index > 0 ? siblings[index - 1] : null;
-  const nextQuestion = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
+  const nextQuestion =
+    index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
 
   const goTo = (id: number) => {
     router.replace({
