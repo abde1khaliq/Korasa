@@ -170,6 +170,7 @@ export function QuickCreateModal({
   const [answer, setAnswer] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const [note, setNote] = useState("");
+  const [text, setText] = useState("");
 
   useEffect(() => {
     if (tab !== "question" || !subjectId || !accessToken) {
@@ -200,6 +201,7 @@ export function QuickCreateModal({
     setAnswer("");
     setDifficulty("Medium");
     setNote("");
+    setText("");
     setFolderId("");
     setNewFolderName("");
   };
@@ -257,7 +259,8 @@ export function QuickCreateModal({
     !!image &&
     trimmedAnswer.length > 0 &&
     trimmedAnswer.length <= MAX_LEN &&
-    note.length <= MAX_LEN;
+    note.length <= MAX_LEN &&
+    text.length <= MAX_LEN;
 
   const handleCreateQuestion = async () => {
     if (!questionValid || isSubmitting || !accessToken || !image) return;
@@ -288,6 +291,7 @@ export function QuickCreateModal({
       formData.append("answer", trimmedAnswer);
       formData.append("difficulty", difficultyToApi[difficulty]);
       formData.append("note", note.trim());
+      formData.append("text", text.trim());
 
       await apiFetch(`/api/folders/${targetFolderId}/questions`, {
         method: "POST",
@@ -327,11 +331,12 @@ export function QuickCreateModal({
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={{ maxHeight: "90%" }}
+          style={{ maxHeight: "95%" }} // Increased from 90% to 95%
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
             className="rounded-t-3xl bg-paper"
+            style={{ maxHeight: "95%" }} // Added maxHeight to the inner container
           >
             <View className="flex-row items-center justify-between px-6 py-5 border-b border-rule">
               <Pressable onPress={onClose}>
@@ -376,9 +381,10 @@ export function QuickCreateModal({
               className="px-6"
               contentContainerStyle={{
                 paddingTop: 20,
-                paddingBottom: 32,
-                gap: 16,
+                paddingBottom: 40, // Increased from 32 to 40 for more bottom space
+                gap: 20, // Increased from 16 to 20 for better spacing
               }}
+              showsVerticalScrollIndicator={true} // Added scroll indicator for better UX
             >
               {subjects.length === 0 ? (
                 <Text className="text-[15px] text-ink-soft">
@@ -528,9 +534,36 @@ export function QuickCreateModal({
                   </View>
 
                   <View>
-                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
-                      Answer
-                    </Text>
+                    <View className="flex-row justify-between">
+                      <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                        Question text (optional)
+                      </Text>
+                      <Text className="text-[12px] text-ink-faint">
+                        {text.length}/{MAX_LEN}
+                      </Text>
+                    </View>
+                    <View className="mt-2 rounded-xl border border-rule bg-paper-card p-4">
+                      <TextInput
+                        value={text}
+                        onChangeText={setText}
+                        placeholder="Add a text transcript…"
+                        maxLength={MAX_LEN}
+                        multiline
+                        className="text-[15px] text-ink"
+                        style={{ minHeight: 60 }}
+                      />
+                    </View>
+                  </View>
+
+                  <View>
+                    <View className="flex-row justify-between">
+                      <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                        Answer
+                      </Text>
+                      <Text className="text-[12px] text-ink-faint">
+                        {answer.length}/{MAX_LEN}
+                      </Text>
+                    </View>
                     <View className="mt-2 rounded-xl border border-rule bg-paper-card p-4">
                       <TextInput
                         value={answer}
@@ -539,6 +572,7 @@ export function QuickCreateModal({
                         maxLength={MAX_LEN}
                         multiline
                         className="text-[15px] text-ink"
+                        style={{ minHeight: 60 }}
                       />
                     </View>
                   </View>
@@ -579,9 +613,14 @@ export function QuickCreateModal({
                   </View>
 
                   <View>
-                    <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
-                      Notes (optional)
-                    </Text>
+                    <View className="flex-row justify-between">
+                      <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+                        Notes (optional)
+                      </Text>
+                      <Text className="text-[12px] text-ink-faint">
+                        {note.length}/{MAX_LEN}
+                      </Text>
+                    </View>
                     <View className="mt-2 rounded-xl border border-rule bg-paper-card p-4">
                       <TextInput
                         value={note}
@@ -590,6 +629,7 @@ export function QuickCreateModal({
                         maxLength={MAX_LEN}
                         multiline
                         className="text-[14px] text-ink"
+                        style={{ minHeight: 60 }}
                       />
                     </View>
                   </View>
@@ -601,7 +641,7 @@ export function QuickCreateModal({
                   <Pressable
                     onPress={handleCreateQuestion}
                     disabled={!questionValid || isSubmitting}
-                    className="mt-1 flex-row items-center justify-center rounded-xl bg-onyx py-3.5"
+                    className="mt-2 flex-row items-center justify-center rounded-xl bg-onyx py-3.5" // Changed mt-1 to mt-2
                     style={{
                       gap: 8,
                       opacity: !questionValid || isSubmitting ? 0.4 : 1,
@@ -619,6 +659,9 @@ export function QuickCreateModal({
                       {isSubmitting ? "Creating…" : "Create question"}
                     </Text>
                   </Pressable>
+
+                  {/* Added extra bottom padding for better scroll experience */}
+                  <View style={{ height: 20 }} />
                 </>
               )}
             </ScrollView>

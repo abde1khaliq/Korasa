@@ -12,7 +12,7 @@ import {
   Image,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { X, Plus, Camera, ImagePlus } from "lucide-react-native";
+import { X, Camera, ImagePlus } from "lucide-react-native";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
 import {
