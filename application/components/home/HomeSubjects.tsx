@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { View, Text, Pressable, Alert, ScrollView } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { Plus, ArrowRight, Zap } from "lucide-react-native";
+import { Plus, ArrowRight } from "lucide-react-native";
 import Svg, { Circle } from "react-native-svg";
 import { useAuth } from "@/context/AuthContext";
 import { useSubjects } from "@/hooks/useSubjects";
@@ -19,19 +19,19 @@ import { HomeEmptyState } from "./HomeEmptyState";
 import { CreateSubjectModal } from "./CreateSubjectModal";
 import { Subject } from "@/types/subject";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { QuickCreateModal } from "./QuickCreateModal";
+import { ConfirmModal } from "@/components/common/ConfirmModal";
+import { registerHomeRefresh } from "@/lib/refreshBus";
 
 export function HomeSubjects() {
   const ink = useThemeColor("#2B2724", "#F1EFEC");
-  const ink2 = useThemeColor("#F1EFEC", "#2B2724");
   const paper = useThemeColor("#F7F5F1", "#211D1A");
 
   const router = useRouter();
   const { user } = useAuth();
   const userName = user?.username ?? "";
 
-  const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<Subject | null>(null);
 
   const {
     subjects,
@@ -43,41 +43,32 @@ export function HomeSubjects() {
     onRefresh,
     deleteSubject,
     addSubject,
-    updateSubjectCounts,
   } = useSubjects();
   const { notification, showNotification } = useNotification();
+
+  // Lets the global quick-create button in the tab bar (which owns its own
+  // independent useSubjects() fetch) tell this screen to refresh after
+  // creating something, since they don't share state.
+  useEffect(() => {
+    registerHomeRefresh(fetchSubjects);
+    return () => registerHomeRefresh(null);
+  });
 
   const handleSubjectCreated = (newSubject: Subject) => {
     addSubject(newSubject);
     showNotification(`"${newSubject.name}" created`);
   };
 
-  const handleQuickFolderCreated = (subjectId: number) => {
-    updateSubjectCounts(subjectId, "folder");
-    showNotification("Folder created");
-  };
-
-  const handleQuickQuestionCreated = (subjectId: number) => {
-    updateSubjectCounts(subjectId, "question");
-    showNotification("Question created");
-  };
-
-  const confirmDelete = (subject: Subject) => {
-    Alert.alert(subject.name, "Delete this subject? This can't be undone.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          const result = await deleteSubject(subject.id);
-          showNotification(
-            result.success
-              ? `"${subject.name}" deleted`
-              : result.error || "Failed to delete subject",
-          );
-        },
-      },
-    ]);
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+    const subject = pendingDelete;
+    setPendingDelete(null);
+    const result = await deleteSubject(subject.id);
+    showNotification(
+      result.success
+        ? `"${subject.name}" deleted`
+        : result.error || "Failed to delete subject",
+    );
   };
 
   if (isLoading) {
@@ -215,7 +206,7 @@ export function HomeSubjects() {
               <Pressable
                 key={subject.id}
                 onPress={() => router.push(`/subject/${subject.id}`)}
-                onLongPress={() => confirmDelete(subject)}
+                onLongPress={() => setPendingDelete(subject)}
                 style={{ width: "48%", height: 190 }}
                 className="rounded-2xl border border-rule bg-paper-card p-4"
               >
@@ -264,28 +255,22 @@ export function HomeSubjects() {
         </View>
       </ScrollView>
 
-      <Pressable
-        onPress={() => setShowQuickCreate(true)}
-        className="absolute bottom-6 right-6 items-center justify-center rounded-full bg-onyx z-10"
-        style={{ width: 56, height: 56 }}
-      >
-        <Zap size={24} color={ink} fill={ink2} />
-      </Pressable>
-
       {showCreateModal && (
         <CreateSubjectModal
           onClose={() => setShowCreateModal(false)}
           onCreated={handleSubjectCreated}
         />
       )}
-      {showQuickCreate && (
-        <QuickCreateModal
-          subjects={subjects}
-          onClose={() => setShowQuickCreate(false)}
-          onFolderCreated={handleQuickFolderCreated}
-          onQuestionCreated={handleQuickQuestionCreated}
-        />
-      )}
+
+      <ConfirmModal
+        visible={!!pendingDelete}
+        title={pendingDelete?.name ?? ""}
+        message="Delete this subject? This can't be undone."
+        confirmLabel="Delete"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
+
       <Notification message={notification} />
     </View>
   );

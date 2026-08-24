@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  FlatList,
-  Alert,
-  RefreshControl,
-} from "react-native";
+import { View, Text, Pressable, FlatList, RefreshControl } from "react-native";
 import { ChevronRight, Folder, Plus } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useSubjectFolders } from "@/hooks/useSubjectFolders";
@@ -18,12 +11,14 @@ import { CreateFolderModal } from "./CreateFolderModal";
 import { EditFolderModal } from "./EditFolderModal";
 import { FolderItem } from "@/types/folder";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { ActionSheet } from "@/components/common/ActionSheet";
 
 export function SubjectFolders({ subjectID }: { subjectID: string }) {
   const ink = useThemeColor("#F1EFEC", "#2B2724");
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingFolder, setEditingFolder] = useState<FolderItem | null>(null);
+  const [managingFolder, setManagingFolder] = useState<FolderItem | null>(null);
 
   const {
     subject,
@@ -44,23 +39,14 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
     showNotification(`"${newFolder.name}" created`);
   };
 
-  const handleLongPress = (item: FolderItem) => {
-    Alert.alert(item.name, "Manage this folder", [
-      { text: "Rename", onPress: () => setEditingFolder(item) },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          const result = await deleteFolder(item.id);
-          showNotification(
-            result.success
-              ? `"${item.name}" deleted`
-              : result.error || "Failed to delete folder",
-          );
-        },
-      },
-      { text: "Cancel", style: "cancel" },
-    ]);
+  const handleDeleteFolder = async (item: FolderItem) => {
+    setManagingFolder(null);
+    const result = await deleteFolder(item.id);
+    showNotification(
+      result.success
+        ? `"${item.name}" deleted`
+        : result.error || "Failed to delete folder",
+    );
   };
 
   if (isLoading) return <SubjectFoldersSkeleton />;
@@ -112,7 +98,7 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
                 },
               })
             }
-            onLongPress={() => handleLongPress(item)}
+            onLongPress={() => setManagingFolder(item)}
             className="flex-row items-center rounded-xl px-2 py-4"
             style={{ gap: 16 }}
           >
@@ -190,6 +176,31 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
           }}
         />
       )}
+
+      <ActionSheet
+        visible={!!managingFolder}
+        title={managingFolder?.name}
+        onCancel={() => setManagingFolder(null)}
+        options={
+          managingFolder
+            ? [
+                {
+                  label: "Rename",
+                  onPress: () => {
+                    setEditingFolder(managingFolder);
+                    setManagingFolder(null);
+                  },
+                },
+                {
+                  label: "Delete",
+                  destructive: true,
+                  onPress: () => handleDeleteFolder(managingFolder),
+                },
+              ]
+            : []
+        }
+      />
+
       <Notification message={notification} />
     </View>
   );

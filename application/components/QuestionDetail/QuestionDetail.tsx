@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   Image,
-  Alert,
   RefreshControl,
 } from "react-native";
 import {
@@ -29,6 +28,7 @@ import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
 import { difficultyLabels } from "@/lib/questionUtils";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { ConfirmModal } from "@/components/common/ConfirmModal";
 
 export function QuestionDetail({
   subjectId,
@@ -64,6 +64,7 @@ export function QuestionDetail({
   const { notification, showNotification } = useNotification();
   const [showEditModal, setShowEditModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   if (isLoading) return <QuestionDetailSkeleton />;
 
@@ -79,31 +80,21 @@ export function QuestionDetail({
 
   const label = difficultyLabels[question.difficulty];
 
-  const handleDelete = () => {
-    Alert.alert("Delete question", "This can't be undone.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          setIsDeleting(true);
-          try {
-            await apiFetch(`/api/questions/${questionId}`, {
-              method: "DELETE",
-              token: accessToken!,
-            });
-            router.back();
-          } catch (err) {
-            setIsDeleting(false);
-            showNotification(
-              err instanceof ApiError
-                ? err.message
-                : "Failed to delete question",
-            );
-          }
-        },
-      },
-    ]);
+  const handleDelete = async () => {
+    setConfirmingDelete(false);
+    setIsDeleting(true);
+    try {
+      await apiFetch(`/api/questions/${questionId}`, {
+        method: "DELETE",
+        token: accessToken!,
+      });
+      router.back();
+    } catch (err) {
+      setIsDeleting(false);
+      showNotification(
+        err instanceof ApiError ? err.message : "Failed to delete question",
+      );
+    }
   };
 
   return (
@@ -129,7 +120,11 @@ export function QuestionDetail({
             >
               <Pencil size={18} color={ink} strokeWidth={1.75} />
             </Pressable>
-            <Pressable onPress={handleDelete} hitSlop={8} disabled={isDeleting}>
+            <Pressable
+              onPress={() => setConfirmingDelete(true)}
+              hitSlop={8}
+              disabled={isDeleting}
+            >
               <Trash2 size={18} color="#A34A34" strokeWidth={1.75} />
             </Pressable>
           </View>
@@ -244,6 +239,15 @@ export function QuestionDetail({
           }}
         />
       )}
+
+      <ConfirmModal
+        visible={confirmingDelete}
+        title="Delete question"
+        message="This can't be undone."
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmingDelete(false)}
+      />
 
       <Notification message={notification} />
     </View>

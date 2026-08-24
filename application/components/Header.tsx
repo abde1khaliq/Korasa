@@ -1,6 +1,14 @@
-import { useState } from "react";
-import { View, Text, Pressable, Modal } from "react-native";
-import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  Modal,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+} from "react-native";
+import { useRouter, usePathname } from "expo-router";
 import {
   ChevronLeft,
   LogOut,
@@ -14,6 +22,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 export function Header() {
   const ink = useThemeColor("#2B2724", "#F1EFEC");
 
@@ -21,10 +33,15 @@ export function Header() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { scheme, toggle } = useTheme();
+  const pathname = usePathname();
+  const canGoBack = router.canGoBack();
+
+  useEffect(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  }, [canGoBack]);
 
   const userEmail = user?.email ?? "";
   const userName = user?.username ?? "";
-  const canGoBack = router.canGoBack();
 
   const handleSignOut = () => {
     setShowUserMenu(false);
@@ -33,7 +50,6 @@ export function Header() {
 
   return (
     <SafeAreaView edges={["top"]} className="bg-paper">
-      {/* Reduced padding top from pt-2 to pt-1 or 0 to minimize gap */}
       <View className="flex-row items-center justify-between px-6 py-1">
         <View className="flex-row items-center" style={{ gap: 8 }}>
           {canGoBack && (
