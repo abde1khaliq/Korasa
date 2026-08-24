@@ -159,14 +159,13 @@ export function LandingPage({ isAuthenticated }: { isAuthenticated: boolean }) {
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a href="" className="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-paper/20 px-6 py-3.5 text-[15px] text-paper/50 sm:w-auto">
-              <Smartphone className="size-4" strokeWidth={1.75} />
-              Android v1.0
-            </a>
-            <span className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2.5 rounded-full border border-paper/20 px-6 py-3.5 text-[15px] text-paper/50 sm:w-auto">
-              <Apple className="size-4" strokeWidth={1.75} />
-              iOS — coming soon
-            </span>
+<a 
+  href="https://mega.nz/file/w2QSTKpL#6uvafOjPHLumIb4dLbbOQQk9U-WpIuKBHjo_JLHUzEU" 
+  className="inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-paper px-6 py-3.5 text-[15px] text-onyx hover:bg-paper/90 transition-colors sm:w-auto"
+>
+  <Smartphone className="size-4" strokeWidth={1.75} />
+  Korasa App (90MBs)
+</a>
 
           </div>
         </div>
