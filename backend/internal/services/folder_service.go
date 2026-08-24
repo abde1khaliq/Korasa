@@ -90,3 +90,78 @@ func GetSubjectFolders(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, dto.ToFolderListResponse(folders, db))
 	}
 }
+
+func UpdateFolder(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.GetInt("userID")
+
+		folderID, err := strconv.Atoi(c.Param("folderID"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid folder id"})
+			return
+		}
+
+		folder, err := validators.UserOwnFolder(db, folderID, userID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			}
+			return
+		}
+
+		var input models.FolderInput
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		folder.Name = input.Name
+		if err := db.Save(&folder).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update folder"})
+			return
+		}
+
+		c.JSON(http.StatusOK, dto.ToFolderResponse(folder, db))
+	}
+}
+
+func DeleteFolder(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.GetInt("userID")
+
+		folderID, err := strconv.Atoi(c.Param("folderID"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid folder id"})
+			return
+		}
+
+		folder, err := validators.UserOwnFolder(db, folderID, userID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			}
+			return
+		}
+
+		err = db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Where("folder_id = ?", folder.ID).Delete(&models.Question{}).Error; err != nil {
+				return err
+			}
+			return tx.Delete(&folder).Error
+		})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete folder"})
+			return
+		}
+
+		c.Status(http.StatusNoContent)
+	}
+}

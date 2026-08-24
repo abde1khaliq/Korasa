@@ -53,6 +53,7 @@ func CreateQuestion(db *gorm.DB) gin.HandlerFunc {
 
 		question := models.Question{
 			ImageURL:   imageURL,
+			Text:       c.PostForm("text"),
 			Answer:     c.PostForm("answer"),
 			Difficulty: c.PostForm("difficulty"),
 			Note:       c.PostForm("note"),
@@ -141,55 +142,58 @@ func GetQuestionByID(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// func UpdateQuestion(db *gorm.DB) gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		userID := c.GetInt("userID")
+// Text/answer/difficulty/note only — does not support replacing the image.
+// A re-upload flow (new Cloudinary asset + orphaning the old one) is a
+// separate feature and wasn't part of this request.
+func UpdateQuestion(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.GetInt("userID")
 
-// 		questionID, err := strconv.Atoi(c.Param("questionID"))
-// 		if err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid question id"})
-// 			return
-// 		}
+		questionID, err := strconv.Atoi(c.Param("questionID"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid question id"})
+			return
+		}
 
-// 		var question models.Question
-// 		if err := db.First(&question, questionID).Error; err != nil {
-// 			if errors.Is(err, gorm.ErrRecordNotFound) {
-// 				c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
-// 			} else {
-// 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-// 			}
-// 			return
-// 		}
+		var question models.Question
+		if err := db.First(&question, questionID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			}
+			return
+		}
 
-// 		if _, err := validators.UserOwnFolder(db, question.FolderID, userID); err != nil {
-// 			c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
-// 			return
-// 		}
+		if _, err := validators.UserOwnFolder(db, question.FolderID, userID); err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
+			return
+		}
 
-// 		var input models.QuestionInput
-// 		if err := c.ShouldBindJSON(&input); err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
+		var input models.QuestionInput
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
-// 		if err := validators.Validate(input); err != nil {
-// 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 			return
-// 		}
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
-// 		question.Text = input.Text
-// 		question.Answer = input.Answer
-// 		question.Difficulty = input.Difficulty
-// 		question.Note = input.Note
+		question.Text = input.Text
+		question.Answer = input.Answer
+		question.Difficulty = input.Difficulty
+		question.Note = input.Note
 
-// 		if err := db.Save(&question).Error; err != nil {
-// 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update question"})
-// 			return
-// 		}
+		if err := db.Save(&question).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update question"})
+			return
+		}
 
-// 		c.JSON(http.StatusOK, dto.ToQuestionResponse(question))
-// 	}
-// }
+		c.JSON(http.StatusOK, dto.ToQuestionResponse(question))
+	}
+}
 
 func DeleteQuestion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {

@@ -32,9 +32,10 @@ export function highlightText(text: string, query: string) {
 export function getQuestionMatchType(
   question: Question,
   searchQuery: string,
-): "answer" | "notes" | null {
+): "text" | "answer" | "notes" | null {
   const query = searchQuery.toLowerCase().trim();
   if (!query) return null;
+  if (question.text && question.text.toLowerCase().includes(query)) return "text";
   if (question.answer.toLowerCase().includes(query)) return "answer";
   if (question.note.toLowerCase().includes(query)) return "notes";
   return null;

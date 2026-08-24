@@ -1,0 +1,111 @@
+import { useState } from "react";
+import {
+  View, Text, TextInput, Pressable, Modal, ActivityIndicator,
+  KeyboardAvoidingView, Platform,
+} from "react-native";
+import { X, Check } from "lucide-react-native";
+import { useAuth } from "@/context/AuthContext";
+import { apiFetch, ApiError } from "@/lib/api";
+import { FolderItem } from "@/types/folder";
+import { useThemeColor } from "@/hooks/useThemeColor";
+
+export function EditFolderModal({
+  subjectID,
+  folder,
+  onClose,
+  onUpdated,
+}: {
+  subjectID: string;
+  folder: FolderItem;
+  onClose: () => void;
+  onUpdated: (folder: FolderItem) => void;
+}) {
+  const ink = useThemeColor("#F1EFEC", "#2B2724");
+  const ink2 = useThemeColor("#2B2724", "#F1EFEC");
+  const { accessToken } = useAuth();
+  const [name, setName] = useState(folder.name);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const updated: FolderItem = await apiFetch(
+        `/api/subjects/${subjectID}/folders/${folder.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({ name: trimmed }),
+          token: accessToken!,
+        },
+      );
+      onUpdated(updated);
+      onClose();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to update folder");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable
+        className="flex-1 justify-end"
+        style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
+        onPress={onClose}
+      >
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="rounded-t-3xl bg-paper px-6 pb-8 pt-5"
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className="text-[22px] text-ink">Rename folder</Text>
+              <Pressable
+                onPress={onClose}
+                className="items-center justify-center rounded-full"
+                style={{ width: 36, height: 36 }}
+              >
+                <X size={20} color={ink2} strokeWidth={1.75} />
+              </Pressable>
+            </View>
+
+            <View className="mt-5">
+              <Text className="text-[13px] tracking-widest text-ink-faint uppercase">
+                Folder name
+              </Text>
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                autoFocus
+                editable={!isSubmitting}
+                className="mt-2 rounded-xl border border-rule bg-paper-card px-4 text-[16px] text-ink"
+                style={{ paddingVertical: 14 }}
+              />
+              {error && <Text className="mt-3 text-[14px] text-hard">{error}</Text>}
+
+              <Pressable
+                onPress={handleSubmit}
+                disabled={isSubmitting || !name.trim()}
+                className="mt-5 flex-row items-center justify-center gap-2.5 rounded-xl bg-onyx py-3.5"
+                style={{ opacity: isSubmitting || !name.trim() ? 0.4 : 1 }}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#F7F5F1" />
+                ) : (
+                  <Check size={20} color={ink} strokeWidth={1.75} />
+                )}
+                <Text className="text-[16px] text-paper">
+                  {isSubmitting ? "Saving…" : "Save changes"}
+                </Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Pressable>
+    </Modal>
+  );
+}

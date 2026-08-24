@@ -5,6 +5,7 @@ import "time"
 type Question struct {
 	ID         int       `gorm:"primaryKey"`
 	ImageURL   string    `gorm:"not null;size:2048" validate:"required,url"`
+	Text       string    `gorm:"size:2000" validate:"max=2000"`
 	Answer     string    `gorm:"not null;size:2000" validate:"required,min=1,max=2000"`
 	Difficulty string    `gorm:"not null;size:16" validate:"required,oneof=easy medium hard"`
 	Note       string    `gorm:"size:2000"`
@@ -14,6 +15,7 @@ type Question struct {
 }
 
 type QuestionInput struct {
+	Text       string `json:"text" validate:"max=2000"`
 	Answer     string `json:"answer" validate:"required,min=1,max=2000"`
 	Difficulty string `json:"difficulty" validate:"required,oneof=easy medium hard"`
 	Note       string `json:"note" validate:"max=2000"`

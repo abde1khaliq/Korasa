@@ -31,6 +31,7 @@ export function useQuestionFilter(questions: Question[]) {
     if (!searchLower) return filteredByDifficulty;
     return filteredByDifficulty.filter(
       (q) =>
+        (q.text && q.text.toLowerCase().includes(searchLower)) ||
         q.answer.toLowerCase().includes(searchLower) ||
         q.note.toLowerCase().includes(searchLower),
     );

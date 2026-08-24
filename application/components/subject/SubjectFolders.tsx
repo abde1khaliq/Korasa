@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Pressable, FlatList } from "react-native";
+import { View, Text, Pressable, FlatList, Alert } from "react-native";
 import { ChevronRight, Folder, Plus } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useSubjectFolders } from "@/hooks/useSubjectFolders";
@@ -8,6 +8,7 @@ import { Notification } from "@/components/Notification";
 import { SubjectFoldersSkeleton } from "./SubjectFoldersSkeleton";
 import { SubjectFoldersError } from "./SubjectFoldersError";
 import { CreateFolderModal } from "./CreateFolderModal";
+import { EditFolderModal } from "./EditFolderModal";
 import { FolderItem } from "@/types/folder";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
@@ -15,13 +16,32 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
   const ink = useThemeColor("#F1EFEC", "#2B2724")
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<FolderItem | null>(null);
 
-  const { subject, folders, isLoading, error, fetchData, addFolder } = useSubjectFolders(subjectID);
+  const { subject, folders, isLoading, error, fetchData, addFolder, updateFolderState, deleteFolder } =
+    useSubjectFolders(subjectID);
   const { notification, showNotification } = useNotification();
 
   const handleFolderCreated = (newFolder: FolderItem) => {
     addFolder(newFolder);
     showNotification(`"${newFolder.name}" created`);
+  };
+
+  const handleLongPress = (item: FolderItem) => {
+    Alert.alert(item.name, "Manage this folder", [
+      { text: "Rename", onPress: () => setEditingFolder(item) },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          const result = await deleteFolder(item.id);
+          showNotification(
+            result.success ? `"${item.name}" deleted` : result.error || "Failed to delete folder",
+          );
+        },
+      },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
   if (isLoading) return <SubjectFoldersSkeleton />;
@@ -54,6 +74,7 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
                 params: { id: subjectID, folderId: String(item.id), name: item.name },
               })
             }
+            onLongPress={() => handleLongPress(item)}
             className="flex-row items-center rounded-xl px-2 py-4"
             style={{ gap: 16 }}
           >
@@ -93,6 +114,18 @@ export function SubjectFolders({ subjectID }: { subjectID: string }) {
           subjectID={subjectID}
           onClose={() => setShowCreateModal(false)}
           onCreated={handleFolderCreated}
+        />
+      )}
+      {editingFolder && (
+        <EditFolderModal
+          subjectID={subjectID}
+          folder={editingFolder}
+          onClose={() => setEditingFolder(null)}
+          onUpdated={(updated) => {
+            updateFolderState(updated);
+            setEditingFolder(null);
+            showNotification(`"${updated.name}" updated`);
+          }}
         />
       )}
       <Notification message={notification} />

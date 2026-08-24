@@ -5,6 +5,7 @@ import "github.com/abde1khaliq/korasa/internal/models"
 type QuestionResponse struct {
 	ID         int    `json:"id"`
 	ImageURL   string `json:"image_url"`
+	Text       string `json:"text"`
 	Answer     string `json:"answer"`
 	Difficulty string `json:"difficulty"`
 	Note       string `json:"note"`
@@ -15,6 +16,7 @@ func ToQuestionResponse(q models.Question) QuestionResponse {
 	return QuestionResponse{
 		ID:         q.ID,
 		ImageURL:   q.ImageURL,
+		Text:       q.Text,
 		Answer:     q.Answer,
 		Difficulty: q.Difficulty,
 		Note:       q.Note,
