@@ -33,7 +33,7 @@ export function Login() {
       setError("Invalid credentials. Please try again.");
       setLoading(false);
     } else {
-      router.push("/");
+      router.push("/app");
       router.refresh();
     }
   };

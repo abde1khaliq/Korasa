@@ -14,7 +14,7 @@ export const Header = () => {
 
   const userEmail = session?.user?.email || "";
   const userName = session?.user?.name || "";
-  const isRoot = pathname === "/";
+  const isRoot = pathname === "/app";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

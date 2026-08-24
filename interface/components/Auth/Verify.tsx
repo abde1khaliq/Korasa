@@ -142,7 +142,7 @@ export const VerifyEmailPage = () => {
       );
 
       setTimeout(() => {
-        router.push("/");
+        router.push("/app");
         router.refresh();
       }, 1000);
     } catch (err) {
