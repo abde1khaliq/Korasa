@@ -110,7 +110,7 @@ export function LandingPage({ isAuthenticated }: { isAuthenticated: boolean }) {
           </div>
         </div>
       </section> */}
-
+{/* 
       <section id="changelog" className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-2xl">
           <p className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
@@ -148,7 +148,7 @@ export function LandingPage({ isAuthenticated }: { isAuthenticated: boolean }) {
             ))}
           </ul>
         </div>
-      </section>
+      </section> */}
 
       {/* Download */}
       <section id="download" className="px-6 py-16 sm:px-10">
