@@ -151,13 +151,7 @@ func DeleteFolder(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		err = db.Transaction(func(tx *gorm.DB) error {
-			if err := tx.Where("folder_id = ?", folder.ID).Delete(&models.Question{}).Error; err != nil {
-				return err
-			}
-			return tx.Delete(&folder).Error
-		})
-		if err != nil {
+		if err := db.Delete(&folder).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete folder"})
 			return
 		}
