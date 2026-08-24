@@ -107,7 +107,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
         style={{
           position: "absolute",
           alignSelf: "center",
-          top: -26,
+          top: -15,
           width: 56,
           height: 56,
           borderRadius: 28,
