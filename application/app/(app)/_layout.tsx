@@ -21,6 +21,10 @@ export default function AppLayout() {
           <Stack.Screen name="subject/[id]" />
           <Stack.Screen name="subject/[id]/folder/[folderId]" />
           <Stack.Screen name="subject/[id]/folder/[folderId]/question/[questionId]" />
+
+          <Stack.Screen name="exam/[id]" />
+          <Stack.Screen name="exam/[id]/attempt" />
+          <Stack.Screen name="exam/[id]/attempt/[attemptId]" />
         </Stack>
       </View>
     </View>
