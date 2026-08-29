@@ -13,5 +13,9 @@ func UserRouters(router *gin.RouterGroup, db *gorm.DB) {
 	router.POST("/refresh", services.RefreshUser(db))
 	router.POST("/verify", services.VerifyEmail(db))
 	router.POST("/resend-verification", services.ResendVerificationCode())
+	router.POST("/forgot-password", services.ForgotPassword(db))
+	router.POST("/verify-reset-code", services.VerifyResetCode())
+	router.POST("/reset-password", services.ResetPassword(db))
+	router.POST("/resend-reset-code", services.ResendPasswordResetCode(db))
 	router.PATCH("/onboarding-complete", middleware.RequireAuth(), services.CompleteOnboarding(db))
 }

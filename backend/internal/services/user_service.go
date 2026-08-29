@@ -74,6 +74,7 @@ func (s *verificationStore) incrementAttempts(email string) {
 }
 
 var verificationCodes = newVerificationStore()
+var passwordResetCodes = newVerificationStore()
 
 func RegisterUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -312,3 +313,184 @@ func CompleteOnboarding(db *gorm.DB) gin.HandlerFunc {
 		c.Status(http.StatusNoContent)
 	}
 }
+
+func ForgotPassword(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var input struct {
+			Email string `json:"email" binding:"required"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email is required"})
+			return
+		}
+
+		generic := gin.H{"message": "If an account with that email exists, a reset code has been sent."}
+
+		var user models.User
+		if err := db.Where("email = ?", input.Email).First(&user).Error; err != nil {
+			c.JSON(http.StatusOK, generic)
+			return
+		}
+
+		code, err := security.GenerateVerificationCode()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate reset code"})
+			return
+		}
+
+		passwordResetCodes.set(input.Email, VerificationData{
+			Code:       code,
+			Email:      input.Email,
+			ExpiresAt:  time.Now().Add(verificationCodeTTL),
+			LastSentAt: time.Now(),
+		})
+
+		if err := SendPasswordResetCode(input.Email, code); err != nil {
+			passwordResetCodes.delete(input.Email)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not send reset email"})
+			return
+		}
+
+		c.JSON(http.StatusOK, generic)
+	}
+}
+
+func VerifyResetCode() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var input struct {
+			Email string `json:"email" binding:"required"`
+			Code  string `json:"code" binding:"required"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email and code are required"})
+			return
+		}
+
+		resetData, exists := passwordResetCodes.get(input.Email)
+		if !exists {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired reset code"})
+			return
+		}
+
+		if resetData.Attempts >= verificationMaxTries {
+			passwordResetCodes.delete(input.Email)
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "too many failed attempts, please request a new code"})
+			return
+		}
+
+		if subtle.ConstantTimeCompare([]byte(resetData.Code), []byte(input.Code)) != 1 {
+			passwordResetCodes.incrementAttempts(input.Email)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired reset code"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Code verified."})
+	}
+}
+
+func ResetPassword(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var input struct {
+			Email    string `json:"email" binding:"required"`
+			Code     string `json:"code" binding:"required"`
+			Password string `json:"password" binding:"required"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email, code, and password are required"})
+			return
+		}
+
+		if len(input.Password) < 8 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "password must be at least 8 characters"})
+			return
+		}
+
+		resetData, exists := passwordResetCodes.get(input.Email)
+		if !exists {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired reset code"})
+			return
+		}
+
+		if resetData.Attempts >= verificationMaxTries {
+			passwordResetCodes.delete(input.Email)
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "too many failed attempts, please request a new code"})
+			return
+		}
+
+		if subtle.ConstantTimeCompare([]byte(resetData.Code), []byte(input.Code)) != 1 {
+			passwordResetCodes.incrementAttempts(input.Email)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired reset code"})
+			return
+		}
+
+		hashed, err := security.HashPassword(input.Password)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not process password"})
+			return
+		}
+
+		if err := db.Model(&models.User{}).Where("email = ?", input.Email).Update("password", hashed).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update password"})
+			return
+		}
+
+		passwordResetCodes.delete(input.Email)
+
+		c.JSON(http.StatusOK, gin.H{"message": "Password reset successfully."})
+	}
+}
+
+func ResendPasswordResetCode(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var input struct {
+			Email string `json:"email" binding:"required"`
+		}
+
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email is required"})
+			return
+		}
+
+		generic := gin.H{"message": "If an account with that email exists, a new reset code has been sent."}
+
+		var user models.User
+		if err := db.Where("email = ?", input.Email).First(&user).Error; err != nil {
+			c.JSON(http.StatusOK, generic)
+			return
+		}
+
+		resetData, exists := passwordResetCodes.get(input.Email)
+		if !exists {
+			c.JSON(http.StatusOK, generic)
+			return
+		}
+
+		if time.Since(resetData.LastSentAt) < verificationResendCD {
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "please wait before requesting another code"})
+			return
+		}
+
+		newCode, err := security.GenerateVerificationCode()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate reset code"})
+			return
+		}
+
+		resetData.Code = newCode
+		resetData.Attempts = 0
+		resetData.ExpiresAt = time.Now().Add(verificationCodeTTL)
+		resetData.LastSentAt = time.Now()
+		passwordResetCodes.set(input.Email, resetData)
+
+		if err := SendPasswordResetCode(input.Email, newCode); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not send reset email"})
+			return
+		}
+
+		c.JSON(http.StatusOK, generic)
+	}
+}
+

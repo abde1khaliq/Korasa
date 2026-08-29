@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { ApiError } from "@/lib/api";
 
 export default function LoginScreen() {
   const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -84,9 +85,16 @@ export default function LoginScreen() {
           </View>
 
           <Pressable
+            onPress={() => router.push("/(auth)/forgot-password")}
+            className="mt-3 self-end"
+          >
+            <Text className="text-[15px] text-brand">Forgot password?</Text>
+          </Pressable>
+
+          <Pressable
             onPress={handleLogin}
             disabled={loading}
-            className="mt-8 rounded-full bg-onyx py-4 items-center"
+            className="mt-6 rounded-full bg-onyx py-4 items-center"
             style={{ opacity: loading ? 0.5 : 1 }}
           >
             {loading ? (
