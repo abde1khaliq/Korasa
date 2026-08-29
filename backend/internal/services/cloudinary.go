@@ -25,10 +25,6 @@ func InitCloudinary() error {
 	return nil
 }
 
-// Capped to 1600px wide with auto quality — this is not optional polish,
-// it's what keeps a single free-tier account (25 credits/month, where
-// storage + bandwidth + transformations all draw from the same pool)
-// from being exhausted by a handful of full-resolution phone photos.
 func UploadQuestionImage(ctx context.Context, file io.Reader) (string, error) {
 	resp, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{
 		Folder:         "korasa/questions",
