@@ -1,5 +1,5 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -8,6 +8,8 @@ import "react-native-reanimated";
 import "../global.css";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import { useAppUpdates } from "@/hooks/useAppUpdates";
+import { UpdateSplash } from "@/components/misc/UpdateSplash";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,11 +46,26 @@ function RootNavigator() {
   );
 }
 
-function ThemedRoot() {
+function AppWithUpdateCheck() {
   const { scheme, themeVars } = useTheme();
+  const { status, error, retry } = useAppUpdates();
+  const [dismissed, setDismissed] = useState(false);
+
+  const showSplash =
+    !dismissed && status !== "up-to-date";
+
   return (
     <View style={[{ flex: 1 }, themeVars]}>
-      <RootNavigator />
+      {showSplash ? (
+        <UpdateSplash
+          status={status as Exclude<typeof status, "up-to-date">}
+          error={error}
+          onRetry={retry}
+          onDismiss={() => setDismissed(true)}
+        />
+      ) : (
+        <RootNavigator />
+      )}
       <StatusBar style={scheme === "dark" ? "light" : "dark"} />
     </View>
   );
@@ -66,7 +83,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <ThemedRoot />
+        <AppWithUpdateCheck />
       </ThemeProvider>
     </AuthProvider>
   );
