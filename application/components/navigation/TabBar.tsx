@@ -9,20 +9,8 @@ import { Notification } from "@/components/Notification";
 import { QuickCreateModal } from "@/components/home/QuickCreateModal";
 import { triggerHomeRefresh } from "@/lib/refreshBus";
 
-// Deliberately NOT importing BottomTabBarProps from @react-navigation/bottom-tabs
-// — it's a transitive dep of expo-router, not a direct one in package.json,
-// so pinning to its exact type is a version-drift risk. This is a narrower
-// structural subset of what Tabs actually passes; TS is structural, so
-// spreading the real props into this still type-checks.
-type TabBarProps = {
-  state: { index: number; routes: { key: string; name: string }[] };
-  navigation: {
-    navigate: (name: string) => void;
-    emit: (event: { type: string; target: string; canPreventDefault: true }) => {
-      defaultPrevented: boolean;
-    };
-  };
-};
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+
 
 const ICONS: Record<string, { label: string; icon: typeof Home }> = {
   index: { label: "Home", icon: Home },
@@ -31,7 +19,7 @@ const ICONS: Record<string, { label: string; icon: typeof Home }> = {
   profile: { label: "Profile", icon: User },
 };
 
-export function TabBar({ state, navigation }: TabBarProps) {
+export function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const paper = useThemeColor("#F7F5F1", "#211D1A");
   const ink = useThemeColor("#2B2724", "#F1EFEC");

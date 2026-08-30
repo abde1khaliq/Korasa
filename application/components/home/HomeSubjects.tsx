@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { Plus, ArrowRight } from "lucide-react-native";
 import Svg, { Circle } from "react-native-svg";
 import { useAuth } from "@/context/AuthContext";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useNotification } from "@/hooks/useNotification";
-import { RefreshControl } from "react-native";
 import {
-  getSubjectMeta,
   getGreeting,
   getFormattedName,
 } from "@/lib/subjectUtils";
@@ -17,9 +15,11 @@ import { HomeSubjectsSkeleton } from "./HomeSubjectsSkeleton";
 import { HomeSubjectsError } from "./HomeSubjectsError";
 import { HomeEmptyState } from "./HomeEmptyState";
 import { CreateSubjectModal } from "./CreateSubjectModal";
+import { SubjectCard } from "./SubjectCard";
 import { Subject } from "@/types/subject";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
+import { ActionSheet } from "@/components/common/ActionSheet";
 import { registerHomeRefresh } from "@/lib/refreshBus";
 
 export function HomeSubjects() {
@@ -31,6 +31,7 @@ export function HomeSubjects() {
   const userName = user?.username ?? "";
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [managingSubject, setManagingSubject] = useState<Subject | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Subject | null>(null);
 
   const {
@@ -200,44 +201,14 @@ export function HomeSubjects() {
           className="flex-row flex-wrap justify-between px-6 py-6"
           style={{ rowGap: 16 }}
         >
-          {subjects.map((subject) => {
-            const { code, chip } = getSubjectMeta(subject.id, subject.name);
-            return (
-              <Pressable
-                key={subject.id}
-                onPress={() => router.push(`/subject/${subject.id}`)}
-                onLongPress={() => setPendingDelete(subject)}
-                style={{ width: "48%", height: 190 }}
-                className="rounded-2xl border border-rule bg-paper-card p-4"
-              >
-                <View
-                  className="self-start rounded-lg px-3 py-1.5"
-                  style={{ backgroundColor: chip.bg }}
-                >
-                  <Text
-                    style={{ color: chip.text, fontSize: 13, letterSpacing: 1 }}
-                  >
-                    {code}
-                  </Text>
-                </View>
-                <View style={{ flex: 1 }} />
-                <Text
-                  className="font-display text-[26px] leading-[30px] text-ink"
-                  numberOfLines={1}
-                >
-                  {subject.name}
-                </Text>
-                <View className="mt-3" style={{ gap: 4 }}>
-                  <Text className="text-[14px] text-ink-soft">
-                    {subject.folder_count || 0} folders
-                  </Text>
-                  <Text className="text-[14px] text-ink-soft">
-                    {subject.question_count || 0} questions
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          })}
+          {subjects.map((subject) => (
+            <SubjectCard
+              key={subject.id}
+              subject={subject}
+              onPress={() => router.push(`/subject/${subject.id}`)}
+              onOpenMenu={() => setManagingSubject(subject)}
+            />
+          ))}
 
           <Pressable
             onPress={() => setShowCreateModal(true)}
@@ -261,6 +232,31 @@ export function HomeSubjects() {
           onCreated={handleSubjectCreated}
         />
       )}
+
+      <ActionSheet
+        visible={!!managingSubject}
+        title={managingSubject?.name}
+        options={[
+          {
+            label: "Open subject",
+            onPress: () => {
+              const s = managingSubject;
+              setManagingSubject(null);
+              if (s) router.push(`/subject/${s.id}`);
+            },
+          },
+          {
+            label: "Delete subject",
+            destructive: true,
+            onPress: () => {
+              const s = managingSubject;
+              setManagingSubject(null);
+              setPendingDelete(s);
+            },
+          },
+        ]}
+        onCancel={() => setManagingSubject(null)}
+      />
 
       <ConfirmModal
         visible={!!pendingDelete}

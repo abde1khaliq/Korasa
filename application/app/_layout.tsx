@@ -8,6 +8,8 @@ import "react-native-reanimated";
 import "../global.css";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import { WhatsNewProvider } from "@/context/WhatsNewContext";
+import { WhatsNewModal } from "@/components/misc/WhatsNewModal";
 import { useAppUpdates } from "@/hooks/useAppUpdates";
 import { UpdateSplash } from "@/components/misc/UpdateSplash";
 
@@ -33,7 +35,7 @@ function RootNavigator() {
       return;
     }
     if (isAuthenticated && user?.has_completed_onboarding && (inAuthGroup || inOnboarding)) {
-      router.replace("/(app)");
+      router.replace("/(app)" as any);
     }
   }, [isAuthenticated, isLoading, segments, user?.has_completed_onboarding]);
 
@@ -64,7 +66,10 @@ function AppWithUpdateCheck() {
           onDismiss={() => setDismissed(true)}
         />
       ) : (
-        <RootNavigator />
+        <>
+          <RootNavigator />
+          <WhatsNewModal />
+        </>
       )}
       <StatusBar style={scheme === "dark" ? "light" : "dark"} />
     </View>
@@ -83,7 +88,9 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <AppWithUpdateCheck />
+        <WhatsNewProvider>
+          <AppWithUpdateCheck />
+        </WhatsNewProvider>
       </ThemeProvider>
     </AuthProvider>
   );
