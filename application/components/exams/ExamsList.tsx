@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { View, Text, Pressable, FlatList, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Plus, Clock, Layers, ChevronRight } from "lucide-react-native";
 import { useExams } from "@/hooks/useExams";
 import { useNotification } from "@/hooks/useNotification";
@@ -15,9 +16,14 @@ import { examTypeLabels, scorePercent } from "@/lib/examUtils";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 export function ExamsList() {
+  const insets = useSafeAreaInsets();
   const ink = useThemeColor("#F1EFEC", "#2B2724");
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const tabBarHeight = 64;
+  const tabBarBottom = Math.max(insets.bottom, 14);
+  const buttonBottom = tabBarBottom + tabBarHeight + 16;
 
   const { exams, isLoading, isRefreshing, error, fetchExams, onRefresh, addExam } = useExams();
   const { notification, showNotification } = useNotification();
@@ -56,7 +62,7 @@ export function ExamsList() {
       <FlatList
         data={exams}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: buttonBottom + 64 }}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={ink} />}
         ListHeaderComponent={
           <View className="px-2 pt-6 pb-4">
@@ -112,7 +118,17 @@ export function ExamsList() {
       <Pressable
         onPress={() => setShowCreateModal(true)}
         className="absolute self-center flex-row items-center rounded-full bg-onyx"
-        style={{ bottom: 24, gap: 8, paddingHorizontal: 24, paddingVertical: 14 }}
+        style={{
+          bottom: buttonBottom,
+          gap: 8,
+          paddingHorizontal: 24,
+          paddingVertical: 14,
+          shadowColor: "#000",
+          shadowOpacity: 0.18,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 8,
+        }}
       >
         <Plus size={20} color={ink} strokeWidth={2} />
         <Text className="text-[16px] text-paper">New exam</Text>
