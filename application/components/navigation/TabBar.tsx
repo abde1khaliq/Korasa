@@ -1,35 +1,41 @@
-import { useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  Platform,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Home, ClipboardList, Settings, User, Plus } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
+import { Home, ClipboardList, User, Plus } from "lucide-react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useNotification } from "@/hooks/useNotification";
 import { Notification } from "@/components/Notification";
 import { QuickCreateModal } from "@/components/home/QuickCreateModal";
 import { triggerHomeRefresh } from "@/lib/refreshBus";
-
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
-
-const ICONS: Record<string, { label: string; icon: typeof Home }> = {
-  index: { label: "Home", icon: Home },
-  exams: { label: "Exams", icon: ClipboardList },
-  settings: { label: "Settings", icon: Settings },
-  profile: { label: "Profile", icon: User },
-};
+const TABS: Array<{ name: string; label: string; icon: typeof Home }> = [
+  { name: "index", label: "Home", icon: Home },
+  { name: "exams", label: "Exams", icon: ClipboardList },
+  { name: "profile", label: "Profile", icon: User },
+];
 
 export function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const paper = useThemeColor("#F7F5F1", "#211D1A");
-  const ink = useThemeColor("#2B2724", "#F1EFEC");
-  const inkFaint = useThemeColor("#9C9086", "#7A7166");
-  const rule = useThemeColor("#E4DED4", "#3A332C");
-
   const [showQuickCreate, setShowQuickCreate] = useState(false);
 
-  // Independent fetch from Home's own useSubjects() — this bar is mounted
-  // once for the whole Tabs navigator, not per-screen.
+  const glassBg = useThemeColor("rgba(247, 245, 241, 0.92)", "rgba(33, 29, 26, 0.92)");
+  const glassBorder = useThemeColor("rgba(228, 222, 212, 0.8)", "rgba(58, 51, 44, 0.8)");
+  const onyxBg = useThemeColor("#2A2724", "#F1EFEC");
+  const onyxIcon = useThemeColor("#F7F5F1", "#211D1A");
+
   const { subjects } = useSubjects();
   const { notification, showNotification } = useNotification();
 
@@ -39,6 +45,12 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
   };
 
   const press = (routeName: string, isFocused: boolean) => {
+    try {
+      if (Platform.OS !== "web") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch {}
+
     const route = state.routes.find((r) => r.name === routeName);
     if (!route) return;
     const event = navigation.emit({
@@ -51,66 +63,60 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
     }
   };
 
-  const renderTab = (routeName: string) => {
-    const def = ICONS[routeName];
-    if (!def) return null;
-    const Icon = def.icon;
-    const routeIndex = state.routes.findIndex((r) => r.name === routeName);
-    const isFocused = state.index === routeIndex;
-
-    return (
-      <Pressable
-        key={routeName}
-        onPress={() => press(routeName, isFocused)}
-        style={{ flex: 1, alignItems: "center", gap: 4, paddingVertical: 4 }}
-      >
-        <Icon size={22} color={isFocused ? ink : inkFaint} strokeWidth={isFocused ? 2 : 1.75} />
-        <Text style={{ fontSize: 11, color: isFocused ? ink : inkFaint }}>{def.label}</Text>
-      </Pressable>
-    );
-  };
-
   return (
-    <View style={{ position: "relative" }}>
+    <View
+      pointerEvents="box-none"
+      style={{
+        position: "absolute",
+        left: 16,
+        right: 16,
+        bottom: Math.max(insets.bottom, 14),
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        zIndex: 50,
+      }}
+    >
+      {/* Container 1: Floating Liquid Glass Navigation Bar */}
       <View
         style={{
+          flex: 1,
+          height: 64,
+          borderRadius: 32,
+          backgroundColor: glassBg,
+          borderColor: glassBorder,
+          borderWidth: 1,
           flexDirection: "row",
           alignItems: "center",
-          backgroundColor: paper,
-          borderTopWidth: 1,
-          borderTopColor: rule,
-          paddingTop: 10,
-          paddingBottom: Math.max(insets.bottom, 10),
+          justifyContent: "space-between",
+          paddingHorizontal: 8,
+          shadowColor: "#000",
+          shadowOpacity: 0.14,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 8 },
+          elevation: 10,
         }}
       >
-        {renderTab("index")}
-        {renderTab("exams")}
-        <View style={{ width: 64 }} />
-        {renderTab("settings")}
-        {renderTab("profile")}
+        {TABS.map((tab) => {
+          const routeIndex = state.routes.findIndex((r) => r.name === tab.name);
+          const isFocused = state.index === routeIndex;
+          return (
+            <TabItem
+              key={tab.name}
+              tab={tab}
+              isFocused={isFocused}
+              onPress={() => press(tab.name, isFocused)}
+            />
+          );
+        })}
       </View>
 
-      <Pressable
+      {/* Container 2: Floating Quick Add Button */}
+      <QuickAddButton
+        onyxBg={onyxBg}
+        onyxIcon={onyxIcon}
         onPress={() => setShowQuickCreate(true)}
-        style={{
-          position: "absolute",
-          alignSelf: "center",
-          top: -15,
-          width: 56,
-          height: 56,
-          borderRadius: 28,
-          backgroundColor: "#2A2724",
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: "#000",
-          shadowOpacity: 0.25,
-          shadowRadius: 10,
-          shadowOffset: { width: 0, height: 4 },
-          elevation: 6,
-        }}
-      >
-        <Plus size={26} color="#F7F5F1" strokeWidth={2} />
-      </Pressable>
+      />
 
       {showQuickCreate && (
         <QuickCreateModal
@@ -120,7 +126,131 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
           onQuestionCreated={() => handleCreated("Question created")}
         />
       )}
+
       <Notification message={notification} />
     </View>
+  );
+}
+
+function TabItem({
+  tab,
+  isFocused,
+  onPress,
+}: {
+  tab: { name: string; label: string; icon: typeof Home };
+  isFocused: boolean;
+  onPress: () => void;
+}) {
+  const Icon = tab.icon;
+  const ink = useThemeColor("#2B2724", "#F1EFEC");
+  const inkFaint = useThemeColor("#9C9086", "#7A7166");
+  const activePillBg = useThemeColor(
+    "rgba(156, 144, 134, 0.22)",
+    "rgba(241, 239, 236, 0.12)"
+  );
+
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.92, { damping: 14, stiffness: 220 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 14, stiffness: 220 });
+  };
+
+  return (
+    <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+      <Pressable
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          paddingVertical: 8,
+          borderRadius: 24,
+          backgroundColor: isFocused ? activePillBg : "transparent",
+          gap: 3,
+        }}
+      >
+        <Icon
+          size={20}
+          color={isFocused ? ink : inkFaint}
+          strokeWidth={isFocused ? 2.2 : 1.75}
+        />
+        <Text
+          style={{
+            fontSize: 11,
+            fontWeight: isFocused ? "600" : "400",
+            color: isFocused ? ink : inkFaint,
+          }}
+        >
+          {tab.label}
+        </Text>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+function QuickAddButton({
+  onyxBg,
+  onyxIcon,
+  onPress,
+}: {
+  onyxBg: string;
+  onyxIcon: string;
+  onPress: () => void;
+}) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.88, { damping: 12, stiffness: 240 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 12, stiffness: 240 });
+  };
+
+  const handlePress = () => {
+    try {
+      if (Platform.OS !== "web") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+    } catch {}
+    onPress();
+  };
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Pressable
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={handlePress}
+        style={{
+          width: 54,
+          height: 54,
+          borderRadius: 32,
+          backgroundColor: onyxBg,
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: "#000",
+          shadowOpacity: 0.22,
+          shadowRadius: 18,
+          shadowOffset: { width: 0, height: 8 },
+          elevation: 10,
+        }}
+      >
+        <Plus size={24} color={onyxIcon} strokeWidth={2.25} />
+      </Pressable>
+    </Animated.View>
   );
 }

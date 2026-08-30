@@ -8,7 +8,7 @@ import {
   Platform,
   UIManager,
 } from "react-native";
-import { useRouter, usePathname } from "expo-router";
+import { useRouter } from "expo-router";
 import {
   ChevronLeft,
   LogOut,
@@ -16,6 +16,7 @@ import {
   Sun,
   Menu,
   User,
+  Settings,
 } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
@@ -33,7 +34,6 @@ export function Header() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { scheme, toggle } = useTheme();
-  const pathname = usePathname();
   const canGoBack = router.canGoBack();
 
   useEffect(() => {
@@ -117,15 +117,17 @@ export function Header() {
 
               <View className="p-2">
                 <Pressable
-                  onPress={handleSignOut}
+                  onPress={() => {
+                    setShowUserMenu(false);
+                    router.push("/(app)/(tabs)/settings" as any);
+                  }}
                   className="flex-row items-center rounded-xl px-3 py-2.5"
                   style={{ gap: 12 }}
                 >
-                  <LogOut size={16} color="#A34A34" strokeWidth={1.75} />
-                  <Text className="text-[14px]" style={{ color: "#A34A34" }}>
-                    Sign out
-                  </Text>
+                  <Settings size={16} color={ink} strokeWidth={1.75} />
+                  <Text className="text-[14px] text-ink">Settings</Text>
                 </Pressable>
+
                 <Pressable
                   onPress={() => {
                     setShowUserMenu(false);
@@ -141,6 +143,17 @@ export function Header() {
                   )}
                   <Text className="text-[14px] text-ink">
                     {scheme === "dark" ? "Light mode" : "Dark mode"}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={handleSignOut}
+                  className="flex-row items-center rounded-xl px-3 py-2.5"
+                  style={{ gap: 12 }}
+                >
+                  <LogOut size={16} color="#A34A34" strokeWidth={1.75} />
+                  <Text className="text-[14px]" style={{ color: "#A34A34" }}>
+                    Sign out
                   </Text>
                 </Pressable>
               </View>

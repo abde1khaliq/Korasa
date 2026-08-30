@@ -13,6 +13,7 @@ import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
   withTiming,
+  withSpring,
   cancelAnimation,
   Easing,
 } from "react-native-reanimated";
@@ -24,7 +25,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 const LONG_PRESS_DURATION = 1000; // 1 second
-const CORNER_RADIUS = 16;
+const CORNER_RADIUS = 24;
 const STROKE_WIDTH = 3;
 
 interface SubjectCardProps {
@@ -44,7 +45,10 @@ export function SubjectCard({
 
   const brandColor = useThemeColor("#A8703F", "#C99A66");
   const inkFaint = useThemeColor("#9C9086", "#7A7166");
+  const cardBg = useThemeColor("rgba(251, 250, 248, 0.92)", "rgba(39, 34, 32, 0.92)");
+  const cardBorder = useThemeColor("rgba(228, 222, 212, 0.85)", "rgba(58, 51, 44, 0.85)");
 
+  const scale = useSharedValue(1);
   const progress = useSharedValue(0);
   const borderOpacity = useSharedValue(0);
 
@@ -59,7 +63,6 @@ export function SubjectCard({
   const height = dimensions?.height ?? 0;
 
   // Perimeter of a rounded rectangle with corner radius R:
-  // 2*(w - 2*r) + 2*(h - 2*r) + 2*PI*r
   const perimeter =
     width > 0 && height > 0
       ? 2 * (width + height - 4 * CORNER_RADIUS) + 2 * Math.PI * CORNER_RADIUS
@@ -77,8 +80,16 @@ export function SubjectCard({
     };
   });
 
+  const cardScaleStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
   const handlePressIn = () => {
     hasTriggeredRef.current = false;
+    scale.value = withSpring(0.95, { damping: 14, stiffness: 220 });
+
     cancelAnimation(progress);
     cancelAnimation(borderOpacity);
     progress.value = 0;
@@ -103,6 +114,8 @@ export function SubjectCard({
   };
 
   const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 14, stiffness: 220 });
+
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -123,81 +136,96 @@ export function SubjectCard({
   };
 
   return (
-    <Pressable
-      onLayout={onLayout}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onPress={handlePress}
-      style={{ width: "48%", height: 190, position: "relative" }}
-      className="overflow-hidden rounded-2xl border border-rule bg-paper-card p-4"
-    >
-      {/* Top Header Row: Subject Chip Code & Move-up-right Arrow */}
-      <View className="flex-row items-center justify-between">
-        <View
-          className="self-start rounded-lg px-3 py-1.5"
-          style={{ backgroundColor: chip.bg }}
+    <Animated.View style={[{ width: "48%", height: 195 }, cardScaleStyle]}>
+      <Pressable
+        onLayout={onLayout}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={handlePress}
+        style={{
+          flex: 1,
+          borderRadius: CORNER_RADIUS,
+          backgroundColor: cardBg,
+          borderColor: cardBorder,
+          borderWidth: 1,
+          padding: 16,
+          overflow: "hidden",
+          shadowColor: "#000",
+          shadowOpacity: 0.08,
+          shadowRadius: 16,
+          shadowOffset: { width: 0, height: 6 },
+          elevation: 4,
+        }}
+      >
+        {/* Top Header Row: Subject Chip Code & Move-up-right Arrow */}
+        <View className="flex-row items-center justify-between">
+          <View
+            className="self-start rounded-xl px-3 py-1.5"
+            style={{ backgroundColor: chip.bg }}
+          >
+            <Text style={{ color: chip.text, fontSize: 12, letterSpacing: 1, fontWeight: "700" }}>
+              {code}
+            </Text>
+          </View>
+
+          <MoveUpRight size={17} color={inkFaint} strokeWidth={1.75} />
+        </View>
+
+        <View style={{ flex: 1 }} />
+
+        {/* Subject Name */}
+        <Text
+          className="font-display text-[25px] leading-[29px] text-ink"
+          numberOfLines={1}
         >
-          <Text style={{ color: chip.text, fontSize: 13, letterSpacing: 1 }}>
-            {code}
+          {subject.name}
+        </Text>
+
+        {/* Subject Counts */}
+        <View className="mt-3 flex-row items-center gap-1.5">
+          <Text className="text-[13px] text-ink-soft font-medium">
+            {subject.folder_count || 0} folders
+          </Text>
+          <Text className="text-[12px] text-ink-faint">·</Text>
+          <Text className="text-[13px] text-ink-soft font-medium">
+            {subject.question_count || 0} questions
           </Text>
         </View>
 
-        <MoveUpRight size={17} color={inkFaint} strokeWidth={1.75} />
-      </View>
-
-      <View style={{ flex: 1 }} />
-
-      {/* Subject Name */}
-      <Text
-        className="font-display text-[26px] leading-[30px] text-ink"
-        numberOfLines={1}
-      >
-        {subject.name}
-      </Text>
-
-      {/* Subject Counts */}
-      <View className="mt-3" style={{ gap: 4 }}>
-        <Text className="text-[14px] text-ink-soft">
-          {subject.folder_count || 0} folders
-        </Text>
-        <Text className="text-[14px] text-ink-soft">
-          {subject.question_count || 0} questions
-        </Text>
-      </View>
-
-      {/* Animated Loading Border Overlay for Long Press */}
-      {dimensions && (
-        <Animated.View
-          style={[
-            {
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-            },
-            animatedSvgStyle,
-          ]}
-          pointerEvents="none"
-        >
-          <Svg width={width} height={height} style={{ position: "absolute", top: 0, left: 0 }}>
-            <AnimatedRect
-              x={STROKE_WIDTH / 2}
-              y={STROKE_WIDTH / 2}
-              width={Math.max(0, width - STROKE_WIDTH)}
-              height={Math.max(0, height - STROKE_WIDTH)}
-              rx={CORNER_RADIUS}
-              ry={CORNER_RADIUS}
-              fill="none"
-              stroke={brandColor}
-              strokeWidth={STROKE_WIDTH}
-              strokeDasharray={`${perimeter} ${perimeter}`}
-              animatedProps={animatedProps}
-              strokeLinecap="round"
-            />
-          </Svg>
-        </Animated.View>
-      )}
-    </Pressable>
+        {/* Animated Loading Border Overlay for Long Press */}
+        {dimensions && (
+          <Animated.View
+            style={[
+              {
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+              },
+              animatedSvgStyle,
+            ]}
+            pointerEvents="none"
+          >
+            <Svg width={width} height={height} style={{ position: "absolute", top: 0, left: 0 }}>
+              <AnimatedRect
+                x={STROKE_WIDTH / 2}
+                y={STROKE_WIDTH / 2}
+                width={Math.max(0, width - STROKE_WIDTH)}
+                height={Math.max(0, height - STROKE_WIDTH)}
+                rx={CORNER_RADIUS}
+                ry={CORNER_RADIUS}
+                fill="none"
+                stroke={brandColor}
+                strokeWidth={STROKE_WIDTH}
+                strokeDasharray={`${perimeter} ${perimeter}`}
+                animatedProps={animatedProps}
+                strokeLinecap="round"
+              />
+            </Svg>
+          </Animated.View>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
