@@ -236,15 +236,15 @@ export function CreateExamModal({
   const folderLabelById = (id: number) => folders.find((f) => f.id === id)?.name ?? "";
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable
-        className="flex-1 justify-end"
-        style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
-        onPress={onClose}
+    <Modal transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={{ maxHeight: "95%" }}
+        <Pressable
+          className="flex-1 justify-end"
+          style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
+          onPress={onClose}
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
@@ -267,6 +267,8 @@ export function CreateExamModal({
               <ScrollView
                 className="px-6"
                 contentContainerStyle={{ paddingTop: 20, paddingBottom: 40, gap: 20 }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={true}
               >
                 <View>
                   <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
@@ -464,8 +466,8 @@ export function CreateExamModal({
               </ScrollView>
             )}
           </Pressable>
-        </KeyboardAvoidingView>
-      </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

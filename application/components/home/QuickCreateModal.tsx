@@ -151,7 +151,6 @@ export function QuickCreateModal({
 }) {
   const { accessToken } = useAuth();
   const ink = useThemeColor("#F1EFEC", "#2B2724");
-  const ink2 = useThemeColor("#2B2724", "#F1EFEC");
 
   const [tab, setTab] = useState<"folder" | "question">("folder");
   const [subjectId, setSubjectId] = useState<number | "">(
@@ -323,20 +322,20 @@ export function QuickCreateModal({
       : (folders.find((f) => f.id === v)?.name ?? "");
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable
-        className="flex-1 justify-end"
-        style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
-        onPress={onClose}
+    <Modal transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={{ maxHeight: "95%" }} // Increased from 90% to 95%
+        <Pressable
+          className="flex-1 justify-end"
+          style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
+          onPress={onClose}
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
             className="rounded-t-3xl bg-paper"
-            style={{ maxHeight: "95%" }} // Added maxHeight to the inner container
+            style={{ maxHeight: "95%" }}
           >
             <View className="flex-row items-center justify-between px-6 py-5 border-b border-rule">
               <Pressable onPress={onClose}>
@@ -385,6 +384,7 @@ export function QuickCreateModal({
                 gap: 20, // Increased from 16 to 20 for better spacing
               }}
               showsVerticalScrollIndicator={true} // Added scroll indicator for better UX
+              keyboardShouldPersistTaps="handled"
             >
               {subjects.length === 0 ? (
                 <Text className="text-[15px] text-ink-soft">
@@ -666,8 +666,8 @@ export function QuickCreateModal({
               )}
             </ScrollView>
           </Pressable>
-        </KeyboardAvoidingView>
-      </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

@@ -62,10 +62,14 @@ export function SubjectCard({
   const width = dimensions?.width ?? 0;
   const height = dimensions?.height ?? 0;
 
-  // Perimeter of a rounded rectangle with corner radius R:
+  const strokeRadius = Math.max(0, CORNER_RADIUS - STROKE_WIDTH / 2);
+  const rectWidth = Math.max(0, width - STROKE_WIDTH);
+  const rectHeight = Math.max(0, height - STROKE_WIDTH);
+
+  // Exact mathematical perimeter of the stroke path:
   const perimeter =
     width > 0 && height > 0
-      ? 2 * (width + height - 4 * CORNER_RADIUS) + 2 * Math.PI * CORNER_RADIUS
+      ? 2 * (rectWidth + rectHeight - 4 * strokeRadius) + 2 * Math.PI * strokeRadius
       : 500;
 
   const animatedProps = useAnimatedProps(() => {
@@ -90,14 +94,15 @@ export function SubjectCard({
     hasTriggeredRef.current = false;
     scale.value = withSpring(0.95, { damping: 14, stiffness: 220 });
 
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
     cancelAnimation(progress);
     cancelAnimation(borderOpacity);
     progress.value = 0;
-    borderOpacity.value = withTiming(1, { duration: 80 });
-    progress.value = withTiming(1, {
-      duration: LONG_PRESS_DURATION,
-      easing: Easing.linear,
-    });
+    borderOpacity.value = 0;
 
     timerRef.current = setTimeout(async () => {
       hasTriggeredRef.current = true;
@@ -106,10 +111,19 @@ export function SubjectCard({
           await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         }
       } catch {}
-      onOpenMenu();
-      borderOpacity.value = withTiming(0, { duration: 250 }, () => {
-        progress.value = 0;
+
+      // Trigger the border drawing animation after 1 second of continuous pressing
+      borderOpacity.value = withTiming(1, { duration: 100 });
+      progress.value = withTiming(1, {
+        duration: 300,
+        easing: Easing.out(Easing.quad),
+      }, () => {
+        borderOpacity.value = withTiming(0, { duration: 250 }, () => {
+          progress.value = 0;
+        });
       });
+
+      onOpenMenu();
     }, LONG_PRESS_DURATION);
   };
 
@@ -122,8 +136,9 @@ export function SubjectCard({
     }
     if (!hasTriggeredRef.current) {
       cancelAnimation(progress);
+      cancelAnimation(borderOpacity);
       borderOpacity.value = withTiming(0, { duration: 150 });
-      progress.value = withTiming(0, { duration: 150 });
+      progress.value = 0;
     }
   };
 
@@ -168,7 +183,16 @@ export function SubjectCard({
             </Text>
           </View>
 
-          <MoveUpRight size={17} color={inkFaint} strokeWidth={1.75} />
+          <View
+            className="items-center justify-center rounded-full"
+            style={{
+              width: 28,
+              height: 28,
+              backgroundColor: "rgba(156, 144, 134, 0.14)",
+            }}
+          >
+            <MoveUpRight size={14} color={inkFaint} strokeWidth={2} />
+          </View>
         </View>
 
         <View style={{ flex: 1 }} />
@@ -193,28 +217,33 @@ export function SubjectCard({
         </View>
 
         {/* Animated Loading Border Overlay for Long Press */}
-        {dimensions && (
+        {dimensions && width > 0 && height > 0 && (
           <Animated.View
             style={[
               {
                 position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
+                top: -1,
+                left: -1,
+                right: -1,
+                bottom: -1,
               },
               animatedSvgStyle,
             ]}
             pointerEvents="none"
           >
-            <Svg width={width} height={height} style={{ position: "absolute", top: 0, left: 0 }}>
+            <Svg
+              width={width}
+              height={height}
+              viewBox={`0 0 ${width} ${height}`}
+              style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+            >
               <AnimatedRect
                 x={STROKE_WIDTH / 2}
                 y={STROKE_WIDTH / 2}
-                width={Math.max(0, width - STROKE_WIDTH)}
-                height={Math.max(0, height - STROKE_WIDTH)}
-                rx={CORNER_RADIUS}
-                ry={CORNER_RADIUS}
+                width={rectWidth}
+                height={rectHeight}
+                rx={strokeRadius}
+                ry={strokeRadius}
                 fill="none"
                 stroke={brandColor}
                 strokeWidth={STROKE_WIDTH}

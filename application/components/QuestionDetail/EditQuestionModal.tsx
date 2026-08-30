@@ -88,19 +88,20 @@ export function EditQuestionModal({
   };
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable
-        className="flex-1 justify-end"
-        style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
-        onPress={onClose}
+    <Modal transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={{ maxHeight: "90%" }}
+        <Pressable
+          className="flex-1 justify-end"
+          style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
+          onPress={onClose}
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
             className="rounded-t-3xl bg-paper"
+            style={{ maxHeight: "95%" }}
           >
             <View className="flex-row items-center justify-between px-6 py-5 border-b border-rule">
               <Pressable onPress={onClose}>
@@ -129,7 +130,9 @@ export function EditQuestionModal({
 
             <ScrollView
               className="px-6"
-              contentContainerStyle={{ paddingVertical: 24, gap: 24 }}
+              contentContainerStyle={{ paddingTop: 24, paddingBottom: 48, gap: 24 }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={true}
             >
               {error && (
                 <Text className="rounded-xl bg-hard-soft px-4 py-3 text-[14px] text-hard">
@@ -227,10 +230,13 @@ export function EditQuestionModal({
                   />
                 </View>
               </View>
+
+              {/* Bottom gap spacing */}
+              <View style={{ height: 20 }} />
             </ScrollView>
           </Pressable>
-        </KeyboardAvoidingView>
-      </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

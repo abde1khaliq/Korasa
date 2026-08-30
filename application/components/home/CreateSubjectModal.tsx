@@ -41,9 +41,16 @@ export function CreateSubjectModal({
   };
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable className="flex-1 justify-end" style={{ backgroundColor: "rgba(42,39,36,0.4)" }} onPress={onClose}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <Modal transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <Pressable
+          className="flex-1 justify-end"
+          style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
+          onPress={onClose}
+        >
           <Pressable onPress={(e) => e.stopPropagation()} className="rounded-t-3xl bg-paper px-6 pb-8 pt-5">
             <View className="flex-row items-center justify-between">
               <Text className="text-[22px] text-ink">New subject</Text>
@@ -78,8 +85,8 @@ export function CreateSubjectModal({
               </Pressable>
             </View>
           </Pressable>
-        </KeyboardAvoidingView>
-      </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

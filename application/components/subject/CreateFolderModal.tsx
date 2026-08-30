@@ -57,14 +57,15 @@ export function CreateFolderModal({
   };
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable
-        className="flex-1 justify-end"
-        style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
-        onPress={onClose}
+    <Modal transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        <Pressable
+          className="flex-1 justify-end"
+          style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
+          onPress={onClose}
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
@@ -115,8 +116,8 @@ export function CreateFolderModal({
               </Pressable>
             </View>
           </Pressable>
-        </KeyboardAvoidingView>
-      </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
