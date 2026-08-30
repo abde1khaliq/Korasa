@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -223,6 +224,12 @@ func DeleteQuestion(db *gorm.DB) gin.HandlerFunc {
 		if err := db.Delete(&question).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete question"})
 			return
+		}
+
+		if question.ImageURL != "" {
+			if err := DeleteQuestionImage(c.Request.Context(), question.ImageURL); err != nil {
+				log.Printf("failed to delete image from cloudinary for question %d: %v", question.ID, err)
+			}
 		}
 
 		c.Status(http.StatusNoContent)

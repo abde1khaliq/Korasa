@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -151,9 +152,22 @@ func DeleteFolder(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		var questions []models.Question
+		if err := db.Where("folder_id = ?", folderID).Find(&questions).Error; err != nil {
+			log.Printf("failed to fetch questions for folder %d before deletion: %v", folderID, err)
+		}
+
 		if err := db.Delete(&folder).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete folder"})
 			return
+		}
+
+		for _, q := range questions {
+			if q.ImageURL != "" {
+				if err := DeleteQuestionImage(c.Request.Context(), q.ImageURL); err != nil {
+					log.Printf("failed to delete image from cloudinary for question %d: %v", q.ID, err)
+				}
+			}
 		}
 
 		c.Status(http.StatusNoContent)
