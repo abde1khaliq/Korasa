@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export function DownloadAppSection() {
-  const downloadUrl = "https://github.com/Ahmed-Abdelkhaliq/Korasa/releases/latest";
+  const downloadUrl = "https://download1514.mediafire.com/oudd5i7r564gG1tbYrFTQoLcQT9dP8tuoJ8RjttPUJTPWDZ3IQN9X8T4pBHbcftQRGoFtkxzY9mQrVYN9Gb8CkcF23voxV8L1KP8WlasJUv_rQvvPFLX2TGobKg5c99haup_Swdkybkcy448o1wfW2YpFBFXiJd2GFr6ar5ud5z6nA/a00orm55kmt8nwq/Korasa.apk";
 
   return (
     <section id="download" className="border-t border-rule bg-paper-card py-20 md:py-28 px-6">
@@ -24,7 +24,6 @@ export function DownloadAppSection() {
           />
 
           <div className="grid items-center gap-10 lg:grid-cols-12">
-            {/* Left Column: Copy & Download CTAs */}
             <div className="lg:col-span-7">
 
               <h2 className="mt-4 font-display text-3xl tracking-tight text-ink sm:text-4xl lg:text-5xl">
@@ -52,7 +51,6 @@ export function DownloadAppSection() {
               </div>
             </div>
 
-            {/* Right Column: Phone Mockup / QR Code card */}
             <div className="lg:col-span-5 flex justify-center">
               <div className="w-full max-w-sm rounded-3xl border border-rule bg-paper-card p-6 shadow-inner text-center">
                 <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-brand/10 text-brand">
@@ -65,16 +63,6 @@ export function DownloadAppSection() {
                 <p className="mt-1 text-[13px] text-ink-soft">
                   Download the APK directly to your phone or tablet to start studying immediately.
                 </p>
-
-                {/* Simulated QR Code card */}
-                <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-rule bg-paper p-5">
-                  <div className="flex size-36 items-center justify-center rounded-xl border border-dashed border-rule bg-paper-card text-ink-faint">
-                    <QrCode className="size-28 text-ink-soft" />
-                  </div>
-                  <p className="mt-3 font-mono text-[11px] text-ink-faint">
-                    Scan or tap to download directly
-                  </p>
-                </div>
               </div>
             </div>
           </div>
