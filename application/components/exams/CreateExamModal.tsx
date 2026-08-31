@@ -172,8 +172,6 @@ export function CreateExamModal({
     difficulties,
   );
 
-  // Keep the requested count in range as the eligible pool shrinks —
-  // switching scope or difficulties can drop it below what was picked.
   useEffect(() => {
     if (eligibleCount !== null && eligibleCount > 0 && questionCount > eligibleCount) {
       setQuestionCount(eligibleCount);

@@ -14,10 +14,6 @@ interface ActionSheetProps {
   cancelLabel?: string;
 }
 
-// Replaces Alert.alert(title, message, [option, option, ...Cancel]) call
-// sites with more than a plain confirm/cancel — e.g. the folder long-press
-// "Rename / Delete / Cancel" menu. Caller is responsible for closing the
-// sheet inside each option's onPress before doing the actual work.
 export function ActionSheet({
   visible,
   title,

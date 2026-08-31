@@ -380,10 +380,10 @@ export function QuickCreateModal({
               className="px-6"
               contentContainerStyle={{
                 paddingTop: 20,
-                paddingBottom: 40, // Increased from 32 to 40 for more bottom space
-                gap: 20, // Increased from 16 to 20 for better spacing
+                paddingBottom: 40,
+                gap: 20,
               }}
-              showsVerticalScrollIndicator={true} // Added scroll indicator for better UX
+              showsVerticalScrollIndicator={true}
               keyboardShouldPersistTaps="handled"
             >
               {subjects.length === 0 ? (
@@ -660,7 +660,6 @@ export function QuickCreateModal({
                     </Text>
                   </Pressable>
 
-                  {/* Added extra bottom padding for better scroll experience */}
                   <View style={{ height: 20 }} />
                 </>
               )}

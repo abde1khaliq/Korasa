@@ -52,7 +52,6 @@ export function CalendarHeader({
         )}
       </View>
 
-      {/* Month Switcher Bar */}
       <View className="mt-5 flex-row items-center justify-between rounded-2xl border border-rule bg-paper-card px-3 py-2.5">
         <Pressable
           onPress={onPrevMonth}

@@ -47,9 +47,6 @@ export function HomeSubjects() {
   } = useSubjects();
   const { notification, showNotification } = useNotification();
 
-  // Lets the global quick-create button in the tab bar (which owns its own
-  // independent useSubjects() fetch) tell this screen to refresh after
-  // creating something, since they don't share state.
   useEffect(() => {
     registerHomeRefresh(fetchSubjects);
     return () => registerHomeRefresh(null);

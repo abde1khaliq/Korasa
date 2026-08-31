@@ -38,7 +38,6 @@ export function CreateLessonModal({
   const ink = useThemeColor("#F1EFEC", "#2B2724");
   const inkIcon = useThemeColor("#2B2724", "#F1EFEC");
 
-  // Subject selection & on-the-fly creation state
   const hasExistingSubjects = subjects.length > 0;
   const [isCreatingNewSubject, setIsCreatingNewSubject] = useState<boolean>(
     !initialLesson && !hasExistingSubjects
@@ -48,19 +47,16 @@ export function CreateLessonModal({
     initialLesson?.subject_id ?? (subjects.length > 0 ? subjects[0].id : null)
   );
 
-  // If subjects load later and no subject was selected yet
   useEffect(() => {
     if (!initialLesson && !selectedSubjectId && subjects.length > 0 && !isCreatingNewSubject) {
       setSelectedSubjectId(subjects[0].id);
     }
   }, [subjects, initialLesson, selectedSubjectId, isCreatingNewSubject]);
 
-  // Selected recurring days (array of 0..6)
   const [selectedDays, setSelectedDays] = useState<number[]>(
     initialLesson ? [initialLesson.day_of_week] : [initialDayOfWeek]
   );
 
-  // Time Picker State (Hour, Minute, AM/PM)
   const initialTimeParsed = useMemo(() => {
     if (!initialLesson?.start_time) {
       return { hour: 10, minute: 0, ampm: "AM" as "AM" | "PM" };
@@ -102,7 +98,6 @@ export function CreateLessonModal({
     }
   };
 
-  // Convert selected hour, minute, and AM/PM to 24h "HH:mm"
   const computed24hTime = useMemo(() => {
     let h24 = selectedHour;
     if (selectedAmPm === "PM" && selectedHour < 12) {
@@ -134,7 +129,6 @@ export function CreateLessonModal({
       }
       setIsSubmitting(true);
       try {
-        // Create subject on the fly
         const createdSubject = await apiFetch("/api/subjects", {
           method: "POST",
           body: JSON.stringify({ name: trimmedNewSubject }),
@@ -212,7 +206,6 @@ export function CreateLessonModal({
             className="rounded-t-3xl bg-paper"
             style={{ maxHeight: "92%" }}
           >
-            {/* Header */}
             <View className="flex-row items-center justify-between border-b border-rule px-6 py-5">
               <Pressable onPress={onClose}>
                 <X size={22} color="#6E655C" strokeWidth={1.75} />
@@ -232,7 +225,6 @@ export function CreateLessonModal({
               }}
               keyboardShouldPersistTaps="handled"
             >
-              {/* Subject (Lesson Title) Section */}
               <View>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
@@ -336,7 +328,6 @@ export function CreateLessonModal({
                           );
                         })}
 
-                        {/* Create new subject option inside dropdown */}
                         <Pressable
                           onPress={() => {
                             setIsCreatingNewSubject(true);
@@ -356,7 +347,6 @@ export function CreateLessonModal({
                 )}
               </View>
 
-              {/* Day(s) of Week Selector */}
               <View>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
@@ -396,7 +386,6 @@ export function CreateLessonModal({
                 </View>
               </View>
 
-              {/* Selectable 24-Hour Start Time Picker */}
               <View>
                 <View className="flex-row items-center justify-between">
                   <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
@@ -410,7 +399,6 @@ export function CreateLessonModal({
                   </View>
                 </View>
 
-                {/* AM / PM Segmented Control */}
                 <View className="mt-2.5 flex-row rounded-xl border border-rule bg-paper-card p-1">
                   <Pressable
                     onPress={() => setSelectedAmPm("AM")}
@@ -442,7 +430,6 @@ export function CreateLessonModal({
                   </Pressable>
                 </View>
 
-                {/* Hour Selection Grid (1 to 12) */}
                 <Text className="mt-3 text-[11px] font-medium text-ink-faint">
                   Select Hour
                 </Text>
@@ -471,7 +458,6 @@ export function CreateLessonModal({
                   })}
                 </View>
 
-                {/* Minute Selection Grid (5-minute intervals) */}
                 <Text className="mt-3 text-[11px] font-medium text-ink-faint">
                   Select Minute
                 </Text>
@@ -502,7 +488,6 @@ export function CreateLessonModal({
                 </View>
               </View>
 
-              {/* Location */}
               <View>
                 <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
                   Location / Room (optional)
@@ -516,7 +501,6 @@ export function CreateLessonModal({
                 />
               </View>
 
-              {/* Reminder Selector */}
               <View>
                 <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
                   Weekly Notification Reminder
@@ -572,10 +556,8 @@ export function CreateLessonModal({
                 )}
               </View>
 
-              {/* Error message */}
               {error && <Text className="text-[14px] text-hard">{error}</Text>}
 
-              {/* Submit Button */}
               <Pressable
                 onPress={handleSave}
                 disabled={isSubmitting}

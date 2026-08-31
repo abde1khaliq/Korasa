@@ -15,7 +15,6 @@ export const difficultyStyles: Record<
   Hard: { dot: "bg-hard", pillBg: "bg-hard-soft", pillText: "text-hard" },
 };
 
-// Explicit hex fallback for cases NativeWind's `border-current` won't resolve.
 export const difficultyHex: Record<Difficulty, string> = {
   Easy: "#3F7D5C",
   Medium: "#A17A2E",

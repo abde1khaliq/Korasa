@@ -24,7 +24,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
-const LONG_PRESS_DURATION = 1000; // 1 second
+const LONG_PRESS_DURATION = 1000;
 const CORNER_RADIUS = 24;
 const STROKE_WIDTH = 3;
 
@@ -66,7 +66,6 @@ export function SubjectCard({
   const rectWidth = Math.max(0, width - STROKE_WIDTH);
   const rectHeight = Math.max(0, height - STROKE_WIDTH);
 
-  // Exact mathematical perimeter of the stroke path:
   const perimeter =
     width > 0 && height > 0
       ? 2 * (rectWidth + rectHeight - 4 * strokeRadius) + 2 * Math.PI * strokeRadius
@@ -112,7 +111,6 @@ export function SubjectCard({
         }
       } catch {}
 
-      // Trigger the border drawing animation after 1 second of continuous pressing
       borderOpacity.value = withTiming(1, { duration: 100 });
       progress.value = withTiming(1, {
         duration: 300,
@@ -172,7 +170,6 @@ export function SubjectCard({
           elevation: 4,
         }}
       >
-        {/* Top Header Row: Subject Chip Code & Move-up-right Arrow */}
         <View className="flex-row items-center justify-between">
           <View
             className="self-start rounded-xl px-3 py-1.5"
@@ -197,7 +194,6 @@ export function SubjectCard({
 
         <View style={{ flex: 1 }} />
 
-        {/* Subject Name */}
         <Text
           className="font-display text-[25px] leading-[29px] text-ink"
           numberOfLines={1}
@@ -205,7 +201,6 @@ export function SubjectCard({
           {subject.name}
         </Text>
 
-        {/* Subject Counts */}
         <View className="mt-3 flex-row items-center gap-1.5">
           <Text className="text-[13px] text-ink-soft font-medium">
             {subject.folder_count || 0} folders
@@ -216,7 +211,6 @@ export function SubjectCard({
           </Text>
         </View>
 
-        {/* Animated Loading Border Overlay for Long Press */}
         {dimensions && width > 0 && height > 0 && (
           <Animated.View
             style={[

@@ -62,7 +62,6 @@ export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }
 
   return (
     <View className="mb-3 rounded-2xl border border-rule bg-paper-card p-4">
-      {/* Top row: Status, Day, Actions */}
       <View className="flex-row items-center justify-between">
         <View className="flex-row flex-wrap items-center" style={{ gap: 6 }}>
           <View className={`rounded-full px-2.5 py-0.5 ${statusBg}`}>
@@ -79,7 +78,6 @@ export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }
           </View>
         </View>
 
-        {/* Action icons */}
         <View className="flex-row items-center" style={{ gap: 4 }}>
           <Pressable
             onPress={() => onEdit(lesson)}
@@ -98,12 +96,10 @@ export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }
         </View>
       </View>
 
-      {/* Subject Title */}
       <Text className="mt-2.5 text-[18px] font-semibold text-ink" numberOfLines={1}>
         {lesson.title}
       </Text>
 
-      {/* Meta info: Time, Location, Reminder */}
       <View className="mt-3 flex-row flex-wrap items-center pt-2 border-t border-rule" style={{ gap: 14 }}>
         <View className="flex-row items-center" style={{ gap: 4 }}>
           <Clock size={13} color="#9C9086" strokeWidth={1.75} />

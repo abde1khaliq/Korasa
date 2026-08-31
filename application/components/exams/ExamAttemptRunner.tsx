@@ -73,9 +73,6 @@ export function ExamAttemptRunner({ examId }: { examId: string }) {
     }
   };
 
-  // Countdown is client-enforced only — see the note in chat. Auto-submits
-  // whatever's been answered so far when the clock hits zero; unanswered
-  // questions count as wrong.
   useEffect(() => {
     if (phase !== "in_progress" || secondsLeft === null) return;
     if (secondsLeft <= 0) {

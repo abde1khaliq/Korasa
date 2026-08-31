@@ -44,7 +44,6 @@ export function UpdateSplash({
       className="flex-1 items-center justify-center bg-paper px-8"
       style={{ gap: 24 }}
     >
-      {/* Decorative concentric rings — matches the HomeSubjects card style */}
       <View
         style={{ width: 120, height: 120, position: "relative" }}
         pointerEvents="none"
@@ -65,7 +64,6 @@ export function UpdateSplash({
             }}
           />
         ))}
-        {/* Pulsing center dot */}
         {!isError && (
           <Pulse
             style={{

@@ -87,7 +87,6 @@ export function WhatsNewModal() {
           onPress={handleClose}
         />
 
-        {/* Flexible Height Modal Card */}
         <Pressable
           onPress={(e) => e.stopPropagation()}
           className="w-full max-w-lg overflow-hidden rounded-3xl border shadow-2xl"
@@ -97,13 +96,11 @@ export function WhatsNewModal() {
             borderColor: ruleColor,
           }}
         >
-          {/* Header Bar */}
           <View
             className={`px-6 pt-6 ${hasFeatures ? "pb-4 border-b" : "pb-6"}`}
             style={{ borderColor: ruleColor }}
           >
             <View className="flex-row items-center justify-between">
-              {/* Badge & Version */}
               <View className="flex-row items-center gap-2">
                 <View
                   className="flex-row items-center gap-1.5 rounded-full px-2.5 py-1"
@@ -128,7 +125,6 @@ export function WhatsNewModal() {
                 </View>
               </View>
 
-              {/* Close Button */}
               <Pressable
                 onPress={handleClose}
                 className="items-center justify-center rounded-full"
@@ -143,7 +139,6 @@ export function WhatsNewModal() {
               </Pressable>
             </View>
 
-            {/* Title & Subtitle */}
             <View className="mt-3">
               <Text className="font-display text-[26px] leading-[32px] text-ink">
                 {activeRelease.title}
@@ -155,7 +150,6 @@ export function WhatsNewModal() {
               )}
             </View>
 
-            {/* Release Version Selector Toggle if multiple releases available */}
             {hasMultipleReleases && (
               <View className="mt-3 flex-row items-center justify-between">
                 <Pressable
@@ -187,7 +181,6 @@ export function WhatsNewModal() {
               </View>
             )}
 
-            {/* Dropdown list of past releases */}
             {showHistorySelector && hasMultipleReleases && (
               <View
                 className="mt-2 rounded-2xl border overflow-hidden p-1.5"
@@ -243,7 +236,6 @@ export function WhatsNewModal() {
             )}
           </View>
 
-          {/* Optional Features Scrollable Body with Flexible Height */}
           {hasFeatures && (
             <ScrollView
               showsVerticalScrollIndicator={true}
@@ -264,7 +256,6 @@ export function WhatsNewModal() {
             </ScrollView>
           )}
 
-          {/* Bottom Action Footer */}
           <View
             className="border-t px-6 py-4"
             style={{ borderColor: ruleColor, backgroundColor: cardBg }}
@@ -291,7 +282,6 @@ function FeatureItem({ feature }: { feature: ChangelogFeature }) {
   const ruleColor = useThemeColor("#E4DED4", "#3A332C");
   const brandColor = useThemeColor("#A8703F", "#C99A66");
 
-  // Determine Icon component
   let IconComponent = Sparkles;
   if (feature.icon) {
     if (typeof feature.icon === "string") {
@@ -310,7 +300,6 @@ function FeatureItem({ feature }: { feature: ChangelogFeature }) {
         gap: 14,
       }}
     >
-      {/* Icon Pill */}
       <View
         className="items-center justify-center rounded-xl p-2.5"
         style={{
@@ -320,7 +309,6 @@ function FeatureItem({ feature }: { feature: ChangelogFeature }) {
         <IconComponent size={20} color={brandColor} strokeWidth={1.75} />
       </View>
 
-      {/* Feature Details */}
       <View className="flex-1" style={{ gap: 4 }}>
         <View className="flex-row items-center justify-between flex-wrap gap-2">
           <Text className="text-[16px] font-semibold text-ink">

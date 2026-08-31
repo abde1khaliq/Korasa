@@ -78,7 +78,6 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
         zIndex: 50,
       }}
     >
-      {/* Container 1: Floating Liquid Glass Navigation Bar */}
       <View
         style={{
           flex: 1,
@@ -112,7 +111,6 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
         })}
       </View>
 
-      {/* Container 2: Floating Quick Add Button */}
       <QuickAddButton
         onyxBg={onyxBg}
         onyxIcon={onyxIcon}

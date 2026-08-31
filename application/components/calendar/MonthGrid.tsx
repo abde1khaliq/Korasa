@@ -27,7 +27,6 @@ export function MonthGrid({
     currentDate.getMonth()
   );
 
-  // Group lessons by day_of_week (0..6)
   const lessonsByDayOfWeek = useMemo(() => {
     const map: Record<number, number> = {};
     for (const l of lessons) {
@@ -38,7 +37,6 @@ export function MonthGrid({
 
   return (
     <View className="mx-5 mt-3 rounded-2xl border border-rule bg-paper-card p-3">
-      {/* Weekday headers */}
       <View className="flex-row items-center justify-between pb-2 border-b border-rule">
         {WEEKDAYS.map((day) => (
           <View key={day} className="flex-1 items-center justify-center">
@@ -49,7 +47,6 @@ export function MonthGrid({
         ))}
       </View>
 
-      {/* Grid rows */}
       <View className="mt-2" style={{ gap: 4 }}>
         {Array.from({ length: Math.ceil(cells.length / 7) }).map((_, rowIndex) => {
           const rowCells = cells.slice(rowIndex * 7, rowIndex * 7 + 7);
@@ -90,7 +87,6 @@ export function MonthGrid({
                       </Text>
                     </View>
 
-                    {/* Recurring lesson indicator dots */}
                     <View className="h-1.5 flex-row items-center justify-center mt-0.5" style={{ gap: 2 }}>
                       {hasLessons ? (
                         Array.from({ length: Math.min(lessonCount, 3) }).map((_, dotIndex) => (

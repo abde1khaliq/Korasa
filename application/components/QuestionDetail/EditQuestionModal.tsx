@@ -231,7 +231,6 @@ export function EditQuestionModal({
                 </View>
               </View>
 
-              {/* Bottom gap spacing */}
               <View style={{ height: 20 }} />
             </ScrollView>
           </Pressable>

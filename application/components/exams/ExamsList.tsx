@@ -28,12 +28,9 @@ export function ExamsList() {
   const { exams, isLoading, isRefreshing, error, fetchExams, onRefresh, addExam } = useExams();
   const { notification, showNotification } = useNotification();
 
-  // Picks up a fresh last_attempt score after coming back from taking an
-  // exam — the list otherwise only refetches on mount and pull-to-refresh.
   useFocusEffect(
     useCallback(() => {
       fetchExams();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []),
   );
 

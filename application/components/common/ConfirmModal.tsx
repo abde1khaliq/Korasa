@@ -11,9 +11,6 @@ interface ConfirmModalProps {
   onCancel: () => void;
 }
 
-// Replaces Alert.alert(title, message, [{Cancel}, {Delete, destructive}])
-// call sites. Same two-choice shape, rendered as an in-app card instead of
-// the native OS dialog.
 export function ConfirmModal({
   visible,
   title,

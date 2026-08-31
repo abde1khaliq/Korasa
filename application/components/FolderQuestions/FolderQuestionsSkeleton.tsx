@@ -70,7 +70,6 @@ export function FolderQuestionsSkeleton() {
               overflow: "hidden",
             }}
           >
-            {/* Header row skeleton */}
             <View
               style={{
                 flexDirection: "row",
@@ -99,7 +98,6 @@ export function FolderQuestionsSkeleton() {
               />
             </View>
 
-            {/* Inset Photo skeleton */}
             <View style={{ paddingHorizontal: 12 }}>
               <Pulse
                 style={{
@@ -111,7 +109,6 @@ export function FolderQuestionsSkeleton() {
               />
             </View>
 
-            {/* Bottom details skeleton */}
             <View
               style={{
                 paddingHorizontal: 12,

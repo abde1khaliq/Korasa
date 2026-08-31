@@ -6,9 +6,6 @@ import { apiFetch, ApiError } from "@/lib/api";
 import { Attempt } from "@/types/exam";
 import { formatAttemptDate, formatDuration, scorePercent } from "@/lib/examUtils";
 
-// Only the aggregate score — the backend has no read endpoint for
-// exam_attempt_answers, so there's no way to show which questions in a
-// past attempt were missed.
 export function AttemptSummaryScreen({ examId, attemptId }: { examId: string; attemptId: string }) {
   const router = useRouter();
   const { accessToken } = useAuth();

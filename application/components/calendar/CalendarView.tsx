@@ -51,7 +51,6 @@ export function CalendarView() {
   const tabBarBottom = Math.max(insets.bottom, 14);
   const buttonBottom = tabBarBottom + tabBarHeight + 16;
 
-  // Filter lessons for the selected day's day_of_week
   const selectedDayLessons = useMemo(() => {
     const targetDayOfWeek = selectedDate.getDay();
     return lessons
@@ -59,7 +58,6 @@ export function CalendarView() {
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
   }, [lessons, selectedDate]);
 
-  // Lessons grouped by day of week for the Timetable view
   const lessonsByDayOfWeek = useMemo(() => {
     const map: Record<number, Lesson[]> = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
     for (const l of lessons) {
@@ -67,14 +65,12 @@ export function CalendarView() {
         map[l.day_of_week].push(l);
       }
     }
-    // Sort each day's lessons by start_time
     for (const d of Object.keys(map)) {
       map[Number(d)].sort((a, b) => a.start_time.localeCompare(b.start_time));
     }
     return map;
   }, [lessons]);
 
-  // Next upcoming lesson
   const nextLesson = upcomingLessons[0] ?? null;
 
   const handlePrevMonth = () => {
@@ -156,7 +152,6 @@ export function CalendarView() {
           />
         }
       >
-        {/* Header */}
         <CalendarHeader
           currentDate={currentMonth}
           onPrevMonth={handlePrevMonth}
@@ -165,7 +160,6 @@ export function CalendarView() {
           totalLessons={lessons.length}
         />
 
-        {/* View Switcher: Month Calendar vs Weekly Timetable */}
         <View className="mx-5 mt-2 flex-row" style={{ gap: 8 }}>
           <Pressable
             onPress={() => setViewMode("month")}
@@ -214,7 +208,6 @@ export function CalendarView() {
           </Pressable>
         </View>
 
-        {/* Highlight Banner for Next Upcoming Lesson */}
         {nextLesson && (
           <UpcomingLessonBanner
             lesson={nextLesson}
@@ -224,7 +217,6 @@ export function CalendarView() {
 
         {viewMode === "month" ? (
           <>
-            {/* Interactive Month Grid */}
             <MonthGrid
               currentDate={currentMonth}
               selectedDate={selectedDate}
@@ -232,7 +224,6 @@ export function CalendarView() {
               onSelectDate={handleSelectDate}
             />
 
-            {/* Selected Day Agenda Section */}
             <View className="mx-5 mt-6">
               <View className="flex-row items-center justify-between pb-3">
                 <View>
@@ -274,7 +265,6 @@ export function CalendarView() {
             </View>
           </>
         ) : (
-          /* Weekly Timetable View (Mon -> Sun) */
           <View className="mx-5 mt-5" style={{ gap: 18 }}>
             {DAYS_OF_WEEK.map((dayOption) => {
               const dayLessons = lessonsByDayOfWeek[dayOption.value] || [];
@@ -327,7 +317,6 @@ export function CalendarView() {
         )}
       </ScrollView>
 
-      {/* Floating "+ New lesson" Button */}
       <Pressable
         onPress={() => {
           setEditingLesson(null);
@@ -350,7 +339,6 @@ export function CalendarView() {
         <Text className="text-[16px] font-semibold text-paper">New lesson</Text>
       </Pressable>
 
-      {/* Create / Edit Modal */}
       {showCreateModal && (
         <CreateLessonModal
           initialDayOfWeek={selectedDate.getDay()}
@@ -363,7 +351,6 @@ export function CalendarView() {
         />
       )}
 
-      {/* Toast Notification */}
       <Notification message={notification} />
     </View>
   );
