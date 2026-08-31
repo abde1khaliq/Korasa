@@ -108,7 +108,7 @@ export function Login() {
           </button>
         </form>
 
-        <div className="mt-8 flex items-center gap-4">
+        {/* <div className="mt-8 flex items-center gap-4">
           <span className="h-px flex-1 bg-rule" />
           <span className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
             or
@@ -118,7 +118,7 @@ export function Login() {
 
         <button className="text-ink mt-6 w-full rounded-full border border-rule bg-paper-card px-8 py-4 text-[17px] hover:bg-rule/50 transition-colors">
           Continue with Google
-        </button>
+        </button> */}
 
         <p className="mt-auto pt-12 text-center text-[17px] text-ink-soft">
           New here?{" "}
