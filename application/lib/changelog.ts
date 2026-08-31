@@ -66,15 +66,15 @@ export interface ChangelogRelease {
  */
 export const CHANGELOG: ChangelogRelease[] = [
     {
-    id: "v1.0.2",
-    version: "v1.0.2",
+    id: "v1.1.0",
+    version: "v1.1.0",
     date: "Calendar",
     title: "Calendar feature has come to life!",
     subtitle: "Schedule your lessons or lectures to get notified by Korasa to never miss them.",
   },
   {
-    id: "v1.0.1",
-    version: "v1.0.1",
+    id: "v1.0.0",
+    version: "v1.0.0",
     date: "Exams",
     title: "Exams are here!",
     subtitle: "Use your saved questions to create exams and start testing yourself.",

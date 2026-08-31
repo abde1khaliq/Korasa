@@ -2,7 +2,7 @@
   "expo": {
     "name": "Korasa",
     "slug": "korasa-study",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "application",
@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.abdelkhaliqq.korasastudy"
+      "bundleIdentifier": "com.abdelkhaliqq.korasastudy",
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,6 +20,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.abdelkhaliqq.korasastudy",
+      "versionCode": 2,
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]
@@ -47,6 +49,13 @@
         "expo-image-picker",
         {
           "cameraPermission": "Allow Korasa to access your camera to photograph questions."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#A8703F"
         }
       ]
     ],
