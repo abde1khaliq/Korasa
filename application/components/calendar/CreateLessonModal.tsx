@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -10,26 +10,15 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { X, Check, ChevronDown, Plus, Clock, Repeat } from "lucide-react-native";
+import { X, Check, ChevronDown, Plus, Clock, BookOpen, PlusCircle } from "lucide-react-native";
 import { useSubjects } from "@/hooks/useSubjects";
+import { useAuth } from "@/context/AuthContext";
+import { apiFetch } from "@/lib/api";
 import { Lesson, LessonInput, REMINDER_OPTIONS, DAYS_OF_WEEK } from "@/types/lesson";
-import { formatTime24to12 } from "@/lib/lessonUtils";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
-const DURATION_PRESETS = [
-  { label: "30m", minutes: 30 },
-  { label: "45m", minutes: 45 },
-  { label: "1h", minutes: 60 },
-  { label: "1.5h", minutes: 90 },
-  { label: "2h", minutes: 120 },
-];
-
-const TIME_PRESETS = [
-  "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
-  "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
-  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
-  "17:00", "17:30", "18:00", "18:30", "19:00", "20:00"
-];
+const HOURS = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
 interface CreateLessonModalProps {
   initialDayOfWeek: number;
@@ -44,40 +33,56 @@ export function CreateLessonModal({
   onClose,
   onSubmit,
 }: CreateLessonModalProps) {
-  const { subjects } = useSubjects();
+  const { accessToken } = useAuth();
+  const { subjects, addSubject } = useSubjects();
   const ink = useThemeColor("#F1EFEC", "#2B2724");
   const inkIcon = useThemeColor("#2B2724", "#F1EFEC");
 
-  const [title, setTitle] = useState(initialLesson?.title ?? "");
-  const [subjectId, setSubjectId] = useState<number | null>(
-    initialLesson?.subject_id ?? null
+  // Subject selection & on-the-fly creation state
+  const hasExistingSubjects = subjects.length > 0;
+  const [isCreatingNewSubject, setIsCreatingNewSubject] = useState<boolean>(
+    !initialLesson && !hasExistingSubjects
   );
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(
+    initialLesson?.subject_id ?? (subjects.length > 0 ? subjects[0].id : null)
+  );
+
+  // If subjects load later and no subject was selected yet
+  useEffect(() => {
+    if (!initialLesson && !selectedSubjectId && subjects.length > 0 && !isCreatingNewSubject) {
+      setSelectedSubjectId(subjects[0].id);
+    }
+  }, [subjects, initialLesson, selectedSubjectId, isCreatingNewSubject]);
 
   // Selected recurring days (array of 0..6)
   const [selectedDays, setSelectedDays] = useState<number[]>(
     initialLesson ? [initialLesson.day_of_week] : [initialDayOfWeek]
   );
 
-  const [timeString, setTimeString] = useState(initialLesson?.start_time ?? "10:00");
-  const [durationMinutes, setDurationMinutes] = useState(
-    initialLesson && initialLesson.end_time
-      ? (() => {
-          const [sH, sM] = initialLesson.start_time.split(":").map(Number);
-          const [eH, eM] = initialLesson.end_time.split(":").map(Number);
-          return Math.max(15, (eH * 60 + eM) - (sH * 60 + sM));
-        })()
-      : 60
-  );
+  // Time Picker State (Hour, Minute, AM/PM)
+  const initialTimeParsed = useMemo(() => {
+    if (!initialLesson?.start_time) {
+      return { hour: 10, minute: 0, ampm: "AM" as "AM" | "PM" };
+    }
+    const [hStr, mStr] = initialLesson.start_time.split(":");
+    const h = parseInt(hStr, 10) || 0;
+    const m = parseInt(mStr, 10) || 0;
+    const ampm: "AM" | "PM" = h >= 12 ? "PM" : "AM";
+    const h12 = h % 12 || 12;
+    return { hour: h12, minute: m, ampm };
+  }, [initialLesson]);
+
+  const [selectedHour, setSelectedHour] = useState<number>(initialTimeParsed.hour);
+  const [selectedMinute, setSelectedMinute] = useState<number>(initialTimeParsed.minute);
+  const [selectedAmPm, setSelectedAmPm] = useState<"AM" | "PM">(initialTimeParsed.ampm);
+
   const [location, setLocation] = useState(initialLesson?.location ?? "");
   const [reminderMinutes, setReminderMinutes] = useState<number>(
     initialLesson?.reminder_minutes ?? 15
   );
-  const [description, setDescription] = useState(
-    initialLesson?.description ?? ""
-  );
 
   const [openSubjectSelect, setOpenSubjectSelect] = useState(false);
-  const [openTimeSelect, setOpenTimeSelect] = useState(false);
   const [openReminderSelect, setOpenReminderSelect] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,7 +90,6 @@ export function CreateLessonModal({
 
   const toggleDay = (dayValue: number) => {
     if (initialLesson) {
-      // In edit mode, switch single day
       setSelectedDays([dayValue]);
       return;
     }
@@ -98,34 +102,75 @@ export function CreateLessonModal({
     }
   };
 
-  const handleSave = async () => {
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      setError("Please enter a lesson title");
-      return;
+  // Convert selected hour, minute, and AM/PM to 24h "HH:mm"
+  const computed24hTime = useMemo(() => {
+    let h24 = selectedHour;
+    if (selectedAmPm === "PM" && selectedHour < 12) {
+      h24 = selectedHour + 12;
+    } else if (selectedAmPm === "AM" && selectedHour === 12) {
+      h24 = 0;
     }
+    const hStr = String(h24).padStart(2, "0");
+    const mStr = String(selectedMinute).padStart(2, "0");
+    return `${hStr}:${mStr}`;
+  }, [selectedHour, selectedMinute, selectedAmPm]);
+
+  const formattedDisplayTime = useMemo(() => {
+    const mStr = String(selectedMinute).padStart(2, "0");
+    return `${selectedHour}:${mStr} ${selectedAmPm}`;
+  }, [selectedHour, selectedMinute, selectedAmPm]);
+
+  const handleSave = async () => {
+    setError(null);
+
+    let resolvedSubjectId: number | null = null;
+    let resolvedTitle = "";
+
+    if (isCreatingNewSubject) {
+      const trimmedNewSubject = newSubjectName.trim();
+      if (!trimmedNewSubject) {
+        setError("Please enter a subject name (e.g. Physics, Calculus)");
+        return;
+      }
+      setIsSubmitting(true);
+      try {
+        // Create subject on the fly
+        const createdSubject = await apiFetch("/api/subjects", {
+          method: "POST",
+          body: JSON.stringify({ name: trimmedNewSubject }),
+          token: accessToken!,
+        });
+        addSubject(createdSubject);
+        resolvedSubjectId = createdSubject.id;
+        resolvedTitle = createdSubject.name;
+      } catch (err: any) {
+        setIsSubmitting(false);
+        setError(err?.message || "Failed to create new subject");
+        return;
+      }
+    } else {
+      const existing = subjects.find((s) => s.id === selectedSubjectId);
+      if (!existing) {
+        setError("Please select a subject or create a new one");
+        return;
+      }
+      resolvedSubjectId = existing.id;
+      resolvedTitle = existing.name;
+    }
+
     if (selectedDays.length === 0) {
-      setError("Please select at least one day for the recurring lesson");
+      setError("Please select at least one recurring day");
+      setIsSubmitting(false);
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
 
     try {
-      // Calculate end time string "HH:mm"
-      const [sH, sM] = timeString.split(":").map(Number);
-      const totalEndMins = sH * 60 + sM + durationMinutes;
-      const endH = String(Math.floor(totalEndMins / 60) % 24).padStart(2, "0");
-      const endM = String(totalEndMins % 60).padStart(2, "0");
-      const calculatedEndTime = `${endH}:${endM}`;
-
       const payload: LessonInput = {
-        title: trimmedTitle,
-        subject_id: subjectId,
-        description: description.trim() || undefined,
-        start_time: timeString,
-        end_time: calculatedEndTime,
+        title: resolvedTitle,
+        subject_id: resolvedSubjectId,
+        start_time: computed24hTime,
         location: location.trim() || undefined,
         reminder_minutes: reminderMinutes,
         days_of_week: selectedDays,
@@ -141,7 +186,7 @@ export function CreateLessonModal({
     }
   };
 
-  const selectedSubject = subjects.find((s) => s.id === subjectId);
+  const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
   const selectedReminderLabel =
     REMINDER_OPTIONS.find((r) => r.value === reminderMinutes)?.label ??
     `${reminderMinutes} minutes before`;
@@ -183,21 +228,132 @@ export function CreateLessonModal({
               contentContainerStyle={{
                 paddingTop: 20,
                 paddingBottom: 40,
-                gap: 18,
+                gap: 20,
               }}
               keyboardShouldPersistTaps="handled"
             >
-              {/* Title */}
+              {/* Subject (Lesson Title) Section */}
               <View>
-                <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
-                  Lesson Title *
-                </Text>
-                <TextInput
-                  value={title}
-                  onChangeText={setTitle}
-                  placeholder="e.g. Physics Lecture, Math Recitation"
-                  className="mt-2 rounded-xl border border-rule bg-paper-card px-4 py-3.5 text-[15px] text-ink"
-                />
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
+                    Subject *
+                  </Text>
+                  {hasExistingSubjects && (
+                    <Pressable
+                      onPress={() => {
+                        setIsCreatingNewSubject(!isCreatingNewSubject);
+                        setOpenSubjectSelect(false);
+                      }}
+                      className="flex-row items-center"
+                      style={{ gap: 4 }}
+                    >
+                      {isCreatingNewSubject ? (
+                        <Text className="text-[12px] font-semibold text-brand">
+                          Choose existing subject
+                        </Text>
+                      ) : (
+                        <>
+                          <PlusCircle size={13} color="#A8703F" strokeWidth={2} />
+                          <Text className="text-[12px] font-semibold text-brand">
+                            New subject
+                          </Text>
+                        </>
+                      )}
+                    </Pressable>
+                  )}
+                </View>
+
+                {isCreatingNewSubject ? (
+                  <View className="mt-2">
+                    <TextInput
+                      value={newSubjectName}
+                      onChangeText={setNewSubjectName}
+                      placeholder="e.g. Physics, Mathematics, Biology"
+                      placeholderTextColor="#9C9086"
+                      className="rounded-xl border border-brand bg-paper-card px-4 py-3.5 text-[15px] font-medium text-ink"
+                      autoFocus={!initialLesson}
+                    />
+                    <Text className="mt-1 text-[11px] text-ink-faint">
+                      Creates a subject and sets it as the lesson title
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    <Pressable
+                      onPress={() => setOpenSubjectSelect((o) => !o)}
+                      className="mt-2 flex-row items-center justify-between rounded-xl border border-rule bg-paper-card px-4 py-3.5"
+                    >
+                      <View className="flex-row items-center" style={{ gap: 8 }}>
+                        <BookOpen size={16} color="#A8703F" strokeWidth={2} />
+                        <Text
+                          className={
+                            selectedSubject
+                              ? "text-[15px] font-medium text-ink"
+                              : "text-[15px] text-ink-faint"
+                          }
+                        >
+                          {selectedSubject ? selectedSubject.name : "Select a subject"}
+                        </Text>
+                      </View>
+                      <ChevronDown
+                        size={18}
+                        color={inkIcon}
+                        strokeWidth={1.75}
+                        style={{
+                          transform: [
+                            { rotate: openSubjectSelect ? "180deg" : "0deg" },
+                          ],
+                        }}
+                      />
+                    </Pressable>
+
+                    {openSubjectSelect && (
+                      <View className="mt-1.5 overflow-hidden rounded-xl border border-rule bg-paper-card">
+                        {subjects.map((s) => {
+                          const isSel = s.id === selectedSubjectId;
+                          return (
+                            <Pressable
+                              key={s.id}
+                              onPress={() => {
+                                setSelectedSubjectId(s.id);
+                                setOpenSubjectSelect(false);
+                              }}
+                              className={`flex-row items-center justify-between border-b border-rule px-4 py-3 ${
+                                isSel ? "bg-brand/10" : ""
+                              }`}
+                            >
+                              <Text
+                                className={`text-[15px] ${
+                                  isSel ? "font-semibold text-brand" : "text-ink"
+                                }`}
+                              >
+                                {s.name}
+                              </Text>
+                              {isSel && (
+                                <Check size={16} color="#A8703F" strokeWidth={2} />
+                              )}
+                            </Pressable>
+                          );
+                        })}
+
+                        {/* Create new subject option inside dropdown */}
+                        <Pressable
+                          onPress={() => {
+                            setIsCreatingNewSubject(true);
+                            setOpenSubjectSelect(false);
+                          }}
+                          className="flex-row items-center bg-paper px-4 py-3"
+                          style={{ gap: 8 }}
+                        >
+                          <Plus size={16} color="#A8703F" strokeWidth={2} />
+                          <Text className="text-[14px] font-semibold text-brand">
+                            + Create a new subject…
+                          </Text>
+                        </Pressable>
+                      </View>
+                    )}
+                  </>
+                )}
               </View>
 
               {/* Day(s) of Week Selector */}
@@ -240,157 +396,105 @@ export function CreateLessonModal({
                 </View>
               </View>
 
-              {/* Subject Selector */}
+              {/* Selectable 24-Hour Start Time Picker */}
               <View>
-                <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
-                  Subject (optional)
-                </Text>
-                <Pressable
-                  onPress={() => setOpenSubjectSelect((o) => !o)}
-                  className="mt-2 flex-row items-center justify-between rounded-xl border border-rule bg-paper-card px-4 py-3.5"
-                >
-                  <Text
-                    className={
-                      selectedSubject
-                        ? "text-[15px] text-ink"
-                        : "text-[15px] text-ink-faint"
-                    }
-                  >
-                    {selectedSubject ? selectedSubject.name : "None (General)"}
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
+                    Start Time *
                   </Text>
-                  <ChevronDown
-                    size={18}
-                    color={inkIcon}
-                    strokeWidth={1.75}
-                    style={{
-                      transform: [
-                        { rotate: openSubjectSelect ? "180deg" : "0deg" },
-                      ],
-                    }}
-                  />
-                </Pressable>
-
-                {openSubjectSelect && (
-                  <View className="mt-1.5 overflow-hidden rounded-xl border border-rule bg-paper-card">
-                    <Pressable
-                      onPress={() => {
-                        setSubjectId(null);
-                        setOpenSubjectSelect(false);
-                      }}
-                      className="flex-row items-center justify-between border-b border-rule px-4 py-3"
-                    >
-                      <Text className="text-[15px] text-ink-soft">
-                        None (General)
-                      </Text>
-                      {subjectId === null && (
-                        <Check size={16} color="#A8703F" strokeWidth={2} />
-                      )}
-                    </Pressable>
-
-                    {subjects.map((s) => {
-                      const isSel = s.id === subjectId;
-                      return (
-                        <Pressable
-                          key={s.id}
-                          onPress={() => {
-                            setSubjectId(s.id);
-                            setOpenSubjectSelect(false);
-                          }}
-                          className={`flex-row items-center justify-between border-b border-rule px-4 py-3 ${
-                            isSel ? "bg-brand/10" : ""
-                          }`}
-                        >
-                          <Text
-                            className={`text-[15px] ${
-                              isSel ? "font-semibold text-brand" : "text-ink"
-                            }`}
-                          >
-                            {s.name}
-                          </Text>
-                          {isSel && (
-                            <Check size={16} color="#A8703F" strokeWidth={2} />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
-
-              {/* Start Time Picker */}
-              <View>
-                <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
-                  Start Time
-                </Text>
-                <Pressable
-                  onPress={() => setOpenTimeSelect((o) => !o)}
-                  className="mt-2 flex-row items-center justify-between rounded-xl border border-rule bg-paper-card px-4 py-3.5"
-                >
-                  <Text className="text-[15px] font-semibold text-ink">
-                    {formatTime24to12(timeString)}
-                  </Text>
-                  <Clock size={16} color="#9C9086" strokeWidth={1.75} />
-                </Pressable>
-              </View>
-
-              {/* Time dropdown grid */}
-              {openTimeSelect && (
-                <View className="rounded-xl border border-rule bg-paper-card p-3">
-                  <Text className="mb-2 text-[12px] font-medium text-ink-faint">
-                    Select Start Time
-                  </Text>
-                  <View className="flex-row flex-wrap" style={{ gap: 6 }}>
-                    {TIME_PRESETS.map((t) => {
-                      const isSel = t === timeString;
-                      return (
-                        <Pressable
-                          key={t}
-                          onPress={() => {
-                            setTimeString(t);
-                            setOpenTimeSelect(false);
-                          }}
-                          className={`rounded-lg px-2.5 py-1.5 ${
-                            isSel ? "bg-onyx" : "bg-paper border border-rule"
-                          }`}
-                        >
-                          <Text
-                            className={`text-[12px] ${
-                              isSel ? "font-semibold text-paper" : "text-ink"
-                            }`}
-                          >
-                            {formatTime24to12(t)}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
+                  <View className="flex-row items-center rounded-full bg-paper px-3 py-1 border border-brand/30" style={{ gap: 6 }}>
+                    <Clock size={13} color="#A8703F" strokeWidth={2} />
+                    <Text className="text-[14px] font-bold text-brand">
+                      {formattedDisplayTime}
+                    </Text>
                   </View>
                 </View>
-              )}
 
-              {/* Duration Presets */}
-              <View>
-                <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
-                  Duration
+                {/* AM / PM Segmented Control */}
+                <View className="mt-2.5 flex-row rounded-xl border border-rule bg-paper-card p-1">
+                  <Pressable
+                    onPress={() => setSelectedAmPm("AM")}
+                    className={`flex-1 items-center rounded-lg py-2 ${
+                      selectedAmPm === "AM" ? "bg-onyx" : "bg-transparent"
+                    }`}
+                  >
+                    <Text
+                      className={`text-[13px] font-semibold ${
+                        selectedAmPm === "AM" ? "text-paper" : "text-ink-soft"
+                      }`}
+                    >
+                      AM (Morning)
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setSelectedAmPm("PM")}
+                    className={`flex-1 items-center rounded-lg py-2 ${
+                      selectedAmPm === "PM" ? "bg-onyx" : "bg-transparent"
+                    }`}
+                  >
+                    <Text
+                      className={`text-[13px] font-semibold ${
+                        selectedAmPm === "PM" ? "text-paper" : "text-ink-soft"
+                      }`}
+                    >
+                      PM (Afternoon / Evening)
+                    </Text>
+                  </Pressable>
+                </View>
+
+                {/* Hour Selection Grid (1 to 12) */}
+                <Text className="mt-3 text-[11px] font-medium text-ink-faint">
+                  Select Hour
                 </Text>
-                <View className="mt-2 flex-row" style={{ gap: 8 }}>
-                  {DURATION_PRESETS.map((preset) => {
-                    const isSel = durationMinutes === preset.minutes;
+                <View className="mt-1.5 flex-row flex-wrap" style={{ gap: 6 }}>
+                  {HOURS.map((h) => {
+                    const isSel = selectedHour === h;
                     return (
                       <Pressable
-                        key={preset.label}
-                        onPress={() => setDurationMinutes(preset.minutes)}
-                        className={`flex-1 items-center rounded-xl border py-2.5 ${
+                        key={h}
+                        onPress={() => setSelectedHour(h)}
+                        className={`flex-1 min-w-[44px] items-center rounded-xl border py-2.5 ${
                           isSel
-                            ? "border-brand bg-brand/10"
+                            ? "border-brand bg-brand/15"
+                            : "border-rule bg-paper-card"
+                        }`}
+                      >
+                        <Text
+                          className={`text-[14px] ${
+                            isSel ? "font-bold text-brand" : "font-medium text-ink"
+                          }`}
+                        >
+                          {h}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {/* Minute Selection Grid (5-minute intervals) */}
+                <Text className="mt-3 text-[11px] font-medium text-ink-faint">
+                  Select Minute
+                </Text>
+                <View className="mt-1.5 flex-row flex-wrap" style={{ gap: 6 }}>
+                  {MINUTES.map((m) => {
+                    const isSel = selectedMinute === m;
+                    const mStr = String(m).padStart(2, "0");
+                    return (
+                      <Pressable
+                        key={m}
+                        onPress={() => setSelectedMinute(m)}
+                        className={`flex-1 min-w-[44px] items-center rounded-xl border py-2 ${
+                          isSel
+                            ? "border-brand bg-brand/15"
                             : "border-rule bg-paper-card"
                         }`}
                       >
                         <Text
                           className={`text-[13px] ${
-                            isSel ? "font-semibold text-brand" : "text-ink-soft"
+                            isSel ? "font-bold text-brand" : "font-medium text-ink"
                           }`}
                         >
-                          {preset.label}
+                          :{mStr}
                         </Text>
                       </Pressable>
                     );
@@ -407,6 +511,7 @@ export function CreateLessonModal({
                   value={location}
                   onChangeText={setLocation}
                   placeholder="e.g. Lecture Hall B, Room 204, Zoom"
+                  placeholderTextColor="#9C9086"
                   className="mt-2 rounded-xl border border-rule bg-paper-card px-4 py-3.5 text-[15px] text-ink"
                 />
               </View>
@@ -467,32 +572,17 @@ export function CreateLessonModal({
                 )}
               </View>
 
-              {/* Notes */}
-              <View>
-                <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
-                  Notes / Agenda (optional)
-                </Text>
-                <TextInput
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder="Add topics, syllabus hints, or preparation notes…"
-                  multiline
-                  className="mt-2 rounded-xl border border-rule bg-paper-card p-4 text-[15px] text-ink"
-                  style={{ minHeight: 70 }}
-                />
-              </View>
-
               {/* Error message */}
               {error && <Text className="text-[14px] text-hard">{error}</Text>}
 
               {/* Submit Button */}
               <Pressable
                 onPress={handleSave}
-                disabled={isSubmitting || !title.trim()}
+                disabled={isSubmitting}
                 className="mt-2 flex-row items-center justify-center rounded-xl bg-onyx py-4 shadow-sm"
                 style={{
                   gap: 8,
-                  opacity: isSubmitting || !title.trim() ? 0.5 : 1,
+                  opacity: isSubmitting ? 0.5 : 1,
                 }}
               >
                 {isSubmitting ? (

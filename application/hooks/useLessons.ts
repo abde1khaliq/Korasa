@@ -9,7 +9,7 @@ import {
 } from "@/lib/notifications";
 
 export function useLessons() {
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [upcomingLessons, setUpcomingLessons] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,14 +32,14 @@ export function useLessons() {
       setUpcomingLessons(sortedUpcoming);
 
       // Background notification sync
-      syncLessonNotifications(sortedAll).catch(() => {});
+      syncLessonNotifications(sortedAll, user?.username).catch(() => {});
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load lessons");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [accessToken]);
+  }, [accessToken, user?.username]);
 
   useEffect(() => {
     fetchLessons();
@@ -91,7 +91,7 @@ export function useLessons() {
     );
 
     // Re-schedule notification
-    scheduleLessonNotification(updated).catch(() => {});
+    scheduleLessonNotification(updated, user?.username).catch(() => {});
     fetchLessons();
 
     return updated;

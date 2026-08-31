@@ -24,6 +24,36 @@ export function formatTime24to12(time24: string): string {
   return `${h12}:${m} ${ampm}`;
 }
 
+/**
+ * Parses user handwritten time input (e.g. "10:00 AM", "2:30 PM", "14:30", "9:30")
+ * into normalized 24-hour "HH:mm" format.
+ */
+export function parseManualTimeTo24h(input: string): string | null {
+  if (!input) return null;
+  const str = input.trim().toLowerCase();
+
+  const match = str.match(/^(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)?$/);
+  if (!match) return null;
+
+  let hour = parseInt(match[1], 10);
+  const minute = match[2] ? parseInt(match[2], 10) : 0;
+  const ampm = match[3];
+
+  if (minute < 0 || minute > 59) return null;
+
+  if (ampm) {
+    if (hour < 1 || hour > 12) return null;
+    if (ampm === "pm" && hour < 12) hour += 12;
+    if (ampm === "am" && hour === 12) hour = 0;
+  } else {
+    if (hour < 0 || hour > 23) return null;
+  }
+
+  const hStr = String(hour).padStart(2, "0");
+  const mStr = String(minute).padStart(2, "0");
+  return `${hStr}:${mStr}`;
+}
+
 export function formatTimeRange(start: string, end: string | null): string {
   const startStr = formatTime24to12(start);
   if (!end) return startStr;

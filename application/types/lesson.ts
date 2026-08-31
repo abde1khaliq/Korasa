@@ -3,7 +3,7 @@ export interface Lesson {
   subject_id: number | null;
   subject_name: string | null;
   title: string;
-  description: string;
+  description?: string;
   day_of_week: number; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   day_name: string;
   start_time: string; // "HH:mm" e.g. "10:00"
@@ -22,7 +22,7 @@ export interface LessonInput {
   day_of_week?: number;
   days_of_week?: number[];
   start_time: string; // "HH:mm" e.g. "10:00"
-  end_time?: string | null; // "HH:mm" e.g. "11:30"
+  end_time?: string | null;
   location?: string;
   color?: string;
   reminder_minutes?: number;
@@ -52,13 +52,18 @@ export interface ReminderOption {
 export const REMINDER_OPTIONS: ReminderOption[] = [
   { value: 0, label: "At start of lesson" },
   { value: 5, label: "5 minutes before" },
+  { value: 10, label: "10 minutes before" },
   { value: 15, label: "15 minutes before" },
   { value: 30, label: "30 minutes before" },
+  { value: 45, label: "45 minutes before" },
   { value: 60, label: "1 hour before" },
   { value: 120, label: "2 hours before" },
   { value: 180, label: "3 hours before" },
+  { value: 240, label: "4 hours before" },
   { value: 360, label: "6 hours before" },
+  { value: 480, label: "8 hours before" },
   { value: 720, label: "12 hours before" },
   { value: 1440, label: "1 day before" },
   { value: 2880, label: "2 days before" },
+  { value: 4320, label: "3 days before" },
 ];

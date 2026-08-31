@@ -2,6 +2,7 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { Lesson } from "@/types/lesson";
 import { formatTime24to12, getDayName } from "@/lib/lessonUtils";
+import { getFormattedName } from "@/lib/subjectUtils";
 
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
@@ -63,9 +64,49 @@ function getLessonNotificationId(lessonId: number): string {
 }
 
 /**
+ * Generates personalized, natural notification content.
+ */
+export function generateNotificationMessage(lesson: Lesson, userName?: string): { title: string; body: string } {
+  const name = userName ? getFormattedName(userName) : "";
+  const prefix = name ? `${name}, ` : "";
+  const subjectName = lesson.subject_name || lesson.title;
+  const timeFormatted = formatTime24to12(lesson.start_time);
+  const dayName = getDayName(lesson.day_of_week);
+  const reminderOffset = lesson.reminder_minutes ?? 15;
+
+  let body = "";
+  if (reminderOffset === 0) {
+    body = `${prefix}your ${subjectName} lesson is starting right now at ${timeFormatted}! 📚`;
+  } else if (reminderOffset === 1440) {
+    // Exactly 1 day before
+    body = `${prefix}tomorrow at ${timeFormatted} you have ${subjectName} lesson.`;
+  } else if (reminderOffset === 2880) {
+    // 2 days before
+    body = `${prefix}in 2 days (${dayName}) at ${timeFormatted} you have ${subjectName} lesson.`;
+  } else if (reminderOffset === 4320) {
+    // 3 days before
+    body = `${prefix}in 3 days (${dayName}) at ${timeFormatted} you have ${subjectName} lesson.`;
+  } else if (reminderOffset >= 60) {
+    const hours = Math.round(reminderOffset / 60);
+    body = `${prefix}today at ${timeFormatted} you have ${subjectName} lesson (in ${hours} ${hours === 1 ? "hour" : "hours"}).`;
+  } else {
+    body = `${prefix}in ${reminderOffset} minutes you have ${subjectName} lesson at ${timeFormatted}! 📚`;
+  }
+
+  if (lesson.location) {
+    body += ` · Location: ${lesson.location}`;
+  }
+
+  return {
+    title: `${subjectName} Lesson Reminder`,
+    body,
+  };
+}
+
+/**
  * Schedules a recurring weekly local push notification for a periodic lesson.
  */
-export async function scheduleLessonNotification(lesson: Lesson): Promise<string | null> {
+export async function scheduleLessonNotification(lesson: Lesson, userName?: string): Promise<string | null> {
   if (Platform.OS === "web") return null;
 
   try {
@@ -96,38 +137,14 @@ export async function scheduleLessonNotification(lesson: Lesson): Promise<string
     // Weekday in expo-notifications: 1=Sunday, 2=Monday, ..., 7=Saturday
     const expoWeekday = triggerDayOfWeek + 1;
 
-    const timeFormatted = formatTime24to12(lesson.start_time);
-    const dayName = getDayName(lesson.day_of_week);
-
-    let reminderText = "Starting now";
-    if (reminderOffset > 0) {
-      if (reminderOffset >= 1440) {
-        const days = Math.round(reminderOffset / 1440);
-        reminderText = `Starts in ${days} day${days === 1 ? "" : "s"}`;
-      } else if (reminderOffset >= 60) {
-        const hours = Math.round(reminderOffset / 60);
-        reminderText = `Starts in ${hours} hour${hours === 1 ? "" : "s"}`;
-      } else {
-        reminderText = `Starts in ${reminderOffset} mins`;
-      }
-    }
-
-    const bodyParts: string[] = [];
-    if (lesson.subject_name) {
-      bodyParts.push(lesson.subject_name);
-    }
-    bodyParts.push(`${reminderText} (${timeFormatted} every ${dayName})`);
-    if (lesson.location) {
-      bodyParts.push(`@ ${lesson.location}`);
-    }
-
+    const { title, body } = generateNotificationMessage(lesson, userName);
     const identifier = getLessonNotificationId(lesson.id);
 
     await Notifications.scheduleNotificationAsync({
       identifier,
       content: {
-        title: `Upcoming Lesson: ${lesson.title}`,
-        body: bodyParts.join(" · "),
+        title,
+        body,
         data: { lessonId: lesson.id, type: "lesson_reminder" },
         sound: true,
       },
@@ -163,11 +180,11 @@ export async function cancelLessonNotification(lessonId: number): Promise<void> 
 /**
  * Synchronizes weekly notifications for all user lessons.
  */
-export async function syncLessonNotifications(lessons: Lesson[]): Promise<void> {
+export async function syncLessonNotifications(lessons: Lesson[], userName?: string): Promise<void> {
   if (Platform.OS === "web") return;
   try {
     for (const lesson of lessons) {
-      await scheduleLessonNotification(lesson);
+      await scheduleLessonNotification(lesson, userName);
     }
   } catch (err) {
     console.warn("Failed to sync lesson notifications:", err);

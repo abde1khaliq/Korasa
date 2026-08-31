@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { Clock, MapPin, Bell, Calendar as CalendarIcon } from "lucide-react-native";
 import { Lesson } from "@/types/lesson";
-import { formatTimeRange, getCountdownText, getDayName } from "@/lib/lessonUtils";
+import { formatTime24to12, getCountdownText, getDayName } from "@/lib/lessonUtils";
 
 interface UpcomingLessonBannerProps {
   lesson: Lesson;
@@ -11,7 +11,14 @@ interface UpcomingLessonBannerProps {
 
 export function UpcomingLessonBanner({ lesson, onPress }: UpcomingLessonBannerProps) {
   const countdown = getCountdownText(lesson);
-  const timeRange = formatTimeRange(lesson.start_time, lesson.end_time);
+  const timeFormatted = formatTime24to12(lesson.start_time);
+
+  const reminderLabel =
+    lesson.reminder_minutes >= 1440
+      ? `${Math.round(lesson.reminder_minutes / 1440)}d reminder`
+      : lesson.reminder_minutes >= 60
+      ? `${Math.round(lesson.reminder_minutes / 60)}h reminder`
+      : `${lesson.reminder_minutes}m reminder`;
 
   return (
     <Pressable
@@ -25,6 +32,10 @@ export function UpcomingLessonBanner({ lesson, onPress }: UpcomingLessonBannerPr
             Next Lesson · {getDayName(lesson.day_of_week)}
           </Text>
         </View>
+
+        <View className="rounded-full bg-brand/10 px-2.5 py-0.5">
+          <Text className="text-[12px] font-medium text-brand">{countdown}</Text>
+        </View>
       </View>
 
       <Text className="mt-2.5 text-[18px] font-semibold text-ink" numberOfLines={1}>
@@ -32,17 +43,9 @@ export function UpcomingLessonBanner({ lesson, onPress }: UpcomingLessonBannerPr
       </Text>
 
       <View className="mt-2.5 flex-row flex-wrap items-center" style={{ gap: 12 }}>
-        {lesson.subject_name && (
-          <View className="rounded-full bg-tag px-2.5 py-0.5">
-            <Text className="text-[12px] font-medium text-ink">
-              {lesson.subject_name}
-            </Text>
-          </View>
-        )}
-
         <View className="flex-row items-center" style={{ gap: 4 }}>
           <Clock size={13} color="#9C9086" strokeWidth={1.75} />
-          <Text className="text-[13px] text-ink-soft">{timeRange}</Text>
+          <Text className="text-[13px] font-medium text-ink-soft">{timeFormatted}</Text>
         </View>
 
         {lesson.location ? (
@@ -58,11 +61,7 @@ export function UpcomingLessonBanner({ lesson, onPress }: UpcomingLessonBannerPr
           <View className="flex-row items-center" style={{ gap: 4 }}>
             <Bell size={12} color="#9C9086" strokeWidth={1.75} />
             <Text className="text-[12px] text-ink-faint">
-              {lesson.reminder_minutes >= 1440
-                ? `${Math.round(lesson.reminder_minutes / 1440)}d reminder`
-                : lesson.reminder_minutes >= 60
-                ? `${Math.round(lesson.reminder_minutes / 60)}h reminder`
-                : `${lesson.reminder_minutes}m reminder`}
+              {reminderLabel}
             </Text>
           </View>
         )}
