@@ -26,11 +26,6 @@ export function HeroSection() {
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Editorial & Value Proposition */}
           <div className="lg:col-span-7">
-            {/* Tagline Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-3.5 py-1.5 font-mono text-[11px] font-medium tracking-wider text-brand uppercase">
-              <Sparkles className="size-3.5 text-brand" />
-              <span>Personal Question Bank & Exam Generator</span>
-            </div>
 
             {/* Main Headline */}
             <h1 className="mt-6 font-display text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-6xl">
