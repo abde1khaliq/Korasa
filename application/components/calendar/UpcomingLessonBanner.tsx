@@ -16,7 +16,7 @@ export function UpcomingLessonBanner({ lesson, onPress }: UpcomingLessonBannerPr
   return (
     <Pressable
       onPress={() => onPress(lesson)}
-      className="mx-5 mt-4 overflow-hidden rounded-2xl border border-brand/40 bg-paper-card p-4 shadow-sm"
+      className="mx-5 mt-4 overflow-hidden rounded-2xl border border-brand bg-paper-card p-4 shadow-sm"
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center" style={{ gap: 6 }}>
@@ -24,10 +24,6 @@ export function UpcomingLessonBanner({ lesson, onPress }: UpcomingLessonBannerPr
           <Text className="text-[12px] font-semibold uppercase tracking-wider text-brand">
             Next Lesson · {getDayName(lesson.day_of_week)}
           </Text>
-        </View>
-
-        <View className="rounded-full bg-brand/10 px-2.5 py-0.5">
-          <Text className="text-[12px] font-medium text-brand">{countdown}</Text>
         </View>
       </View>
 

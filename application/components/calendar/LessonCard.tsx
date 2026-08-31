@@ -64,13 +64,6 @@ export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }
             </Text>
           </View>
 
-          <View className="flex-row items-center rounded-full bg-paper px-2 py-0.5 border border-rule" style={{ gap: 4 }}>
-            <Repeat size={10} color="#9C9086" strokeWidth={2} />
-            <Text className="text-[11px] font-medium text-ink-soft">
-              Every {getDayName(lesson.day_of_week)}
-            </Text>
-          </View>
-
           {lesson.subject_name ? (
             <View className="rounded-full bg-tag px-2.5 py-0.5">
               <Text className="text-[11px] font-medium text-ink">
