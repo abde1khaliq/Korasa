@@ -69,7 +69,7 @@ export const CHANGELOG: ChangelogRelease[] = [
     id: "v1.0.2",
     version: "v1.0.2",
     date: "Calendar",
-    title: "Calendar feature has came to life!",
+    title: "Calendar feature has come to life!",
     subtitle: "Schedule your lessons or lectures to get notified by Korasa to never miss them.",
   },
   {
