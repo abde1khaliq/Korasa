@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export function DownloadAppSection() {
-  const downloadUrl = "https://drive.google.com/file/d/1P-xh2BN05ojCbiteGFSntw9sOcxLgj-D/view?usp=drive_link";
+  const downloadUrl = "https://download854.mediafire.com/cnskjkkzkqsgIGD8ECiG-XHVtPsMYzvYDygbZ5dMgS-bCFcF2b4ieck3cL0hHZoCJSE6mL3HFOnDcU-xEVLyD3d9_BGJYUi2TEUDhEP2-3dJDBh4IWX1KkvgzBPRwrkIjD2a-C-W94o_OmQu1egwEb7vm1Q6xSBO5ar-D48UiFHXfA/mx5jqtcbomzpdfh/Korasa.apk";
 
   return (
     <section id="download" className="border-t border-rule bg-paper-card py-20 md:py-28 px-6">
