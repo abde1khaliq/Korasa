@@ -28,11 +28,11 @@ export function HowItWorksSection() {
       num: "02",
       icon: Camera,
       title: "Save Questions",
-      subtitle: "Photo OCR, Answers, & Notes",
+      subtitle: "Photo, Answers, & Notes",
       desc: "Upload or take a picture of a tricky question with your camera, then record its answer, difficulty level (Easy/Medium/Hard), and a note explaining your solving approach.",
       tag: "CAPTURE",
       highlights: [
-        "Camera OCR text recognition for fast entry",
+        "Capture the question using your camera",
         "Tag difficulty: Easy, Medium, or Hard",
         "Add solving approach notes & step-by-step logic",
       ],

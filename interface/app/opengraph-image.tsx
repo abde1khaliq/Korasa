@@ -75,7 +75,7 @@ export default async function OpenGraphImage() {
             maxWidth: 860,
           }}
         >
-          Organize your study notes, capture questions with OCR, and generate authentic practice exams.
+          Organize your study notes, capture questions, and generate authentic practice exams.
         </div>
 
         <div

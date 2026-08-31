@@ -5,7 +5,7 @@ export const SITE_CONFIG = {
   title: "Korasa | Study in Your Way",
   tagline: "Study in Your Way",
   description:
-    "Organize your studies, capture questions with photo OCR, and generate authentic practice exams tailored to your learning goals.",
+    "Organize your studies, capture questions, and generate authentic practice exams tailored to your learning goals.",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://korasa.study",
   ogImage: "https://ik.imagekit.io/cin2tn3bj/korasa_logo.png?updatedAt=1787320657608",
   author: {

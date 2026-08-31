@@ -5,7 +5,7 @@ import { Camera, X, Loader2, Check } from "lucide-react";
 
 type Stage = "capture" | "crop" | "recognizing";
 
-export function QuestionOCRCapture({
+export function QuestionCapture({
   onClose,
   onTextRecognized,
 }: {

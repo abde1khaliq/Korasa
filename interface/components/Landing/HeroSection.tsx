@@ -73,10 +73,10 @@ export function HeroSection() {
               </div>
               <div>
                 <p className="font-mono text-[10px] font-semibold text-brand uppercase">
-                  Camera OCR
+                  Capture Question
                 </p>
                 <p className="text-[11.5px] font-medium text-ink">
-                  Snap & Auto-Extract
+                  Snap & Save
                 </p>
               </div>
             </div>

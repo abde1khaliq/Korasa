@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Difficulty, difficultyStyles } from "../misc/Screen";
 import { Question } from "@/types/question";
 import { Camera, Loader2, X } from "lucide-react";
-import { QuestionOCRCapture } from "./QuestionOCRCapture";
+import { QuestionCapture } from "./QuestionOCRCapture";
 import { useSession } from "next-auth/react";
 
 const levels: Difficulty[] = ["Easy", "Medium", "Hard"];
@@ -214,7 +214,7 @@ export const CreateQuestionModal = ({
             />
           </div>
           {showOCR && (
-            <QuestionOCRCapture
+            <QuestionCapture
               onClose={() => setShowOCR(false)}
               onTextRecognized={handleOCRText}
             />

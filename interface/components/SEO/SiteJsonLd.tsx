@@ -34,7 +34,7 @@ export function SiteJsonLd() {
     description: SITE_CONFIG.description,
     featureList: [
       "Subject and topic folder study organization",
-      "Camera & photo OCR question capture",
+      "Camera question capture",
       "Customizable practice exam generation",
       "Approach notes and revision tracking",
       "LaTeX math formula support",
