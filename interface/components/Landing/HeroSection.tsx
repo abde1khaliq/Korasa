@@ -4,10 +4,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   Camera,
-  CheckCircle2,
-  Folder,
   Layers,
-  Sparkles,
   Smartphone,
 } from "lucide-react";
 import { PhoneMockup } from "./PhoneMockup";
@@ -42,10 +39,10 @@ export function HeroSection() {
             </p>
 
             {/* CTAs */}
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-col sm:flex-row items-center gap-3">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-onyx px-6 py-3.5 text-[15px] font-medium text-paper shadow-sm transition-all hover:bg-onyx/90 hover:shadow"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-onyx px-6 py-3.5 text-[15px] font-medium text-paper shadow-sm transition-all hover:bg-onyx/90 hover:shadow"
               >
                 Get Started Free
                 <ArrowRight className="size-4" strokeWidth={2} />
@@ -53,7 +50,7 @@ export function HeroSection() {
 
               <a
                 href="#download"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-rule bg-paper-card px-5 py-3.5 text-[14px] font-medium text-ink transition-colors hover:border-brand/40 hover:bg-paper"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-rule bg-paper-card px-5 py-3.5 text-[14px] font-medium text-ink transition-colors hover:border-brand/40 hover:bg-paper"
               >
                 <Smartphone className="size-4 text-brand" />
                 Download Android App
