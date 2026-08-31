@@ -12,7 +12,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
-import { Home, ClipboardList, User, Plus } from "lucide-react-native";
+import { Home, Calendar, ClipboardList, User, Plus } from "lucide-react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useNotification } from "@/hooks/useNotification";
@@ -21,8 +21,9 @@ import { QuickCreateModal } from "@/components/home/QuickCreateModal";
 import { triggerHomeRefresh } from "@/lib/refreshBus";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
-const TABS: Array<{ name: string; label: string; icon: typeof Home }> = [
+const TABS: { name: string; label: string; icon: typeof Home }[] = [
   { name: "index", label: "Home", icon: Home },
+  { name: "calendar", label: "Calendar", icon: Calendar },
   { name: "exams", label: "Exams", icon: ClipboardList },
   { name: "profile", label: "Profile", icon: User },
 ];

@@ -29,6 +29,9 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	ExamRouteGroup := r.Group("/api/exams")
 	api.ExamRoutes(ExamRouteGroup, db)
 
+	LessonRouteGroup := r.Group("/api/lessons")
+	api.LessonRoutes(LessonRouteGroup, db)
+
 	UserRouteGroup := r.Group("/auth")
 	api.UserRouters(UserRouteGroup, db)
 
