@@ -15,7 +15,11 @@ import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useEligibleCount } from "@/hooks/useEligibleCount";
-import { Difficulty, difficultyStyles, difficultyHex } from "@/components/misc/Screen";
+import {
+  Difficulty,
+  difficultyStyles,
+  difficultyHex,
+} from "@/components/misc/Screen";
 import { examTypeLabels, examTypeDescriptions } from "@/lib/examUtils";
 import { Exam, ExamType } from "@/types/exam";
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -55,14 +59,20 @@ function SelectField<T extends string | number>({
 
   return (
     <View>
-      <Text className="text-[12px] tracking-widest text-ink-faint uppercase">{label}</Text>
+      <Text className="text-[12px] tracking-widest text-ink-faint uppercase">
+        {label}
+      </Text>
       <Pressable
         onPress={() => !disabled && setOpen((o) => !o)}
         disabled={disabled}
         className="mt-2 flex-row items-center justify-between rounded-xl border border-rule bg-paper-card px-4 py-3.5"
         style={{ opacity: disabled ? 0.5 : 1 }}
       >
-        <Text className={value === "" ? "text-[15px] text-ink-faint" : "text-[15px] text-ink"}>
+        <Text
+          className={
+            value === "" ? "text-[15px] text-ink-faint" : "text-[15px] text-ink"
+          }
+        >
           {value === "" ? placeholder : getLabel(value)}
         </Text>
         <ChevronDown
@@ -76,7 +86,9 @@ function SelectField<T extends string | number>({
       {open && (
         <View className="mt-1.5 overflow-hidden rounded-xl border border-rule bg-paper-card">
           {options.length === 0 ? (
-            <Text className="px-4 py-3 text-[14px] text-ink-faint">No options available</Text>
+            <Text className="px-4 py-3 text-[14px] text-ink-faint">
+              No options available
+            </Text>
           ) : (
             options.map((opt, i) => {
               const selected = opt.value === value;
@@ -92,16 +104,24 @@ function SelectField<T extends string | number>({
                     gap: 8,
                     borderTopWidth: i === 0 ? 0 : 1,
                     borderTopColor: "#E4DED4",
-                    backgroundColor: selected ? "rgba(168,112,63,0.08)" : "transparent",
+                    backgroundColor: selected
+                      ? "rgba(168,112,63,0.08)"
+                      : "transparent",
                   }}
                 >
                   <Text
-                    className={selected ? "text-brand text-[15px]" : "text-ink text-[15px]"}
+                    className={
+                      selected
+                        ? "text-brand text-[15px]"
+                        : "text-ink text-[15px]"
+                    }
                     style={{ flex: 1 }}
                   >
                     {opt.label}
                   </Text>
-                  {selected && <Check size={16} color="#A8703F" strokeWidth={2} />}
+                  {selected && (
+                    <Check size={16} color="#A8703F" strokeWidth={2} />
+                  )}
                 </Pressable>
               );
             })
@@ -131,7 +151,11 @@ export function CreateExamModal({
   const [loadingFolders, setLoadingFolders] = useState(false);
   const [folderId, setFolderId] = useState<number | "">("");
   const [type, setType] = useState<ExamType>("practice");
-  const [difficulties, setDifficulties] = useState<Difficulty[]>(["Easy", "Medium", "Hard"]);
+  const [difficulties, setDifficulties] = useState<Difficulty[]>([
+    "Easy",
+    "Medium",
+    "Hard",
+  ]);
   const [questionCount, setQuestionCount] = useState(10);
   const [timeLimitMinutes, setTimeLimitMinutes] = useState("15");
   const [error, setError] = useState<string | null>(null);
@@ -164,7 +188,8 @@ export function CreateExamModal({
     };
   }, [scopeMode, subjectId, accessToken]);
 
-  const apiScopeId = scopeMode === "subject" ? subjectId || null : folderId || null;
+  const apiScopeId =
+    scopeMode === "subject" ? subjectId || null : folderId || null;
 
   const { count: eligibleCount, isLoading: countLoading } = useEligibleCount(
     apiScopeId ? scopeMode : null,
@@ -173,13 +198,19 @@ export function CreateExamModal({
   );
 
   useEffect(() => {
-    if (eligibleCount !== null && eligibleCount > 0 && questionCount > eligibleCount) {
+    if (
+      eligibleCount !== null &&
+      eligibleCount > 0 &&
+      questionCount > eligibleCount
+    ) {
       setQuestionCount(eligibleCount);
     }
   }, [eligibleCount]);
 
   const toggleDifficulty = (d: Difficulty) => {
-    setDifficulties((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
+    setDifficulties((prev) =>
+      prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d],
+    );
   };
 
   const scopeReady = scopeMode === "subject" ? !!subjectId : !!folderId;
@@ -187,7 +218,9 @@ export function CreateExamModal({
   const timeValid = type !== "timed" || Number(timeLimitMinutes) >= 1;
   const countValid =
     type === "full" ||
-    (questionCount >= 1 && eligibleCount !== null && questionCount <= eligibleCount);
+    (questionCount >= 1 &&
+      eligibleCount !== null &&
+      questionCount <= eligibleCount);
 
   const isValid =
     trimmedName.length > 0 &&
@@ -229,12 +262,19 @@ export function CreateExamModal({
   };
 
   const subjectOptions = subjects.map((s) => ({ value: s.id, label: s.name }));
-  const subjectLabelById = (id: number) => subjects.find((s) => s.id === id)?.name ?? "";
+  const subjectLabelById = (id: number) =>
+    subjects.find((s) => s.id === id)?.name ?? "";
   const folderOptions = folders.map((f) => ({ value: f.id, label: f.name }));
-  const folderLabelById = (id: number) => folders.find((f) => f.id === id)?.name ?? "";
+  const folderLabelById = (id: number) =>
+    folders.find((f) => f.id === id)?.name ?? "";
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+    <Modal
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -264,7 +304,11 @@ export function CreateExamModal({
             ) : (
               <ScrollView
                 className="px-6"
-                contentContainerStyle={{ paddingTop: 20, paddingBottom: 40, gap: 20 }}
+                contentContainerStyle={{
+                  paddingTop: 20,
+                  paddingBottom: 40,
+                  gap: 20,
+                }}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={true}
               >
@@ -304,14 +348,18 @@ export function CreateExamModal({
                           className="flex-1 items-center rounded-xl border py-2.5"
                           style={{
                             borderColor: on ? "#A8703F" : "#E4DED4",
-                            backgroundColor: on ? "rgba(168,112,63,0.08)" : "transparent",
+                            backgroundColor: on
+                              ? "rgba(168,112,63,0.08)"
+                              : "transparent",
                           }}
                         >
                           <Text
                             className={on ? "text-brand" : "text-ink-soft"}
                             style={{ fontSize: 14, fontWeight: "500" }}
                           >
-                            {mode === "subject" ? "Whole subject" : "Specific folder"}
+                            {mode === "subject"
+                              ? "Whole subject"
+                              : "Specific folder"}
                           </Text>
                         </Pressable>
                       );
@@ -323,7 +371,9 @@ export function CreateExamModal({
                   (loadingFolders ? (
                     <View className="flex-row items-center" style={{ gap: 8 }}>
                       <ActivityIndicator size="small" color="#6E655C" />
-                      <Text className="text-[14px] text-ink-soft">Loading folders…</Text>
+                      <Text className="text-[14px] text-ink-soft">
+                        Loading folders…
+                      </Text>
                     </View>
                   ) : (
                     <SelectField
@@ -351,7 +401,9 @@ export function CreateExamModal({
                           className="rounded-xl border px-4 py-3"
                           style={{
                             borderColor: on ? "#A8703F" : "#E4DED4",
-                            backgroundColor: on ? "rgba(168,112,63,0.08)" : "transparent",
+                            backgroundColor: on
+                              ? "rgba(168,112,63,0.08)"
+                              : "transparent",
                           }}
                         >
                           <Text
@@ -382,9 +434,15 @@ export function CreateExamModal({
                           key={d}
                           onPress={() => toggleDifficulty(d)}
                           className={`flex-1 items-center rounded-xl border py-2.5 ${on ? s.pillBg : "bg-paper-card"}`}
-                          style={{ borderColor: on ? difficultyHex[d] : "#E4DED4" }}
+                          style={{
+                            borderColor: on ? difficultyHex[d] : "#E4DED4",
+                          }}
                         >
-                          <Text className={`text-[14px] ${on ? s.pillText : "text-ink"}`}>{d}</Text>
+                          <Text
+                            className={`text-[14px] ${on ? s.pillText : "text-ink"}`}
+                          >
+                            {d}
+                          </Text>
                         </Pressable>
                       );
                     })}
@@ -409,16 +467,24 @@ export function CreateExamModal({
                     </Text>
                     <View className="flex-row items-center justify-between rounded-xl border border-rule bg-paper-card px-4 py-2">
                       <Pressable
-                        onPress={() => setQuestionCount((c) => Math.max(1, c - 1))}
+                        onPress={() =>
+                          setQuestionCount((c) => Math.max(1, c - 1))
+                        }
                         className="items-center justify-center"
                         style={{ width: 36, height: 36 }}
                       >
                         <Text className="text-[20px] text-ink">–</Text>
                       </Pressable>
-                      <Text className="text-[17px] text-ink">{questionCount}</Text>
+                      <Text className="text-[17px] text-ink">
+                        {questionCount}
+                      </Text>
                       <Pressable
                         onPress={() =>
-                          setQuestionCount((c) => (eligibleCount ? Math.min(eligibleCount, c + 1) : c + 1))
+                          setQuestionCount((c) =>
+                            eligibleCount
+                              ? Math.min(eligibleCount, c + 1)
+                              : c + 1,
+                          )
                         }
                         className="items-center justify-center"
                         style={{ width: 36, height: 36 }}
@@ -436,7 +502,9 @@ export function CreateExamModal({
                     </Text>
                     <TextInput
                       value={timeLimitMinutes}
-                      onChangeText={(v) => setTimeLimitMinutes(v.replace(/[^0-9]/g, ""))}
+                      onChangeText={(v) =>
+                        setTimeLimitMinutes(v.replace(/[^0-9]/g, ""))
+                      }
                       keyboardType="number-pad"
                       className="rounded-xl border border-rule bg-paper-card px-4 text-[15px] text-ink"
                       style={{ paddingVertical: 14 }}
@@ -444,7 +512,9 @@ export function CreateExamModal({
                   </View>
                 )}
 
-                {error && <Text className="text-[14px] text-hard">{error}</Text>}
+                {error && (
+                  <Text className="text-[14px] text-hard">{error}</Text>
+                )}
 
                 <Pressable
                   onPress={handleSubmit}
@@ -457,7 +527,10 @@ export function CreateExamModal({
                   ) : (
                     <Plus size={18} color={ink} strokeWidth={1.75} />
                   )}
-                  <Text className="text-[15px] text-paper" style={{ fontWeight: "500" }}>
+                  <Text
+                    className="text-[15px] text-paper"
+                    style={{ fontWeight: "500" }}
+                  >
                     {isSubmitting ? "Creating…" : "Create exam"}
                   </Text>
                 </Pressable>

@@ -13,7 +13,9 @@ export function useExam(examId: string | undefined) {
     if (!accessToken || !examId) return;
     setError(null);
     try {
-      const data: Exam = await apiFetch(`/api/exams/${examId}`, { token: accessToken });
+      const data: Exam = await apiFetch(`/api/exams/${examId}`, {
+        token: accessToken,
+      });
       setExam(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

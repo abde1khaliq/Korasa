@@ -21,7 +21,11 @@ export default function ProfileScreen() {
       <View className="mt-8 items-center px-6">
         <View
           className="items-center justify-center rounded-full"
-          style={{ width: 72, height: 72, backgroundColor: "rgba(42,39,36,0.1)" }}
+          style={{
+            width: 72,
+            height: 72,
+            backgroundColor: "rgba(42,39,36,0.1)",
+          }}
         >
           <UserIcon size={32} color="#2B2724" strokeWidth={1.5} />
         </View>

@@ -97,10 +97,7 @@ export default function ResetPasswordScreen() {
               style={{ gap: 8 }}
             >
               <Check size={16} color="#16a34a" />
-              <Text
-                className="text-green-600 text-sm"
-                style={{ flex: 1 }}
-              >
+              <Text className="text-green-600 text-sm" style={{ flex: 1 }}>
                 Password reset! Redirecting to sign in…
               </Text>
             </View>
@@ -158,9 +155,7 @@ export default function ResetPasswordScreen() {
               onPress={() => router.replace("/(auth)/login")}
               disabled={loading}
             >
-              <Text className="text-ink-faint text-sm">
-                ← Back to sign in
-              </Text>
+              <Text className="text-ink-faint text-sm">← Back to sign in</Text>
             </Pressable>
           </View>
         </View>

@@ -31,10 +31,11 @@ export function useLessons() {
       setLessons(sortedAll);
       setUpcomingLessons(sortedUpcoming);
 
-      // Background notification sync
       syncLessonNotifications(sortedAll, user?.username).catch(() => {});
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load lessons");
+      setError(
+        err instanceof ApiError ? err.message : "Failed to load lessons",
+      );
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -50,7 +51,9 @@ export function useLessons() {
     fetchLessons();
   }, [fetchLessons]);
 
-  const createLesson = async (input: LessonInput): Promise<Lesson | Lesson[]> => {
+  const createLesson = async (
+    input: LessonInput,
+  ): Promise<Lesson | Lesson[]> => {
     if (!accessToken) throw new Error("Not authenticated");
     const res = await apiFetch("/api/lessons", {
       method: "POST",
@@ -62,18 +65,21 @@ export function useLessons() {
 
     setLessons((prev) =>
       [...prev, ...newLessons].sort((a, b) => {
-        if (a.day_of_week !== b.day_of_week) return a.day_of_week - b.day_of_week;
+        if (a.day_of_week !== b.day_of_week)
+          return a.day_of_week - b.day_of_week;
         return a.start_time.localeCompare(b.start_time);
-      })
+      }),
     );
 
-    // Refresh upcoming list and notifications
     fetchLessons();
 
     return res;
   };
 
-  const updateLesson = async (id: number, input: LessonInput): Promise<Lesson> => {
+  const updateLesson = async (
+    id: number,
+    input: LessonInput,
+  ): Promise<Lesson> => {
     if (!accessToken) throw new Error("Not authenticated");
     const updated: Lesson = await apiFetch(`/api/lessons/${id}`, {
       method: "PATCH",
@@ -85,12 +91,12 @@ export function useLessons() {
       prev
         .map((l) => (l.id === id ? updated : l))
         .sort((a, b) => {
-          if (a.day_of_week !== b.day_of_week) return a.day_of_week - b.day_of_week;
+          if (a.day_of_week !== b.day_of_week)
+            return a.day_of_week - b.day_of_week;
           return a.start_time.localeCompare(b.start_time);
-        })
+        }),
     );
 
-    // Re-schedule notification
     scheduleLessonNotification(updated, user?.username).catch(() => {});
     fetchLessons();
 
@@ -107,7 +113,6 @@ export function useLessons() {
     setLessons((prev) => prev.filter((l) => l.id !== id));
     setUpcomingLessons((prev) => prev.filter((l) => l.id !== id));
 
-    // Cancel notification
     cancelLessonNotification(id).catch(() => {});
   };
 

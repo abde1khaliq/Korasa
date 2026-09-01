@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
@@ -14,7 +22,7 @@ export default function RegisterScreen() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-const handleRegister = async () => {
+  const handleRegister = async () => {
     setError("");
     if (!username || !email || !password) {
       setError("Please fill in all fields.");
@@ -29,7 +37,9 @@ const handleRegister = async () => {
       await register(username, email, password);
       router.replace("/(auth)/verify-email");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to create account.");
+      setError(
+        err instanceof ApiError ? err.message : "Failed to create account.",
+      );
       setLoading(false);
     }
   };
@@ -41,9 +51,7 @@ const handleRegister = async () => {
         className="flex-1"
       >
         <View className="px-6 pt-6">
-          <Text className="font-display text-2xl text-ink">
-            Korasa
-          </Text>
+          <Text className="font-display text-2xl text-ink">Korasa</Text>
         </View>
 
         <View className="flex-1 px-6 pt-10 pb-16">
@@ -54,7 +62,9 @@ const handleRegister = async () => {
             Create account
           </Text>
 
-          {error ? <Text className="mt-4 text-red-500 text-sm">{error}</Text> : null}
+          {error ? (
+            <Text className="mt-4 text-red-500 text-sm">{error}</Text>
+          ) : null}
 
           <Text className="mt-6 text-[14px] tracking-widest text-ink-faint uppercase">
             Username
@@ -98,7 +108,9 @@ const handleRegister = async () => {
               className="text-[18px] text-ink py-3"
             />
           </View>
-          <Text className="mt-2 text-[14px] text-ink-faint">At least 8 characters.</Text>
+          <Text className="mt-2 text-[14px] text-ink-faint">
+            At least 8 characters.
+          </Text>
 
           <Pressable
             onPress={handleRegister}
@@ -109,14 +121,14 @@ const handleRegister = async () => {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text className="text-[17px] text-paper">
-                Create account
-              </Text>
+              <Text className="text-[17px] text-paper">Create account</Text>
             )}
           </Pressable>
 
           <View className="mt-auto pt-12 flex-row justify-center">
-            <Text className="text-[17px] text-ink-soft">Already have an account? </Text>
+            <Text className="text-[17px] text-ink-soft">
+              Already have an account?{" "}
+            </Text>
             <Link href="/(auth)/login">
               <Text className="text-[17px] text-brand">Sign in</Text>
             </Link>

@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  Platform,
-} from "react-native";
+import { View, Text, Pressable, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import Animated, {
@@ -32,8 +27,14 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const [showQuickCreate, setShowQuickCreate] = useState(false);
 
-  const glassBg = useThemeColor("rgba(247, 245, 241, 0.92)", "rgba(33, 29, 26, 0.92)");
-  const glassBorder = useThemeColor("rgba(228, 222, 212, 0.8)", "rgba(58, 51, 44, 0.8)");
+  const glassBg = useThemeColor(
+    "rgba(247, 245, 241, 0.92)",
+    "rgba(33, 29, 26, 0.92)",
+  );
+  const glassBorder = useThemeColor(
+    "rgba(228, 222, 212, 0.8)",
+    "rgba(58, 51, 44, 0.8)",
+  );
   const onyxBg = useThemeColor("#2A2724", "#F1EFEC");
   const onyxIcon = useThemeColor("#F7F5F1", "#211D1A");
 
@@ -145,7 +146,7 @@ function TabItem({
   const inkFaint = useThemeColor("#9C9086", "#7A7166");
   const activePillBg = useThemeColor(
     "rgba(156, 144, 134, 0.22)",
-    "rgba(241, 239, 236, 0.12)"
+    "rgba(241, 239, 236, 0.12)",
   );
 
   const scale = useSharedValue(1);

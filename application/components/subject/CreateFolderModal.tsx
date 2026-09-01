@@ -57,7 +57,12 @@ export function CreateFolderModal({
   };
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+    <Modal
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}

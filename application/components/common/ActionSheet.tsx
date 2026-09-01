@@ -22,7 +22,12 @@ export function ActionSheet({
   cancelLabel = "Cancel",
 }: ActionSheetProps) {
   return (
-    <Modal transparent animationType="fade" visible={visible} onRequestClose={onCancel}>
+    <Modal
+      transparent
+      animationType="fade"
+      visible={visible}
+      onRequestClose={onCancel}
+    >
       <Pressable
         className="flex-1 justify-end"
         style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
@@ -49,7 +54,9 @@ export function ActionSheet({
                   borderTopColor: "#E4DED4",
                 }}
               >
-                <Text className={`text-[16px] ${opt.destructive ? "text-hard" : "text-ink"}`}>
+                <Text
+                  className={`text-[16px] ${opt.destructive ? "text-hard" : "text-ink"}`}
+                >
                   {opt.label}
                 </Text>
               </Pressable>
@@ -60,7 +67,10 @@ export function ActionSheet({
             onPress={onCancel}
             className="mt-2 items-center rounded-2xl border border-rule py-4"
           >
-            <Text className="text-[16px] text-ink" style={{ fontWeight: "500" }}>
+            <Text
+              className="text-[16px] text-ink"
+              style={{ fontWeight: "500" }}
+            >
               {cancelLabel}
             </Text>
           </Pressable>

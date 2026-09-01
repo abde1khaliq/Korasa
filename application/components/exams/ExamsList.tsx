@@ -25,7 +25,15 @@ export function ExamsList() {
   const tabBarBottom = Math.max(insets.bottom, 14);
   const buttonBottom = tabBarBottom + tabBarHeight + 16;
 
-  const { exams, isLoading, isRefreshing, error, fetchExams, onRefresh, addExam } = useExams();
+  const {
+    exams,
+    isLoading,
+    isRefreshing,
+    error,
+    fetchExams,
+    onRefresh,
+    addExam,
+  } = useExams();
   const { notification, showNotification } = useNotification();
 
   useFocusEffect(
@@ -47,7 +55,10 @@ export function ExamsList() {
       <View className="flex-1 bg-paper">
         <ExamsEmptyState onCreateClick={() => setShowCreateModal(true)} />
         {showCreateModal && (
-          <CreateExamModal onClose={() => setShowCreateModal(false)} onCreated={handleCreated} />
+          <CreateExamModal
+            onClose={() => setShowCreateModal(false)}
+            onCreated={handleCreated}
+          />
         )}
         <Notification message={notification} />
       </View>
@@ -59,11 +70,22 @@ export function ExamsList() {
       <FlatList
         data={exams}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: buttonBottom + 64 }}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={ink} />}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: buttonBottom + 64,
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={ink}
+          />
+        }
         ListHeaderComponent={
           <View className="px-2 pt-6 pb-4">
-            <Text className="font-display text-[40px] leading-[44px] text-ink">Exams</Text>
+            <Text className="font-display text-[40px] leading-[44px] text-ink">
+              Exams
+            </Text>
             <Text className="mt-2 text-[17px] text-ink-soft">
               {exams.length} {exams.length === 1 ? "exam" : "exams"}
             </Text>
@@ -71,11 +93,20 @@ export function ExamsList() {
         }
         renderItem={({ item }) => (
           <Pressable
-            onPress={() => router.push({ pathname: "/exam/[id]", params: { id: String(item.id) } })}
+            onPress={() =>
+              router.push({
+                pathname: "/exam/[id]",
+                params: { id: String(item.id) },
+              })
+            }
             className="mb-3 rounded-2xl border border-rule bg-paper-card p-4"
           >
             <View className="flex-row items-center justify-between">
-              <Text className="text-[18px] text-ink" style={{ fontWeight: "500" }} numberOfLines={1}>
+              <Text
+                className="text-[18px] text-ink"
+                style={{ fontWeight: "500" }}
+                numberOfLines={1}
+              >
                 {item.name}
               </Text>
               <ChevronRight size={18} color="#9C9086" strokeWidth={2} />
@@ -85,7 +116,10 @@ export function ExamsList() {
             </Text>
             <View className="mt-3 flex-row items-center" style={{ gap: 14 }}>
               <View className="rounded-full bg-tag px-3 py-1">
-                <Text className="text-[11px] text-ink" style={{ fontWeight: "500" }}>
+                <Text
+                  className="text-[11px] text-ink"
+                  style={{ fontWeight: "500" }}
+                >
                   {examTypeLabels[item.type]}
                 </Text>
               </View>
@@ -98,14 +132,21 @@ export function ExamsList() {
               {item.time_limit_minutes ? (
                 <View className="flex-row items-center" style={{ gap: 5 }}>
                   <Clock size={12} color="#9C9086" strokeWidth={1.75} />
-                  <Text className="text-[12px] text-ink-soft">{item.time_limit_minutes}m</Text>
+                  <Text className="text-[12px] text-ink-soft">
+                    {item.time_limit_minutes}m
+                  </Text>
                 </View>
               ) : null}
             </View>
             {item.last_attempt?.completed_at ? (
               <Text className="mt-2 text-[12px] text-ink-faint">
-                Last: {item.last_attempt.correct_count}/{item.last_attempt.total_count} ·{" "}
-                {scorePercent(item.last_attempt.correct_count, item.last_attempt.total_count)}%
+                Last: {item.last_attempt.correct_count}/
+                {item.last_attempt.total_count} ·{" "}
+                {scorePercent(
+                  item.last_attempt.correct_count,
+                  item.last_attempt.total_count,
+                )}
+                %
               </Text>
             ) : null}
           </Pressable>
@@ -132,7 +173,10 @@ export function ExamsList() {
       </Pressable>
 
       {showCreateModal && (
-        <CreateExamModal onClose={() => setShowCreateModal(false)} onCreated={handleCreated} />
+        <CreateExamModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={handleCreated}
+        />
       )}
       <Notification message={notification} />
     </View>

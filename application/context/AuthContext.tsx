@@ -53,8 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [pendingVerification, setPendingVerification] =
     useState<PendingVerification | null>(null);
 
-  // Not React state on purpose — always read/written straight to SecureStore
-  // so there's no stale-closure risk between cold start, refresh, and logout.
   const refreshInFlight = useRef<Promise<string> | null>(null);
 
   useEffect(() => {
@@ -97,9 +95,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const completeOnboarding = useCallback(async () => {
     if (!user || !accessToken) return;
 
-    // Optimistic — the tutorial is already dismissed on screen, don't make
-    // the person wait on a network round trip to get into the app. Worst
-    // case on failure: they see the tutorial once more next login.
     const updated = { ...user, has_completed_onboarding: true };
     setUser(updated);
     await SecureStore.setItemAsync(USER_KEY, JSON.stringify(updated));
@@ -109,13 +104,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: "PATCH",
         token: accessToken,
       });
-    } catch {
-      // non-fatal
-    }
+    } catch {}
   }, [user, accessToken]);
 
-  // Deduped: if three requests all get 401 within the same tick, they share
-  // one in-flight /auth/refresh call instead of firing three.
   const performRefresh = useCallback(async (): Promise<string> => {
     if (refreshInFlight.current) return refreshInFlight.current;
 
@@ -151,9 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return promise;
   }, []);
 
-  // Wires the context-free apiFetch() helper up to this provider so any
-  // hook's 401 gets refreshed-and-retried without every call site needing
-  // to know refresh logic exists.
   useEffect(() => {
     registerAuthHandlers(performRefresh, () => {
       logout();

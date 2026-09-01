@@ -9,10 +9,6 @@ const apiDifficulty: Record<Difficulty, "easy" | "medium" | "hard"> = {
   Hard: "hard",
 };
 
-// Debounced so toggling three difficulty chips in a row doesn't fire three
-// requests — same shape of problem the folder-loading effect in
-// QuickCreateModal doesn't have to deal with because it's not driven by
-// rapid taps on multiple independent toggles.
 export function useEligibleCount(
   scopeType: "subject" | "folder" | null,
   scopeId: number | null,
@@ -49,7 +45,6 @@ export function useEligibleCount(
       cancelled = true;
       clearTimeout(handle);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken, scopeType, scopeId, difficulties.join(",")]);
 
   return { count, isLoading };

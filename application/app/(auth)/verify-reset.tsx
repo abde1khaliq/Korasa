@@ -139,10 +139,7 @@ export default function VerifyResetScreen() {
               style={{ gap: 8 }}
             >
               <Check size={16} color="#16a34a" />
-              <Text
-                className="text-green-600 text-sm"
-                style={{ flex: 1 }}
-              >
+              <Text className="text-green-600 text-sm" style={{ flex: 1 }}>
                 {success}
               </Text>
             </View>

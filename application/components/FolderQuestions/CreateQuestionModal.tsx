@@ -114,7 +114,12 @@ export function CreateQuestionModal({
   };
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+    <Modal
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -154,7 +159,11 @@ export function CreateQuestionModal({
 
             <ScrollView
               className="px-6"
-              contentContainerStyle={{ paddingTop: 24, paddingBottom: 48, gap: 24 }}
+              contentContainerStyle={{
+                paddingTop: 24,
+                paddingBottom: 48,
+                gap: 24,
+              }}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={true}
             >

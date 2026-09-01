@@ -58,9 +58,16 @@ export function Onboarding() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handleScrollEnd}
-        getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
+        getItemLayout={(_, i) => ({
+          length: width,
+          offset: width * i,
+          index: i,
+        })}
         renderItem={({ item }) => (
-          <View style={{ width }} className="flex-1 items-center justify-center px-10">
+          <View
+            style={{ width }}
+            className="flex-1 items-center justify-center px-10"
+          >
             <Text className="font-display mt-10 text-[28px] leading-[34px] text-ink text-center">
               {item.title}
             </Text>
@@ -76,11 +83,11 @@ export function Onboarding() {
           <View
             key={slide.key}
             className="rounded-full bg-onyx"
-            style={{ 
-              width: i === index ? 20 : 6, 
-              height: 6, 
+            style={{
+              width: i === index ? 20 : 6,
+              height: 6,
               opacity: i === index ? 1 : 0.25,
-              marginHorizontal: 4 
+              marginHorizontal: 4,
             }}
           />
         ))}
@@ -91,7 +98,9 @@ export function Onboarding() {
           onPress={handleNext}
           className="flex-row items-center justify-center rounded-full bg-onyx py-4"
         >
-          <Text className="text-[16px] text-paper">{isLast ? "Get started" : "Next"}</Text>
+          <Text className="text-[16px] text-paper">
+            {isLast ? "Get started" : "Next"}
+          </Text>
           <View style={{ marginLeft: 8 }}>
             <ArrowRight size={18} color={ink} strokeWidth={1.75} />
           </View>

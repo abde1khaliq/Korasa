@@ -4,9 +4,19 @@ import { useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
 import { Attempt } from "@/types/exam";
-import { formatAttemptDate, formatDuration, scorePercent } from "@/lib/examUtils";
+import {
+  formatAttemptDate,
+  formatDuration,
+  scorePercent,
+} from "@/lib/examUtils";
 
-export function AttemptSummaryScreen({ examId, attemptId }: { examId: string; attemptId: string }) {
+export function AttemptSummaryScreen({
+  examId,
+  attemptId,
+}: {
+  examId: string;
+  attemptId: string;
+}) {
   const router = useRouter();
   const { accessToken } = useAuth();
   const [attempt, setAttempt] = useState<Attempt | null>(null);
@@ -14,9 +24,15 @@ export function AttemptSummaryScreen({ examId, attemptId }: { examId: string; at
 
   useEffect(() => {
     if (!accessToken) return;
-    apiFetch(`/api/exams/${examId}/attempts/${attemptId}`, { token: accessToken })
+    apiFetch(`/api/exams/${examId}/attempts/${attemptId}`, {
+      token: accessToken,
+    })
       .then(setAttempt)
-      .catch((err) => setError(err instanceof ApiError ? err.message : "Could not load this attempt"));
+      .catch((err) =>
+        setError(
+          err instanceof ApiError ? err.message : "Could not load this attempt",
+        ),
+      );
   }, [accessToken, examId, attemptId]);
 
   if (error) {
@@ -46,8 +62,13 @@ export function AttemptSummaryScreen({ examId, attemptId }: { examId: string; at
       <Text className="mt-2 text-[17px] text-ink-soft">
         {attempt.correct_count} of {attempt.total_count} correct
       </Text>
-      <Text className="mt-1 text-[14px] text-ink-faint">{formatDuration(attempt.duration_secs)}</Text>
-      <Pressable onPress={() => router.back()} className="mt-10 rounded-full border border-rule px-8 py-4">
+      <Text className="mt-1 text-[14px] text-ink-faint">
+        {formatDuration(attempt.duration_secs)}
+      </Text>
+      <Pressable
+        onPress={() => router.back()}
+        className="mt-10 rounded-full border border-rule px-8 py-4"
+      >
         <Text className="text-[16px] text-ink">Back</Text>
       </Pressable>
     </View>

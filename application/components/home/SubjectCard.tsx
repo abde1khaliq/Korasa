@@ -39,14 +39,23 @@ export function SubjectCard({
   onPress,
   onOpenMenu,
 }: SubjectCardProps) {
-  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [dimensions, setDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasTriggeredRef = useRef(false);
 
   const brandColor = useThemeColor("#A8703F", "#C99A66");
   const inkFaint = useThemeColor("#9C9086", "#7A7166");
-  const cardBg = useThemeColor("rgba(251, 250, 248, 0.92)", "rgba(39, 34, 32, 0.92)");
-  const cardBorder = useThemeColor("rgba(228, 222, 212, 0.85)", "rgba(58, 51, 44, 0.85)");
+  const cardBg = useThemeColor(
+    "rgba(251, 250, 248, 0.92)",
+    "rgba(39, 34, 32, 0.92)",
+  );
+  const cardBorder = useThemeColor(
+    "rgba(228, 222, 212, 0.85)",
+    "rgba(58, 51, 44, 0.85)",
+  );
 
   const scale = useSharedValue(1);
   const progress = useSharedValue(0);
@@ -68,7 +77,8 @@ export function SubjectCard({
 
   const perimeter =
     width > 0 && height > 0
-      ? 2 * (rectWidth + rectHeight - 4 * strokeRadius) + 2 * Math.PI * strokeRadius
+      ? 2 * (rectWidth + rectHeight - 4 * strokeRadius) +
+        2 * Math.PI * strokeRadius
       : 500;
 
   const animatedProps = useAnimatedProps(() => {
@@ -112,14 +122,18 @@ export function SubjectCard({
       } catch {}
 
       borderOpacity.value = withTiming(1, { duration: 100 });
-      progress.value = withTiming(1, {
-        duration: 300,
-        easing: Easing.out(Easing.quad),
-      }, () => {
-        borderOpacity.value = withTiming(0, { duration: 250 }, () => {
-          progress.value = 0;
-        });
-      });
+      progress.value = withTiming(
+        1,
+        {
+          duration: 300,
+          easing: Easing.out(Easing.quad),
+        },
+        () => {
+          borderOpacity.value = withTiming(0, { duration: 250 }, () => {
+            progress.value = 0;
+          });
+        },
+      );
 
       onOpenMenu();
     }, LONG_PRESS_DURATION);
@@ -175,7 +189,14 @@ export function SubjectCard({
             className="self-start rounded-xl px-3 py-1.5"
             style={{ backgroundColor: chip.bg }}
           >
-            <Text style={{ color: chip.text, fontSize: 12, letterSpacing: 1, fontWeight: "700" }}>
+            <Text
+              style={{
+                color: chip.text,
+                fontSize: 12,
+                letterSpacing: 1,
+                fontWeight: "700",
+              }}
+            >
               {code}
             </Text>
           </View>
@@ -229,7 +250,13 @@ export function SubjectCard({
               width={width}
               height={height}
               viewBox={`0 0 ${width} ${height}`}
-              style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+              }}
             >
               <AnimatedRect
                 x={STROKE_WIDTH / 2}

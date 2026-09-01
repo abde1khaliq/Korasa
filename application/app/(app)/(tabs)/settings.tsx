@@ -9,7 +9,6 @@ export default function SettingsScreen() {
   const { scheme, toggle } = useTheme();
   const { openWhatsNew, hasUnseen, activeRelease } = useWhatsNew();
   const ink = useThemeColor("#2B2724", "#F1EFEC");
-  const brandColor = useThemeColor("#A8703F", "#C99A66");
 
   return (
     <SafeAreaView className="flex-1 bg-paper" edges={["bottom"]}>
@@ -33,7 +32,9 @@ export default function SettingsScreen() {
                 <Moon size={18} color={ink} strokeWidth={1.75} />
               )}
               <Text className="text-[15px] text-ink">
-                {scheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                {scheme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"}
               </Text>
             </View>
             <ChevronRight size={18} color="#9C9086" strokeWidth={1.75} />
@@ -53,7 +54,9 @@ export default function SettingsScreen() {
             <View className="flex-row items-center" style={{ gap: 12 }}>
               <Sparkles size={18} color={ink} strokeWidth={1.75} />
               <View className="flex-row items-center gap-2">
-                <Text className="text-[15px] text-ink">{"What's New in Korasa"}</Text>
+                <Text className="text-[15px] text-ink">
+                  {"What's New in Korasa"}
+                </Text>
                 {hasUnseen && (
                   <View className="rounded-full bg-easy px-1.5 py-0.5">
                     <Text className="font-mono text-[9px] font-bold text-white uppercase">

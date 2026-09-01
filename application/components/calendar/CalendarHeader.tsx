@@ -23,7 +23,7 @@ export function CalendarHeader({
   const inkSoft = useThemeColor("#6E655C", "#B3AA9F");
   const isCurrentMonth = isSameDay(
     new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
-    new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
 
   return (
@@ -45,7 +45,10 @@ export function CalendarHeader({
             style={{ gap: 5 }}
           >
             <CalendarDays size={14} color={inkSoft} strokeWidth={1.75} />
-            <Text className="text-[13px] text-ink" style={{ fontWeight: "500" }}>
+            <Text
+              className="text-[13px] text-ink"
+              style={{ fontWeight: "500" }}
+            >
               Today
             </Text>
           </Pressable>

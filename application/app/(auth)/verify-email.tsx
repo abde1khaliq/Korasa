@@ -16,7 +16,12 @@ import { ApiError } from "@/lib/api";
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
-  const { pendingVerification, verifyEmail, resendVerification, clearPendingVerification } = useAuth();
+  const {
+    pendingVerification,
+    verifyEmail,
+    resendVerification,
+    clearPendingVerification,
+  } = useAuth();
 
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -70,7 +75,11 @@ export default function VerifyEmailScreen() {
       // No manual navigation — root layout's redirect effect moves us
       // to (app) once isAuthenticated flips true.
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Verification failed. Please try again.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Verification failed. Please try again.",
+      );
       setLoading(false);
     }
   };
@@ -84,7 +93,11 @@ export default function VerifyEmailScreen() {
       setSuccess("New verification code sent to your email!");
       startTimer();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to resend code. Please try again.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Failed to resend code. Please try again.",
+      );
     } finally {
       setResending(false);
     }
@@ -96,7 +109,10 @@ export default function VerifyEmailScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-paper">
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        className="flex-1"
+      >
         <View className="px-6 pt-6">
           <Text className="font-display text-2xl text-ink">Korasa</Text>
         </View>
@@ -115,7 +131,9 @@ export default function VerifyEmailScreen() {
             </Text>
           </Text>
 
-          {error ? <Text className="mt-4 text-red-500 text-sm">{error}</Text> : null}
+          {error ? (
+            <Text className="mt-4 text-red-500 text-sm">{error}</Text>
+          ) : null}
           {success ? (
             <View
               className="mt-4 flex-row items-center rounded-xl border border-green-200 bg-green-50 px-3 py-3"
@@ -173,12 +191,17 @@ export default function VerifyEmailScreen() {
                 style={{ gap: 8, opacity: resending ? 0.5 : 1 }}
               >
                 <RefreshCw size={16} color="#A8703F" />
-                <Text className="text-brand text-sm" style={{ fontWeight: "500" }}>
+                <Text
+                  className="text-brand text-sm"
+                  style={{ fontWeight: "500" }}
+                >
                   {resending ? "Sending..." : "Resend verification code"}
                 </Text>
               </Pressable>
             ) : (
-              <Text className="text-ink-faint text-sm">Resend available in {timer} seconds</Text>
+              <Text className="text-ink-faint text-sm">
+                Resend available in {timer} seconds
+              </Text>
             )}
 
             <Pressable
@@ -187,7 +210,9 @@ export default function VerifyEmailScreen() {
                 router.replace("/(auth)/register");
               }}
             >
-              <Text className="text-ink-faint text-sm">← Back to registration</Text>
+              <Text className="text-ink-faint text-sm">
+                ← Back to registration
+              </Text>
             </Pressable>
           </View>
         </View>

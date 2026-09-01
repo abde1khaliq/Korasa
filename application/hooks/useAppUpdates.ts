@@ -14,7 +14,6 @@ export function useAppUpdates() {
   const hasRun = useRef(false);
 
   const checkAndUpdate = useCallback(async () => {
-    // In development builds expo-updates is disabled — skip gracefully.
     if (__DEV__ || !Updates.isEnabled) {
       setStatus("up-to-date");
       return;
@@ -35,12 +34,10 @@ export function useAppUpdates() {
       await Updates.fetchUpdateAsync();
       setStatus("ready");
 
-      // Brief pause so the user sees the "ready" state before reload.
       await new Promise((r) => setTimeout(r, 800));
       await Updates.reloadAsync();
     } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "Something went wrong.";
+      const message = e instanceof Error ? e.message : "Something went wrong.";
       setError(message);
       setStatus("error");
     }

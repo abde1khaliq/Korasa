@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
-import { useFonts, PlayfairDisplay_400Regular } from "@expo-google-fonts/playfair-display";
+import {
+  useFonts,
+  PlayfairDisplay_400Regular,
+} from "@expo-google-fonts/playfair-display";
 import "react-native-reanimated";
 import "../global.css";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
@@ -34,7 +37,11 @@ function RootNavigator() {
       router.replace("/onboarding");
       return;
     }
-    if (isAuthenticated && user?.has_completed_onboarding && (inAuthGroup || inOnboarding)) {
+    if (
+      isAuthenticated &&
+      user?.has_completed_onboarding &&
+      (inAuthGroup || inOnboarding)
+    ) {
       router.replace("/(app)" as any);
     }
   }, [isAuthenticated, isLoading, segments, user?.has_completed_onboarding]);
@@ -53,8 +60,7 @@ function AppWithUpdateCheck() {
   const { status, error, retry } = useAppUpdates();
   const [dismissed, setDismissed] = useState(false);
 
-  const showSplash =
-    !dismissed && status !== "up-to-date";
+  const showSplash = !dismissed && status !== "up-to-date";
 
   return (
     <View style={[{ flex: 1 }, themeVars]}>

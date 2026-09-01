@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
@@ -24,7 +32,11 @@ export default function LoginScreen() {
       await login(email, password);
       // No manual navigation needed — root layout's redirect effect handles it.
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Invalid credentials. Please try again.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Invalid credentials. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -37,9 +49,7 @@ export default function LoginScreen() {
         className="flex-1"
       >
         <View className="px-6 pt-6">
-          <Text className="font-display text-2xl text-ink">
-            Korasa
-          </Text>
+          <Text className="font-display text-2xl text-ink">Korasa</Text>
         </View>
 
         <View className="flex-1 px-6 pt-10 pb-16">
@@ -53,7 +63,9 @@ export default function LoginScreen() {
             Pick up where your questions left off.
           </Text>
 
-          {error ? <Text className="mt-4 text-red-500 text-sm">{error}</Text> : null}
+          {error ? (
+            <Text className="mt-4 text-red-500 text-sm">{error}</Text>
+          ) : null}
 
           <Text className="mt-6 text-[14px] tracking-widest text-ink-faint uppercase">
             Email
@@ -100,9 +112,7 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text className="text-[17px] text-paper">
-                Sign in
-              </Text>
+              <Text className="text-[17px] text-paper">Sign in</Text>
             )}
           </Pressable>
 

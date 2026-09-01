@@ -135,9 +135,7 @@ export function UpdateSplash({
             <Text className="text-[17px] text-paper">Try again</Text>
           </Pressable>
           <Pressable onPress={onDismiss} className="items-center py-3">
-            <Text className="text-[15px] text-ink-faint">
-              Continue anyway
-            </Text>
+            <Text className="text-[15px] text-ink-faint">Continue anyway</Text>
           </Pressable>
         </View>
       )}

@@ -24,10 +24,6 @@ export function formatTime24to12(time24: string): string {
   return `${h12}:${m} ${ampm}`;
 }
 
-/**
- * Parses user handwritten time input (e.g. "10:00 AM", "2:30 PM", "14:30", "9:30")
- * into normalized 24-hour "HH:mm" format.
- */
 export function parseManualTimeTo24h(input: string): string | null {
   if (!input) return null;
   const str = input.trim().toLowerCase();
@@ -97,9 +93,6 @@ export function isToday(d: Date): boolean {
   return isSameDay(d, new Date());
 }
 
-/**
- * Calculates the next specific Date timestamp when this weekly lesson will occur.
- */
 export function getNextOccurrenceDate(lesson: Lesson): Date {
   const now = new Date();
   const currentDay = now.getDay();
@@ -110,9 +103,9 @@ export function getNextOccurrenceDate(lesson: Lesson): Date {
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const lessonMinutes = hour * 60 + minute;
     if (lessonMinutes <= currentMinutes) {
-      daysToAdd = 7; // Next week
+      daysToAdd = 7;
     } else {
-      daysToAdd = 0; // Later today
+      daysToAdd = 0;
     }
   } else if (lesson.day_of_week > currentDay) {
     daysToAdd = lesson.day_of_week - currentDay;
@@ -128,7 +121,10 @@ export function getNextOccurrenceDate(lesson: Lesson): Date {
 
 export type LessonStatus = "upcoming" | "ongoing" | "completed";
 
-export function getLessonStatusForDate(lesson: Lesson, targetDate: Date): LessonStatus {
+export function getLessonStatusForDate(
+  lesson: Lesson,
+  targetDate: Date,
+): LessonStatus {
   const today = new Date();
   if (isSameDay(targetDate, today)) {
     const nowMinutes = today.getHours() * 60 + today.getMinutes();
@@ -142,7 +138,8 @@ export function getLessonStatusForDate(lesson: Lesson, targetDate: Date): Lesson
     }
 
     if (nowMinutes < startMinutes) return "upcoming";
-    if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) return "ongoing";
+    if (nowMinutes >= startMinutes && nowMinutes <= endMinutes)
+      return "ongoing";
     return "completed";
   }
 
@@ -162,7 +159,9 @@ export function getCountdownText(lesson: Lesson): string {
 
   if (isSameDay(nextDate, now)) {
     if (diffMins < 60) {
-      return diffMins <= 0 ? "Starting now" : `In ${diffMins} min${diffMins === 1 ? "" : "s"}`;
+      return diffMins <= 0
+        ? "Starting now"
+        : `In ${diffMins} min${diffMins === 1 ? "" : "s"}`;
     }
     const remMins = diffMins % 60;
     return remMins === 0
@@ -181,9 +180,9 @@ export function getCountdownText(lesson: Lesson): string {
 
 export interface CalendarDayCell {
   date: Date;
-  dateKey: string; // YYYY-MM-DD
+  dateKey: string;
   dayNumber: number;
-  dayOfWeek: number; // 0=Sun..6=Sat
+  dayOfWeek: number;
   isCurrentMonth: boolean;
   isToday: boolean;
 }
@@ -195,17 +194,18 @@ export function toDateKey(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-export function getDaysInMonthGrid(year: number, month: number): CalendarDayCell[] {
+export function getDaysInMonthGrid(
+  year: number,
+  month: number,
+): CalendarDayCell[] {
   const firstDayOfMonth = new Date(year, month, 1);
   const lastDayOfMonth = new Date(year, month + 1, 0);
 
-  // Day of week: Mon=0 .. Sun=6
   let startDayOfWeek = firstDayOfMonth.getDay() - 1;
   if (startDayOfWeek === -1) startDayOfWeek = 6;
 
   const cells: CalendarDayCell[] = [];
 
-  // Previous month trailing days
   const prevMonthLastDay = new Date(year, month, 0).getDate();
   for (let i = startDayOfWeek - 1; i >= 0; i--) {
     const d = new Date(year, month - 1, prevMonthLastDay - i);
@@ -219,7 +219,6 @@ export function getDaysInMonthGrid(year: number, month: number): CalendarDayCell
     });
   }
 
-  // Current month days
   const totalDays = lastDayOfMonth.getDate();
   for (let day = 1; day <= totalDays; day++) {
     const d = new Date(year, month, day);
@@ -233,7 +232,6 @@ export function getDaysInMonthGrid(year: number, month: number): CalendarDayCell
     });
   }
 
-  // Next month leading days
   const remaining = (7 - (cells.length % 7)) % 7;
   for (let i = 1; i <= remaining; i++) {
     const d = new Date(year, month + 1, i);

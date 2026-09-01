@@ -42,14 +42,17 @@ export function WhatsNewProvider({ children }: { children: React.ReactNode }) {
   const latestRelease = getLatestRelease();
   const [isOpen, setIsOpen] = useState(false);
   const [hasUnseen, setHasUnseen] = useState(false);
-  const [activeRelease, setActiveRelease] = useState<ChangelogRelease>(latestRelease);
+  const [activeRelease, setActiveRelease] =
+    useState<ChangelogRelease>(latestRelease);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     (async () => {
       try {
-        const lastSeenId = await SecureStore.getItemAsync(LAST_SEEN_CHANGELOG_KEY);
+        const lastSeenId = await SecureStore.getItemAsync(
+          LAST_SEEN_CHANGELOG_KEY,
+        );
         if (!isMounted) return;
 
         if (lastSeenId !== latestRelease.id) {
@@ -60,7 +63,6 @@ export function WhatsNewProvider({ children }: { children: React.ReactNode }) {
           setHasUnseen(false);
         }
       } catch (e) {
-        // SecureStore fallback if error occurs
         if (isMounted) {
           setHasUnseen(false);
         }
@@ -98,10 +100,7 @@ export function WhatsNewProvider({ children }: { children: React.ReactNode }) {
     setIsOpen(false);
     setHasUnseen(false);
     try {
-      await SecureStore.setItemAsync(
-        LAST_SEEN_CHANGELOG_KEY,
-        latestRelease.id
-      );
+      await SecureStore.setItemAsync(LAST_SEEN_CHANGELOG_KEY, latestRelease.id);
     } catch (e) {
       console.warn("Failed to persist seen changelog ID", e);
     }

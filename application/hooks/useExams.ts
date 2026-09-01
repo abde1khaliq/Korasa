@@ -14,7 +14,9 @@ export function useExams() {
     if (!accessToken) return;
     setError(null);
     try {
-      const data: Exam[] = await apiFetch("/api/exams/", { token: accessToken });
+      const data: Exam[] = await apiFetch("/api/exams/", {
+        token: accessToken,
+      });
       setExams(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -39,5 +41,13 @@ export function useExams() {
     if (accessToken) fetchExams();
   }, [accessToken]);
 
-  return { exams, isLoading, isRefreshing, error, fetchExams, onRefresh, addExam };
+  return {
+    exams,
+    isLoading,
+    isRefreshing,
+    error,
+    fetchExams,
+    onRefresh,
+    addExam,
+  };
 }

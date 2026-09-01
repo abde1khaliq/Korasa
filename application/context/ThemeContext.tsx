@@ -42,8 +42,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loaded) return;
-    // Keeps NativeWind's own `dark:` variant, if you use it anywhere,
-    // in sync with the CSS-variable scheme driving our color classes.
     setColorScheme(scheme);
   }, [scheme, loaded, setColorScheme]);
 

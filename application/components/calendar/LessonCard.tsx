@@ -1,8 +1,19 @@
 import React from "react";
 import { View, Text, Pressable, Alert } from "react-native";
-import { Clock, MapPin, Bell, Edit2, Trash2, Repeat } from "lucide-react-native";
+import {
+  Clock,
+  MapPin,
+  Bell,
+  Edit2,
+  Trash2,
+  Repeat,
+} from "lucide-react-native";
 import { Lesson } from "@/types/lesson";
-import { formatTime24to12, getDayName, getLessonStatusForDate } from "@/lib/lessonUtils";
+import {
+  formatTime24to12,
+  getDayName,
+  getLessonStatusForDate,
+} from "@/lib/lessonUtils";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface LessonCardProps {
@@ -12,7 +23,12 @@ interface LessonCardProps {
   onDelete: (lessonId: number) => void;
 }
 
-export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }: LessonCardProps) {
+export function LessonCard({
+  lesson,
+  targetDate = new Date(),
+  onEdit,
+  onDelete,
+}: LessonCardProps) {
   const status = getLessonStatusForDate(lesson, targetDate);
   const timeFormatted = formatTime24to12(lesson.start_time);
   const inkFaint = useThemeColor("#9C9086", "#7A7166");
@@ -28,7 +44,7 @@ export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }
           style: "destructive",
           onPress: () => onDelete(lesson.id),
         },
-      ]
+      ],
     );
   };
 
@@ -36,29 +52,29 @@ export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }
     status === "ongoing"
       ? "In Progress"
       : status === "upcoming"
-      ? "Upcoming"
-      : "Completed";
+        ? "Upcoming"
+        : "Completed";
 
   const statusBg =
     status === "ongoing"
       ? "bg-easy-soft"
       : status === "upcoming"
-      ? "bg-brand/10"
-      : "bg-paper";
+        ? "bg-brand/10"
+        : "bg-paper";
 
   const statusText =
     status === "ongoing"
       ? "text-easy"
       : status === "upcoming"
-      ? "text-brand"
-      : "text-ink-faint";
+        ? "text-brand"
+        : "text-ink-faint";
 
   const reminderLabel =
     lesson.reminder_minutes >= 1440
       ? `${Math.round(lesson.reminder_minutes / 1440)}d before`
       : lesson.reminder_minutes >= 60
-      ? `${Math.round(lesson.reminder_minutes / 60)}h before`
-      : `${lesson.reminder_minutes}m before`;
+        ? `${Math.round(lesson.reminder_minutes / 60)}h before`
+        : `${lesson.reminder_minutes}m before`;
 
   return (
     <View className="mb-3 rounded-2xl border border-rule bg-paper-card p-4">
@@ -70,7 +86,10 @@ export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }
             </Text>
           </View>
 
-          <View className="flex-row items-center rounded-full bg-paper px-2.5 py-0.5 border border-rule" style={{ gap: 4 }}>
+          <View
+            className="flex-row items-center rounded-full bg-paper px-2.5 py-0.5 border border-rule"
+            style={{ gap: 4 }}
+          >
             <Repeat size={10} color="#9C9086" strokeWidth={2} />
             <Text className="text-[11px] font-medium text-ink-soft">
               Every {getDayName(lesson.day_of_week)}
@@ -96,14 +115,22 @@ export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }
         </View>
       </View>
 
-      <Text className="mt-2.5 text-[18px] font-semibold text-ink" numberOfLines={1}>
+      <Text
+        className="mt-2.5 text-[18px] font-semibold text-ink"
+        numberOfLines={1}
+      >
         {lesson.title}
       </Text>
 
-      <View className="mt-3 flex-row flex-wrap items-center pt-2 border-t border-rule" style={{ gap: 14 }}>
+      <View
+        className="mt-3 flex-row flex-wrap items-center pt-2 border-t border-rule"
+        style={{ gap: 14 }}
+      >
         <View className="flex-row items-center" style={{ gap: 4 }}>
           <Clock size={13} color="#9C9086" strokeWidth={1.75} />
-          <Text className="text-[13px] font-medium text-ink-soft">{timeFormatted}</Text>
+          <Text className="text-[13px] font-medium text-ink-soft">
+            {timeFormatted}
+          </Text>
         </View>
 
         {lesson.location ? (
@@ -118,9 +145,7 @@ export function LessonCard({ lesson, targetDate = new Date(), onEdit, onDelete }
         {lesson.reminder_minutes > 0 ? (
           <View className="flex-row items-center" style={{ gap: 4 }}>
             <Bell size={12} color="#9C9086" strokeWidth={1.75} />
-            <Text className="text-[12px] text-ink-faint">
-              {reminderLabel}
-            </Text>
+            <Text className="text-[12px] text-ink-faint">{reminderLabel}</Text>
           </View>
         ) : null}
       </View>

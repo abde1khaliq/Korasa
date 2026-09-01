@@ -10,11 +10,24 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { X, Check, ChevronDown, Plus, Clock, BookOpen, PlusCircle } from "lucide-react-native";
+import {
+  X,
+  Check,
+  ChevronDown,
+  Plus,
+  Clock,
+  BookOpen,
+  PlusCircle,
+} from "lucide-react-native";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
-import { Lesson, LessonInput, REMINDER_OPTIONS, DAYS_OF_WEEK } from "@/types/lesson";
+import {
+  Lesson,
+  LessonInput,
+  REMINDER_OPTIONS,
+  DAYS_OF_WEEK,
+} from "@/types/lesson";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 const HOURS = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -40,21 +53,26 @@ export function CreateLessonModal({
 
   const hasExistingSubjects = subjects.length > 0;
   const [isCreatingNewSubject, setIsCreatingNewSubject] = useState<boolean>(
-    !initialLesson && !hasExistingSubjects
+    !initialLesson && !hasExistingSubjects,
   );
   const [newSubjectName, setNewSubjectName] = useState("");
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(
-    initialLesson?.subject_id ?? (subjects.length > 0 ? subjects[0].id : null)
+    initialLesson?.subject_id ?? (subjects.length > 0 ? subjects[0].id : null),
   );
 
   useEffect(() => {
-    if (!initialLesson && !selectedSubjectId && subjects.length > 0 && !isCreatingNewSubject) {
+    if (
+      !initialLesson &&
+      !selectedSubjectId &&
+      subjects.length > 0 &&
+      !isCreatingNewSubject
+    ) {
       setSelectedSubjectId(subjects[0].id);
     }
   }, [subjects, initialLesson, selectedSubjectId, isCreatingNewSubject]);
 
   const [selectedDays, setSelectedDays] = useState<number[]>(
-    initialLesson ? [initialLesson.day_of_week] : [initialDayOfWeek]
+    initialLesson ? [initialLesson.day_of_week] : [initialDayOfWeek],
   );
 
   const initialTimeParsed = useMemo(() => {
@@ -69,13 +87,19 @@ export function CreateLessonModal({
     return { hour: h12, minute: m, ampm };
   }, [initialLesson]);
 
-  const [selectedHour, setSelectedHour] = useState<number>(initialTimeParsed.hour);
-  const [selectedMinute, setSelectedMinute] = useState<number>(initialTimeParsed.minute);
-  const [selectedAmPm, setSelectedAmPm] = useState<"AM" | "PM">(initialTimeParsed.ampm);
+  const [selectedHour, setSelectedHour] = useState<number>(
+    initialTimeParsed.hour,
+  );
+  const [selectedMinute, setSelectedMinute] = useState<number>(
+    initialTimeParsed.minute,
+  );
+  const [selectedAmPm, setSelectedAmPm] = useState<"AM" | "PM">(
+    initialTimeParsed.ampm,
+  );
 
   const [location, setLocation] = useState(initialLesson?.location ?? "");
   const [reminderMinutes, setReminderMinutes] = useState<number>(
-    initialLesson?.reminder_minutes ?? 15
+    initialLesson?.reminder_minutes ?? 15,
   );
 
   const [openSubjectSelect, setOpenSubjectSelect] = useState(false);
@@ -211,7 +235,9 @@ export function CreateLessonModal({
                 <X size={22} color="#6E655C" strokeWidth={1.75} />
               </Pressable>
               <Text className="text-[17px] font-semibold text-ink">
-                {initialLesson ? "Edit recurring lesson" : "New recurring lesson"}
+                {initialLesson
+                  ? "Edit recurring lesson"
+                  : "New recurring lesson"}
               </Text>
               <View style={{ width: 22 }} />
             </View>
@@ -245,7 +271,11 @@ export function CreateLessonModal({
                         </Text>
                       ) : (
                         <>
-                          <PlusCircle size={13} color="#A8703F" strokeWidth={2} />
+                          <PlusCircle
+                            size={13}
+                            color="#A8703F"
+                            strokeWidth={2}
+                          />
                           <Text className="text-[12px] font-semibold text-brand">
                             New subject
                           </Text>
@@ -275,7 +305,10 @@ export function CreateLessonModal({
                       onPress={() => setOpenSubjectSelect((o) => !o)}
                       className="mt-2 flex-row items-center justify-between rounded-xl border border-rule bg-paper-card px-4 py-3.5"
                     >
-                      <View className="flex-row items-center" style={{ gap: 8 }}>
+                      <View
+                        className="flex-row items-center"
+                        style={{ gap: 8 }}
+                      >
                         <BookOpen size={16} color="#A8703F" strokeWidth={2} />
                         <Text
                           className={
@@ -284,7 +317,9 @@ export function CreateLessonModal({
                               : "text-[15px] text-ink-faint"
                           }
                         >
-                          {selectedSubject ? selectedSubject.name : "Select a subject"}
+                          {selectedSubject
+                            ? selectedSubject.name
+                            : "Select a subject"}
                         </Text>
                       </View>
                       <ChevronDown
@@ -316,13 +351,19 @@ export function CreateLessonModal({
                             >
                               <Text
                                 className={`text-[15px] ${
-                                  isSel ? "font-semibold text-brand" : "text-ink"
+                                  isSel
+                                    ? "font-semibold text-brand"
+                                    : "text-ink"
                                 }`}
                               >
                                 {s.name}
                               </Text>
                               {isSel && (
-                                <Check size={16} color="#A8703F" strokeWidth={2} />
+                                <Check
+                                  size={16}
+                                  color="#A8703F"
+                                  strokeWidth={2}
+                                />
                               )}
                             </Pressable>
                           );
@@ -391,7 +432,10 @@ export function CreateLessonModal({
                   <Text className="text-[12px] uppercase tracking-widest text-ink-faint">
                     Start Time *
                   </Text>
-                  <View className="flex-row items-center rounded-full bg-paper px-3 py-1 border border-brand/30" style={{ gap: 6 }}>
+                  <View
+                    className="flex-row items-center rounded-full bg-paper px-3 py-1 border border-brand/30"
+                    style={{ gap: 6 }}
+                  >
                     <Clock size={13} color="#A8703F" strokeWidth={2} />
                     <Text className="text-[14px] font-bold text-brand">
                       {formattedDisplayTime}
@@ -448,7 +492,9 @@ export function CreateLessonModal({
                       >
                         <Text
                           className={`text-[14px] ${
-                            isSel ? "font-bold text-brand" : "font-medium text-ink"
+                            isSel
+                              ? "font-bold text-brand"
+                              : "font-medium text-ink"
                           }`}
                         >
                           {h}
@@ -477,7 +523,9 @@ export function CreateLessonModal({
                       >
                         <Text
                           className={`text-[13px] ${
-                            isSel ? "font-bold text-brand" : "font-medium text-ink"
+                            isSel
+                              ? "font-bold text-brand"
+                              : "font-medium text-ink"
                           }`}
                         >
                           :{mStr}
@@ -576,10 +624,10 @@ export function CreateLessonModal({
                   {isSubmitting
                     ? "Saving…"
                     : initialLesson
-                    ? "Save Changes"
-                    : selectedDays.length > 1
-                    ? `Create ${selectedDays.length} Lessons`
-                    : "Create Lesson"}
+                      ? "Save Changes"
+                      : selectedDays.length > 1
+                        ? `Create ${selectedDays.length} Lessons`
+                        : "Create Lesson"}
                 </Text>
               </Pressable>
             </ScrollView>

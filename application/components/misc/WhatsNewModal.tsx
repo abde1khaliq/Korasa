@@ -19,11 +19,7 @@ import {
 } from "lucide-react-native";
 import { useWhatsNew } from "@/context/WhatsNewContext";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import {
-  ChangelogFeature,
-  FeatureBadgeType,
-  ICON_MAP,
-} from "@/lib/changelog";
+import { ChangelogFeature, FeatureBadgeType, ICON_MAP } from "@/lib/changelog";
 
 export function WhatsNewModal() {
   const {
@@ -163,7 +159,9 @@ export function WhatsNewModal() {
                 >
                   <History size={13} color={inkFaint} strokeWidth={1.75} />
                   <Text className="font-mono text-[12px] text-ink-faint">
-                    {showHistorySelector ? "Hide past updates" : "Past versions"}
+                    {showHistorySelector
+                      ? "Hide past updates"
+                      : "Past versions"}
                   </Text>
                   <ChevronRight
                     size={12}
@@ -222,11 +220,7 @@ export function WhatsNewModal() {
                           {rel.date}
                         </Text>
                         {isSelected && (
-                          <Check
-                            size={14}
-                            color={brandColor}
-                            strokeWidth={2}
-                          />
+                          <Check size={14} color={brandColor} strokeWidth={2} />
                         )}
                       </View>
                     </Pressable>

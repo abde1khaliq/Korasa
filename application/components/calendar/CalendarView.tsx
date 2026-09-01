@@ -7,7 +7,11 @@ import {
   Pressable,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Plus, Calendar as CalendarIcon, ListFilter } from "lucide-react-native";
+import {
+  Plus,
+  Calendar as CalendarIcon,
+  ListFilter,
+} from "lucide-react-native";
 import { useLessons } from "@/hooks/useLessons";
 import { useNotification } from "@/hooks/useNotification";
 import { Notification } from "@/components/Notification";
@@ -59,7 +63,15 @@ export function CalendarView() {
   }, [lessons, selectedDate]);
 
   const lessonsByDayOfWeek = useMemo(() => {
-    const map: Record<number, Lesson[]> = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
+    const map: Record<number, Lesson[]> = {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+      5: [],
+      6: [],
+      0: [],
+    };
     for (const l of lessons) {
       if (map[l.day_of_week]) {
         map[l.day_of_week].push(l);
@@ -75,13 +87,13 @@ export function CalendarView() {
 
   const handlePrevMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
     );
   };
 
   const handleNextMonth = () => {
     setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
     );
   };
 
@@ -118,7 +130,7 @@ export function CalendarView() {
       showNotification(
         count > 1
           ? `${count} recurring lessons scheduled`
-          : `"${input.title}" scheduled`
+          : `"${input.title}" scheduled`,
       );
     }
   };
@@ -271,7 +283,10 @@ export function CalendarView() {
               const isTodayDay = dayOption.value === todayDayOfWeek;
 
               return (
-                <View key={dayOption.value} className="rounded-2xl border border-rule bg-paper-card/70 p-4">
+                <View
+                  key={dayOption.value}
+                  className="rounded-2xl border border-rule bg-paper-card/70 p-4"
+                >
                   <View className="flex-row items-center justify-between pb-2.5 border-b border-rule">
                     <View className="flex-row items-center" style={{ gap: 8 }}>
                       <Text className="text-[17px] font-semibold text-ink">
@@ -287,7 +302,8 @@ export function CalendarView() {
                     </View>
 
                     <Text className="text-[13px] text-ink-faint">
-                      {dayLessons.length} {dayLessons.length === 1 ? "lesson" : "lessons"}
+                      {dayLessons.length}{" "}
+                      {dayLessons.length === 1 ? "lesson" : "lessons"}
                     </Text>
                   </View>
 

@@ -51,19 +51,6 @@ export interface ChangelogRelease {
   features?: ChangelogFeature[];
 }
 
-/**
- * ============================================================================
- * HOW TO ADD A NEW CHANGELOG / OTA UPDATE:
- * ============================================================================
- * 1. Prepend a new `ChangelogRelease` object at the TOP of the `CHANGELOG` array below.
- * 2. Give it a new unique `id` (e.g. 'v1.0.2' or 'ota-2026-09-01').
- * 3. Write your title, subtitle, and optionally add your feature items under `features: [...]`.
- * 4. Run `bunx eas update`.
- *
- * When users open the app after the update is downloaded, the "What's New" modal
- * will automatically appear showing these newest features!
- * ============================================================================
- */
 export const CHANGELOG: ChangelogRelease[] = [
     {
     id: "v1.1.0",
@@ -81,30 +68,19 @@ export const CHANGELOG: ChangelogRelease[] = [
   },
 ];
 
-/**
- * Returns the most recent release entry in the changelog.
- */
+
 export function getLatestRelease(): ChangelogRelease {
   return CHANGELOG[0];
 }
 
-/**
- * Returns all changelog releases.
- */
 export function getAllReleases(): ChangelogRelease[] {
   return CHANGELOG;
 }
 
-/**
- * Look up a specific release by its ID.
- */
 export function getReleaseById(id: string): ChangelogRelease | undefined {
   return CHANGELOG.find((release) => release.id === id);
 }
 
-/**
- * Icon resolver mapping string names to Lucide icons.
- */
 export const ICON_MAP: Record<string, LucideIcon> = {
   sparkles: Sparkles,
   zap: Zap,

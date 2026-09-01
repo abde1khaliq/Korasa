@@ -13,7 +13,14 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
-import { Search, Plus, X, FileText, ArrowUpRight, HelpCircle } from "lucide-react-native";
+import {
+  Search,
+  Plus,
+  X,
+  FileText,
+  ArrowUpRight,
+  HelpCircle,
+} from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { difficultyStyles } from "@/components/misc/Screen";
 import { Notification } from "@/components/Notification";
@@ -24,7 +31,11 @@ import { CreateQuestionModal } from "./CreateQuestionModal";
 import { useFolderQuestions } from "@/hooks/useFolderQuestions";
 import { useQuestionFilter } from "@/hooks/useQuestionFilter";
 import { useNotification } from "@/hooks/useNotification";
-import { difficultyLabels, getQuestionMatchType, highlightText } from "@/lib/questionUtils";
+import {
+  difficultyLabels,
+  getQuestionMatchType,
+  highlightText,
+} from "@/lib/questionUtils";
 import { Question } from "@/types/question";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useTheme } from "@/context/ThemeContext";
@@ -40,8 +51,14 @@ function QuestionGridCard({
   onPress: () => void;
   searchQuery: string;
 }) {
-  const cardBg = useThemeColor("rgba(251, 250, 248, 0.95)", "rgba(39, 34, 32, 0.95)");
-  const cardBorder = useThemeColor("rgba(228, 222, 212, 0.9)", "rgba(58, 51, 44, 0.9)");
+  const cardBg = useThemeColor(
+    "rgba(251, 250, 248, 0.95)",
+    "rgba(39, 34, 32, 0.95)",
+  );
+  const cardBorder = useThemeColor(
+    "rgba(228, 222, 212, 0.9)",
+    "rgba(58, 51, 44, 0.9)",
+  );
   const inkFaint = useThemeColor("#9C9086", "#7A7166");
   const brandColor = useThemeColor("#A8703F", "#C99A66");
 
@@ -66,7 +83,9 @@ function QuestionGridCard({
   const hasNotes = !!question.note?.trim();
 
   return (
-    <Animated.View style={[{ flex: 1, minHeight: hasText ? 220 : 190 }, cardScaleStyle]}>
+    <Animated.View
+      style={[{ flex: 1, minHeight: hasText ? 220 : 190 }, cardScaleStyle]}
+    >
       <Pressable
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
@@ -125,27 +144,44 @@ function QuestionGridCard({
         </View>
 
         {/* Card Body Details */}
-        <View style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 12, flex: 1, justifyContent: "space-between" }}>
+        <View
+          style={{
+            paddingHorizontal: 12,
+            paddingTop: 10,
+            paddingBottom: 12,
+            flex: 1,
+            justifyContent: "space-between",
+          }}
+        >
           {/* Question text if available */}
           {hasText && (
             <Text
               className="text-[13px] leading-[18px] text-ink font-medium"
               numberOfLines={2}
             >
-              {searchQuery ? highlightText(question.text.trim(), searchQuery) : question.text.trim()}
+              {searchQuery
+                ? highlightText(question.text.trim(), searchQuery)
+                : question.text.trim()}
             </Text>
           )}
 
           {/* Bottom Meta & Action Icon */}
-          <View className={`flex-row items-center justify-between ${hasText ? "mt-2.5 pt-1" : "mt-2"}`}>
+          <View
+            className={`flex-row items-center justify-between ${hasText ? "mt-2.5 pt-1" : "mt-2"}`}
+          >
             <View className="flex-row items-center" style={{ gap: 4 }}>
               {hasNotes ? (
                 <>
                   <FileText size={11} color={inkFaint} strokeWidth={1.75} />
-                  <Text className="text-[11px] text-ink-faint font-medium">Has Notes</Text>
+                  <Text className="text-[11px] text-ink-faint font-medium">
+                    Has Notes
+                  </Text>
                 </>
               ) : matchType ? (
-                <Text className="text-[10px] font-medium" style={{ color: brandColor }}>
+                <Text
+                  className="text-[10px] font-medium"
+                  style={{ color: brandColor }}
+                >
                   In {matchType}
                 </Text>
               ) : (
@@ -389,4 +425,3 @@ export function FolderQuestions({
     </View>
   );
 }
-

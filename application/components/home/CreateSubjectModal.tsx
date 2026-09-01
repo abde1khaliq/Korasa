@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, Modal, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  Modal,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { X, Plus } from "lucide-react-native";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch, ApiError } from "@/lib/api";
@@ -13,8 +22,8 @@ export function CreateSubjectModal({
   onClose: () => void;
   onCreated: (subject: Subject) => void;
 }) {
-  const ink = useThemeColor("#F1EFEC", "#2B2724")
-  const ink2 = useThemeColor("#2B2724", "#F1EFEC")
+  const ink = useThemeColor("#F1EFEC", "#2B2724");
+  const ink2 = useThemeColor("#2B2724", "#F1EFEC");
   const { accessToken } = useAuth();
   const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,14 +43,21 @@ export function CreateSubjectModal({
       onCreated(created);
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to create subject");
+      setError(
+        err instanceof ApiError ? err.message : "Failed to create subject",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+    <Modal
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -51,16 +67,25 @@ export function CreateSubjectModal({
           style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
           onPress={onClose}
         >
-          <Pressable onPress={(e) => e.stopPropagation()} className="rounded-t-3xl bg-paper px-6 pb-8 pt-5">
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="rounded-t-3xl bg-paper px-6 pb-8 pt-5"
+          >
             <View className="flex-row items-center justify-between">
               <Text className="text-[22px] text-ink">New subject</Text>
-              <Pressable onPress={onClose} className="items-center justify-center rounded-full" style={{ width: 36, height: 36 }}>
+              <Pressable
+                onPress={onClose}
+                className="items-center justify-center rounded-full"
+                style={{ width: 36, height: 36 }}
+              >
                 <X size={20} color={ink2} strokeWidth={1.75} />
               </Pressable>
             </View>
 
             <View className="mt-5">
-              <Text className="text-[13px] tracking-widest text-ink-faint uppercase">Subject name</Text>
+              <Text className="text-[13px] tracking-widest text-ink-faint uppercase">
+                Subject name
+              </Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
@@ -70,7 +95,9 @@ export function CreateSubjectModal({
                 className="mt-2 rounded-xl border border-rule bg-paper-card px-4 text-[16px] text-ink"
                 style={{ paddingVertical: 14 }}
               />
-              {error && <Text className="mt-3 text-[14px] text-hard">{error}</Text>}
+              {error && (
+                <Text className="mt-3 text-[14px] text-hard">{error}</Text>
+              )}
 
               <Pressable
                 onPress={handleSubmit}
@@ -78,7 +105,11 @@ export function CreateSubjectModal({
                 className="mt-5 flex-row items-center justify-center gap-2.5 rounded-xl bg-onyx py-3.5"
                 style={{ opacity: isSubmitting || !name.trim() ? 0.4 : 1 }}
               >
-                {isSubmitting ? <ActivityIndicator color={"#F7F5F1"} /> : <Plus size={20} color={ink} strokeWidth={1.75} />}
+                {isSubmitting ? (
+                  <ActivityIndicator color={"#F7F5F1"} />
+                ) : (
+                  <Plus size={20} color={ink} strokeWidth={1.75} />
+                )}
                 <Text className="text-[16px] text-paper">
                   {isSubmitting ? "Creating…" : "Create subject"}
                 </Text>

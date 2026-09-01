@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Plus, ArrowRight } from "lucide-react-native";
 import Svg, { Circle } from "react-native-svg";
 import { useAuth } from "@/context/AuthContext";
 import { useSubjects } from "@/hooks/useSubjects";
 import { useNotification } from "@/hooks/useNotification";
-import {
-  getGreeting,
-  getFormattedName,
-} from "@/lib/subjectUtils";
+import { getGreeting, getFormattedName } from "@/lib/subjectUtils";
 import { Notification } from "@/components/Notification";
 import { HomeSubjectsSkeleton } from "./HomeSubjectsSkeleton";
 import { HomeSubjectsError } from "./HomeSubjectsError";

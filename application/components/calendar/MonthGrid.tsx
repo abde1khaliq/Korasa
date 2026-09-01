@@ -24,7 +24,7 @@ export function MonthGrid({
 }: MonthGridProps) {
   const cells = getDaysInMonthGrid(
     currentDate.getFullYear(),
-    currentDate.getMonth()
+    currentDate.getMonth(),
   );
 
   const lessonsByDayOfWeek = useMemo(() => {
@@ -40,7 +40,10 @@ export function MonthGrid({
       <View className="flex-row items-center justify-between pb-2 border-b border-rule">
         {WEEKDAYS.map((day) => (
           <View key={day} className="flex-1 items-center justify-center">
-            <Text className="text-[12px] text-ink-faint" style={{ fontWeight: "500" }}>
+            <Text
+              className="text-[12px] text-ink-faint"
+              style={{ fontWeight: "500" }}
+            >
               {day}
             </Text>
           </View>
@@ -48,65 +51,75 @@ export function MonthGrid({
       </View>
 
       <View className="mt-2" style={{ gap: 4 }}>
-        {Array.from({ length: Math.ceil(cells.length / 7) }).map((_, rowIndex) => {
-          const rowCells = cells.slice(rowIndex * 7, rowIndex * 7 + 7);
-          return (
-            <View key={rowIndex} className="flex-row items-center justify-between">
-              {rowCells.map((cell: CalendarDayCell) => {
-                const isSelected = isSameDay(cell.date, selectedDate);
-                const lessonCount = lessonsByDayOfWeek[cell.dayOfWeek] || 0;
-                const hasLessons = lessonCount > 0;
+        {Array.from({ length: Math.ceil(cells.length / 7) }).map(
+          (_, rowIndex) => {
+            const rowCells = cells.slice(rowIndex * 7, rowIndex * 7 + 7);
+            return (
+              <View
+                key={rowIndex}
+                className="flex-row items-center justify-between"
+              >
+                {rowCells.map((cell: CalendarDayCell) => {
+                  const isSelected = isSameDay(cell.date, selectedDate);
+                  const lessonCount = lessonsByDayOfWeek[cell.dayOfWeek] || 0;
+                  const hasLessons = lessonCount > 0;
 
-                return (
-                  <Pressable
-                    key={cell.dateKey}
-                    onPress={() => onSelectDate(cell.date)}
-                    className="flex-1 items-center justify-center py-2"
-                  >
-                    <View
-                      className={`h-9 w-9 items-center justify-center rounded-full ${
-                        isSelected
-                          ? "bg-onyx"
-                          : cell.isToday
-                          ? "border border-brand bg-paper"
-                          : "bg-transparent"
-                      }`}
+                  return (
+                    <Pressable
+                      key={cell.dateKey}
+                      onPress={() => onSelectDate(cell.date)}
+                      className="flex-1 items-center justify-center py-2"
                     >
-                      <Text
-                        className={`text-[14px] ${
+                      <View
+                        className={`h-9 w-9 items-center justify-center rounded-full ${
                           isSelected
-                            ? "text-paper font-semibold"
+                            ? "bg-onyx"
                             : cell.isToday
-                            ? "text-brand font-semibold"
-                            : cell.isCurrentMonth
-                            ? "text-ink"
-                            : "text-ink-faint opacity-40"
+                              ? "border border-brand bg-paper"
+                              : "bg-transparent"
                         }`}
                       >
-                        {cell.dayNumber}
-                      </Text>
-                    </View>
+                        <Text
+                          className={`text-[14px] ${
+                            isSelected
+                              ? "text-paper font-semibold"
+                              : cell.isToday
+                                ? "text-brand font-semibold"
+                                : cell.isCurrentMonth
+                                  ? "text-ink"
+                                  : "text-ink-faint opacity-40"
+                          }`}
+                        >
+                          {cell.dayNumber}
+                        </Text>
+                      </View>
 
-                    <View className="h-1.5 flex-row items-center justify-center mt-0.5" style={{ gap: 2 }}>
-                      {hasLessons ? (
-                        Array.from({ length: Math.min(lessonCount, 3) }).map((_, dotIndex) => (
-                          <View
-                            key={dotIndex}
-                            className={`h-1 w-1 rounded-full ${
-                              isSelected ? "bg-brand" : "bg-brand"
-                            }`}
-                          />
-                        ))
-                      ) : (
-                        <View className="h-1 w-1 opacity-0" />
-                      )}
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          );
-        })}
+                      <View
+                        className="h-1.5 flex-row items-center justify-center mt-0.5"
+                        style={{ gap: 2 }}
+                      >
+                        {hasLessons ? (
+                          Array.from({ length: Math.min(lessonCount, 3) }).map(
+                            (_, dotIndex) => (
+                              <View
+                                key={dotIndex}
+                                className={`h-1 w-1 rounded-full ${
+                                  isSelected ? "bg-brand" : "bg-brand"
+                                }`}
+                              />
+                            ),
+                          )
+                        ) : (
+                          <View className="h-1 w-1 opacity-0" />
+                        )}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            );
+          },
+        )}
       </View>
     </View>
   );

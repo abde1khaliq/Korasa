@@ -4,7 +4,6 @@ import { Lesson } from "@/types/lesson";
 import { formatTime24to12, getDayName } from "@/lib/lessonUtils";
 import { getFormattedName } from "@/lib/subjectUtils";
 
-// Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -15,9 +14,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-/**
- * Requests permission from the user for notifications.
- */
 export async function requestNotificationPermissions(): Promise<boolean> {
   if (Platform.OS === "web") return false;
 
@@ -56,17 +52,14 @@ export async function requestNotificationPermissions(): Promise<boolean> {
   }
 }
 
-/**
- * Returns a unique identifier for a lesson's scheduled notification.
- */
 function getLessonNotificationId(lessonId: number): string {
   return `lesson-reminder-${lessonId}`;
 }
 
-/**
- * Generates personalized, natural notification content.
- */
-export function generateNotificationMessage(lesson: Lesson, userName?: string): { title: string; body: string } {
+export function generateNotificationMessage(
+  lesson: Lesson,
+  userName?: string,
+): { title: string; body: string } {
   const name = userName ? getFormattedName(userName) : "";
   const prefix = name ? `${name}, ` : "";
   const subjectName = lesson.subject_name || lesson.title;
@@ -106,11 +99,13 @@ export function generateNotificationMessage(lesson: Lesson, userName?: string): 
 /**
  * Schedules a recurring weekly local push notification for a periodic lesson.
  */
-export async function scheduleLessonNotification(lesson: Lesson, userName?: string): Promise<string | null> {
+export async function scheduleLessonNotification(
+  lesson: Lesson,
+  userName?: string,
+): Promise<string | null> {
   if (Platform.OS === "web") return null;
 
   try {
-    // Cancel previous notification if exists
     await cancelLessonNotification(lesson.id);
 
     const hasPermission = await requestNotificationPermissions();
@@ -124,7 +119,8 @@ export async function scheduleLessonNotification(lesson: Lesson, userName?: stri
     const totalWeekMinutes = 7 * 24 * 60; // 10080 minutes in a 7-day week
 
     // Calculate trigger in weekly minutes (wrapping cleanly across the 7-day week)
-    let triggerWeekMinutes = (lessonWeekMinutes - reminderOffset) % totalWeekMinutes;
+    let triggerWeekMinutes =
+      (lessonWeekMinutes - reminderOffset) % totalWeekMinutes;
     if (triggerWeekMinutes < 0) {
       triggerWeekMinutes += totalWeekMinutes;
     }
@@ -167,7 +163,9 @@ export async function scheduleLessonNotification(lesson: Lesson, userName?: stri
 /**
  * Cancels a scheduled notification for a given lesson ID.
  */
-export async function cancelLessonNotification(lessonId: number): Promise<void> {
+export async function cancelLessonNotification(
+  lessonId: number,
+): Promise<void> {
   if (Platform.OS === "web") return;
   try {
     const identifier = getLessonNotificationId(lessonId);
@@ -180,7 +178,10 @@ export async function cancelLessonNotification(lessonId: number): Promise<void> 
 /**
  * Synchronizes weekly notifications for all user lessons.
  */
-export async function syncLessonNotifications(lessons: Lesson[], userName?: string): Promise<void> {
+export async function syncLessonNotifications(
+  lessons: Lesson[],
+  userName?: string,
+): Promise<void> {
   if (Platform.OS === "web") return;
   try {
     for (const lesson of lessons) {

@@ -27,7 +27,8 @@ export function CalendarEmptyState({
       </Text>
 
       <Text className="mt-1.5 max-w-[280px] text-center text-[14px] text-ink-soft">
-        Schedule your upcoming lectures, study groups, and classes to receive automatic reminders.
+        Schedule your upcoming lectures, study groups, and classes to receive
+        automatic reminders.
       </Text>
 
       <Pressable
@@ -36,9 +37,7 @@ export function CalendarEmptyState({
         style={{ gap: 6 }}
       >
         <Plus size={16} color={ink} strokeWidth={2} />
-        <Text className="text-[14px] font-semibold text-paper">
-          Add lesson
-        </Text>
+        <Text className="text-[14px] font-semibold text-paper">Add lesson</Text>
       </Pressable>
     </View>
   );

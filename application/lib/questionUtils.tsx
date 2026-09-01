@@ -8,10 +8,6 @@ export const difficultyLabels: Record<Question["difficulty"], Difficulty> = {
   hard: "Hard",
 };
 
-// Splitting on a regex with a single capture group interleaves matches at
-// odd indices deterministically — no need for a stateful `.test()` pass,
-// which is what the web version did (and which silently drops every other
-// match because `.test()` on a global-flag regex mutates `lastIndex`).
 export function highlightText(text: string, query: string) {
   if (!query.trim()) return text;
 

@@ -56,7 +56,10 @@ export function FolderQuestionsSkeleton() {
         ))}
       </View>
 
-      <View className="mt-5 px-4 flex-row flex-wrap justify-between" style={{ gap: 12 }}>
+      <View
+        className="mt-5 px-4 flex-row flex-wrap justify-between"
+        style={{ gap: 12 }}
+      >
         {[...Array(6)].map((_, i) => (
           <View
             key={i}

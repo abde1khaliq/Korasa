@@ -22,7 +22,12 @@ export function ConfirmModal({
   onCancel,
 }: ConfirmModalProps) {
   return (
-    <Modal transparent animationType="fade" visible={visible} onRequestClose={onCancel}>
+    <Modal
+      transparent
+      animationType="fade"
+      visible={visible}
+      onRequestClose={onCancel}
+    >
       <Pressable
         className="flex-1 items-center justify-center px-8"
         style={{ backgroundColor: "rgba(42,39,36,0.4)" }}
