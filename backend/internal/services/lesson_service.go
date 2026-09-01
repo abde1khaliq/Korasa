@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -58,7 +59,8 @@ func CreateLesson(db *gorm.DB) gin.HandlerFunc {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					c.JSON(http.StatusNotFound, gin.H{"error": "subject not found"})
 				} else {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+					log.Printf("failed to verify subject ownership %d: %v", *input.SubjectID, err)
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "could not verify subject ownership"})
 				}
 				return
 			}
@@ -106,6 +108,7 @@ func CreateLesson(db *gorm.DB) gin.HandlerFunc {
 			}
 
 			if err := db.Create(&lesson).Error; err != nil {
+				log.Printf("failed to create lesson for user %d: %v", userID, err)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create lesson"})
 				return
 			}
@@ -143,6 +146,7 @@ func ListLessons(db *gorm.DB) gin.HandlerFunc {
 
 		var lessons []models.Lesson
 		if err := query.Preload("Subject").Order("day_of_week ASC, start_time ASC").Find(&lessons).Error; err != nil {
+			log.Printf("failed to list lessons for user %d: %v", userID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve lessons"})
 			return
 		}
@@ -173,6 +177,7 @@ func GetUpcomingLessons(db *gorm.DB) gin.HandlerFunc {
 			Where("user_id = ?", userID).
 			Preload("Subject").
 			Find(&allLessons).Error; err != nil {
+			log.Printf("failed to retrieve upcoming lessons for user %d: %v", userID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve upcoming lessons"})
 			return
 		}
@@ -244,7 +249,8 @@ func GetLesson(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "lesson not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve lesson %d for user %d: %v", lessonID, userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve lesson"})
 			}
 			return
 		}
@@ -268,7 +274,8 @@ func UpdateLesson(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "lesson not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to verify lesson ownership %d: %v", lessonID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update lesson"})
 			}
 			return
 		}
@@ -304,7 +311,8 @@ func UpdateLesson(db *gorm.DB) gin.HandlerFunc {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					c.JSON(http.StatusNotFound, gin.H{"error": "subject not found"})
 				} else {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+					log.Printf("failed to verify subject ownership %d: %v", *input.SubjectID, err)
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update lesson"})
 				}
 				return
 			}
@@ -334,11 +342,13 @@ func UpdateLesson(db *gorm.DB) gin.HandlerFunc {
 		lesson.UpdatedAt = time.Now().UTC()
 
 		if err := db.Save(&lesson).Error; err != nil {
+			log.Printf("failed to save lesson %d: %v", lessonID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update lesson"})
 			return
 		}
 
 		if err := db.Preload("Subject").First(&lesson, lesson.ID).Error; err != nil {
+			log.Printf("failed to load updated lesson %d: %v", lessonID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not load updated lesson"})
 			return
 		}
@@ -362,12 +372,14 @@ func DeleteLesson(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "lesson not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to verify lesson ownership %d: %v", lessonID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete lesson"})
 			}
 			return
 		}
 
 		if err := db.Delete(&lesson).Error; err != nil {
+			log.Printf("failed to delete lesson %d: %v", lessonID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete lesson"})
 			return
 		}

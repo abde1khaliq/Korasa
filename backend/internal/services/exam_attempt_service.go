@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -28,15 +29,12 @@ func StartAttempt(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "exam not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve exam %d for user %d: %v", examID, userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not verify exam ownership"})
 			}
 			return
 		}
 
-		// Reads the CURRENT exam_questions rows, not exam.QuestionCount —
-		// a question in the locked set may have been deleted since
-		// creation (exam_questions.question_id cascades), which would
-		// silently shrink the set below what was originally promised.
 		type row struct {
 			QuestionID int
 			ImageURL   string
@@ -51,6 +49,7 @@ func StartAttempt(db *gorm.DB) gin.HandlerFunc {
 			Joins("JOIN questions ON questions.id = exam_questions.question_id").
 			Where("exam_questions.exam_id = ?", exam.ID).
 			Scan(&rows).Error; err != nil {
+			log.Printf("failed to load exam questions for exam %d: %v", exam.ID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not load exam questions"})
 			return
 		}
@@ -60,8 +59,6 @@ func StartAttempt(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// SET stays locked; only the order the user sees them in shuffles
-		// per attempt.
 		rand.Shuffle(len(rows), func(i, j int) { rows[i], rows[j] = rows[j], rows[i] })
 
 		questions := make([]dto.AttemptQuestionResponse, len(rows))
@@ -83,6 +80,7 @@ func StartAttempt(db *gorm.DB) gin.HandlerFunc {
 			TotalCount: len(rows),
 		}
 		if err := db.Create(&attempt).Error; err != nil {
+			log.Printf("failed to create exam attempt for exam %d: %v", exam.ID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not start attempt"})
 			return
 		}
@@ -97,11 +95,6 @@ func StartAttempt(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// CompleteAttempt requires the client to submit a result for every
-// question that was served. There's currently no "abandoned attempt"
-// handling — if the user quits mid-exam, the attempt row stays
-// incomplete (completed_at null) forever and shows as such in history.
-// Say if you want a timeout/expiry sweep for those.
 func CompleteAttempt(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
@@ -120,7 +113,8 @@ func CompleteAttempt(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "exam not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to verify exam %d for user %d: %v", examID, userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not verify exam ownership"})
 			}
 			return
 		}
@@ -131,7 +125,8 @@ func CompleteAttempt(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "attempt not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve attempt %d: %v", attemptID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve attempt"})
 			}
 			return
 		}
@@ -184,6 +179,7 @@ func CompleteAttempt(db *gorm.DB) gin.HandlerFunc {
 			return tx.Save(&attempt).Error
 		})
 		if err != nil {
+			log.Printf("failed to complete attempt transaction %d: %v", attempt.ID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not complete attempt"})
 			return
 		}
@@ -204,14 +200,16 @@ func ListAttempts(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "exam not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to verify exam %d for user %d: %v", examID, userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve attempts"})
 			}
 			return
 		}
 
 		var attempts []models.ExamAttempt
-		if err := db.Where("exam_id = ?", examID).Order("started_at DESC").Find(&attempts).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if err := db.Where("exam_id = ? AND user_id = ?", examID, userID).Order("started_at DESC").Find(&attempts).Error; err != nil {
+			log.Printf("failed to list attempts for exam %d: %v", examID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve attempts"})
 			return
 		}
 		c.JSON(http.StatusOK, dto.ToAttemptListResponse(attempts))
@@ -235,17 +233,19 @@ func GetAttempt(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "exam not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to verify exam %d for user %d: %v", examID, userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve attempt"})
 			}
 			return
 		}
 
 		var attempt models.ExamAttempt
-		if err := db.Where("id = ? AND exam_id = ?", attemptID, examID).First(&attempt).Error; err != nil {
+		if err := db.Where("id = ? AND exam_id = ? AND user_id = ?", attemptID, examID, userID).First(&attempt).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "attempt not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve attempt %d: %v", attemptID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve attempt"})
 			}
 			return
 		}

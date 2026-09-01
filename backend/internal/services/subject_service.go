@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/abde1khaliq/korasa/internal/dto"
 	"github.com/abde1khaliq/korasa/internal/models"
@@ -17,7 +18,8 @@ func GetUserSubjects(db *gorm.DB) gin.HandlerFunc {
 		userID := c.GetInt("userID")
 		var subjects []models.Subject
 		if err := db.Where("user_id = ?", userID).Find(&subjects).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Printf("failed to retrieve subjects for user %d: %v", userID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve subjects"})
 			return
 		}
 		c.JSON(http.StatusOK, dto.ToSubjectListResponse(subjects, db))
@@ -27,14 +29,19 @@ func GetUserSubjects(db *gorm.DB) gin.HandlerFunc {
 func GetSubjectByID(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
-		subjectID := c.Param("subjectID")
-		var subject models.Subject
+		subjectID, err := strconv.Atoi(c.Param("subjectID"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid subject id"})
+			return
+		}
 
-		if err := db.Where("user_id = ?", userID).First(&subject, subjectID).Error; err != nil {
+		subject, err := validators.UserOwnSubject(db, subjectID, userID)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "subject not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve subject %d for user %d: %v", subjectID, userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve subject"})
 			}
 			return
 		}
@@ -52,14 +59,19 @@ func CreateSubject(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		subject := models.Subject{Name: input.Name, UserID: userID}
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
+		subject := models.Subject{Name: input.Name, UserID: userID}
 		if err := validators.Validate(subject); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		if err := db.Create(&subject).Error; err != nil {
+			log.Printf("failed to create subject for user %d: %v", userID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create subject"})
 			return
 		}
@@ -71,14 +83,19 @@ func CreateSubject(db *gorm.DB) gin.HandlerFunc {
 func UpdateSubject(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
-		subjectID := c.Param("subjectID")
+		subjectID, err := strconv.Atoi(c.Param("subjectID"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid subject id"})
+			return
+		}
 
-		var subject models.Subject
-		if err := db.Where("user_id = ?", userID).First(&subject, subjectID).Error; err != nil {
+		subject, err := validators.UserOwnSubject(db, subjectID, userID)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "subject not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve subject for update %d: %v", subjectID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update subject"})
 			}
 			return
 		}
@@ -96,6 +113,7 @@ func UpdateSubject(db *gorm.DB) gin.HandlerFunc {
 
 		subject.Name = input.Name
 		if err := db.Save(&subject).Error; err != nil {
+			log.Printf("failed to update subject %d: %v", subjectID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update subject"})
 			return
 		}
@@ -107,14 +125,19 @@ func UpdateSubject(db *gorm.DB) gin.HandlerFunc {
 func DeleteSubject(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
-		subjectID := c.Param("subjectID")
+		subjectID, err := strconv.Atoi(c.Param("subjectID"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid subject id"})
+			return
+		}
 
-		var subject models.Subject
-		if err := db.Where("user_id = ?", userID).First(&subject, subjectID).Error; err != nil {
+		subject, err := validators.UserOwnSubject(db, subjectID, userID)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "subject not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve subject for deletion %d: %v", subjectID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete subject"})
 			}
 			return
 		}
@@ -123,10 +146,11 @@ func DeleteSubject(db *gorm.DB) gin.HandlerFunc {
 		if err := db.Joins("JOIN folders ON folders.id = questions.folder_id").
 			Where("folders.subject_id = ?", subject.ID).
 			Find(&questions).Error; err != nil {
-			log.Printf("failed to fetch questions for subject %s before deletion: %v", subjectID, err)
+			log.Printf("failed to fetch questions for subject %d before deletion: %v", subjectID, err)
 		}
 
 		if err := db.Delete(&subject).Error; err != nil {
+			log.Printf("failed to delete subject %d: %v", subjectID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete subject"})
 			return
 		}
@@ -149,11 +173,15 @@ func GetMostRecentSubject(db *gorm.DB) gin.HandlerFunc {
 		userID := c.GetInt("userID")
 
 		if err := db.Where("user_id = ?", userID).Order("updated_at DESC").First(&subject).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not get the most recent subject"})
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				c.JSON(http.StatusNotFound, gin.H{"error": "no subjects found"})
+			} else {
+				log.Printf("failed to retrieve most recent subject for user %d: %v", userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not get the most recent subject"})
+			}
 			return
 		}
 
 		c.JSON(http.StatusOK, dto.ToSubjectResponse(subject, db))
 	}
-
 }

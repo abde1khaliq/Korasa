@@ -2,6 +2,7 @@ package services
 
 import (
 	"crypto/subtle"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -35,7 +36,29 @@ type verificationStore struct {
 }
 
 func newVerificationStore() *verificationStore {
-	return &verificationStore{data: make(map[string]VerificationData)}
+	store := &verificationStore{data: make(map[string]VerificationData)}
+
+	// Background ticker to clean up expired codes every 5 minutes
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+		for range ticker.C {
+			store.cleanup()
+		}
+	}()
+
+	return store
+}
+
+func (s *verificationStore) cleanup() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	now := time.Now()
+	for email, v := range s.data {
+		if now.After(v.ExpiresAt) {
+			delete(s.data, email)
+		}
+	}
 }
 
 func (s *verificationStore) get(email string) (VerificationData, bool) {
@@ -81,7 +104,7 @@ func RegisterUser(db *gorm.DB) gin.HandlerFunc {
 		var input models.RegisterInput
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 			return
 		}
 
@@ -98,13 +121,15 @@ func RegisterUser(db *gorm.DB) gin.HandlerFunc {
 
 		hashed, err := security.HashPassword(input.Password)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not process password"})
+			log.Printf("failed to hash password: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not process registration"})
 			return
 		}
 
 		code, err := security.GenerateVerificationCode()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate verification code"})
+			log.Printf("failed to generate verification code: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not process registration"})
 			return
 		}
 
@@ -119,6 +144,7 @@ func RegisterUser(db *gorm.DB) gin.HandlerFunc {
 
 		if err := SendVerificationCode(input.Email, code); err != nil {
 			verificationCodes.delete(input.Email)
+			log.Printf("failed to send verification email: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not send verification email"})
 			return
 		}
@@ -133,12 +159,17 @@ func RegisterUser(db *gorm.DB) gin.HandlerFunc {
 func VerifyEmail(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
-			Email string `json:"email" binding:"required"`
-			Code  string `json:"code" binding:"required"`
+			Email string `json:"email" binding:"required" validate:"required,email"`
+			Code  string `json:"code" binding:"required" validate:"required,len=6"`
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "email and code are required"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email and 6-digit code are required"})
+			return
+		}
+
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -167,7 +198,8 @@ func VerifyEmail(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		if err := db.Create(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create user"})
+			log.Printf("failed to create user after verification: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create user account"})
 			return
 		}
 
@@ -187,10 +219,15 @@ func VerifyEmail(db *gorm.DB) gin.HandlerFunc {
 func LoginUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
-			Email    string `json:"email"`
-			Password string `json:"password"`
+			Email    string `json:"email" validate:"required,email"`
+			Password string `json:"password" validate:"required,min=8"`
 		}
 		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid login request"})
+			return
+		}
+
+		if err := validators.Validate(input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -208,7 +245,8 @@ func LoginUser(db *gorm.DB) gin.HandlerFunc {
 
 		accessToken, refreshToken, err := security.GenerateTokens(int(user.ID))
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate tokens"})
+			log.Printf("failed to generate tokens for user %d: %v", user.ID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not process login"})
 			return
 		}
 
@@ -228,7 +266,7 @@ func LoginUser(db *gorm.DB) gin.HandlerFunc {
 func RefreshUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
-			RefreshToken string `json:"refreshToken"`
+			RefreshToken string `json:"refreshToken" binding:"required"`
 		}
 		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "missing refresh token"})
@@ -243,6 +281,7 @@ func RefreshUser(db *gorm.DB) gin.HandlerFunc {
 
 		accessToken, newRefreshToken, err := security.GenerateTokens(userID)
 		if err != nil {
+			log.Printf("failed to regenerate tokens for user %d: %v", userID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate tokens"})
 			return
 		}
@@ -257,11 +296,16 @@ func RefreshUser(db *gorm.DB) gin.HandlerFunc {
 func ResendVerificationCode() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
-			Email string `json:"email" binding:"required"`
+			Email string `json:"email" binding:"required" validate:"required,email"`
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "email is required"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "valid email is required"})
+			return
+		}
+
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -280,6 +324,7 @@ func ResendVerificationCode() gin.HandlerFunc {
 
 		newCode, err := security.GenerateVerificationCode()
 		if err != nil {
+			log.Printf("failed to generate verification code: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate verification code"})
 			return
 		}
@@ -291,6 +336,7 @@ func ResendVerificationCode() gin.HandlerFunc {
 		verificationCodes.set(input.Email, verificationData)
 
 		if err := SendVerificationCode(input.Email, newCode); err != nil {
+			log.Printf("failed to send verification code email: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not send verification email"})
 			return
 		}
@@ -306,6 +352,7 @@ func CompleteOnboarding(db *gorm.DB) gin.HandlerFunc {
 		if err := db.Model(&models.User{}).
 			Where("id = ?", userID).
 			Update("has_completed_onboarding", true).Error; err != nil {
+			log.Printf("failed to update onboarding status for user %d: %v", userID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update onboarding status"})
 			return
 		}
@@ -317,11 +364,16 @@ func CompleteOnboarding(db *gorm.DB) gin.HandlerFunc {
 func ForgotPassword(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
-			Email string `json:"email" binding:"required"`
+			Email string `json:"email" binding:"required" validate:"required,email"`
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "email is required"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "valid email is required"})
+			return
+		}
+
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -335,6 +387,7 @@ func ForgotPassword(db *gorm.DB) gin.HandlerFunc {
 
 		code, err := security.GenerateVerificationCode()
 		if err != nil {
+			log.Printf("failed to generate reset code: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate reset code"})
 			return
 		}
@@ -348,6 +401,7 @@ func ForgotPassword(db *gorm.DB) gin.HandlerFunc {
 
 		if err := SendPasswordResetCode(input.Email, code); err != nil {
 			passwordResetCodes.delete(input.Email)
+			log.Printf("failed to send reset email: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not send reset email"})
 			return
 		}
@@ -359,12 +413,17 @@ func ForgotPassword(db *gorm.DB) gin.HandlerFunc {
 func VerifyResetCode() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
-			Email string `json:"email" binding:"required"`
-			Code  string `json:"code" binding:"required"`
+			Email string `json:"email" binding:"required" validate:"required,email"`
+			Code  string `json:"code" binding:"required" validate:"required,len=6"`
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "email and code are required"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email and 6-digit code are required"})
+			return
+		}
+
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -393,9 +452,9 @@ func VerifyResetCode() gin.HandlerFunc {
 func ResetPassword(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
-			Email    string `json:"email" binding:"required"`
-			Code     string `json:"code" binding:"required"`
-			Password string `json:"password" binding:"required"`
+			Email    string `json:"email" binding:"required" validate:"required,email"`
+			Code     string `json:"code" binding:"required" validate:"required,len=6"`
+			Password string `json:"password" binding:"required" validate:"required,min=8"`
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
@@ -403,8 +462,8 @@ func ResetPassword(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if len(input.Password) < 8 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "password must be at least 8 characters"})
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -428,11 +487,13 @@ func ResetPassword(db *gorm.DB) gin.HandlerFunc {
 
 		hashed, err := security.HashPassword(input.Password)
 		if err != nil {
+			log.Printf("failed to hash new password: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not process password"})
 			return
 		}
 
 		if err := db.Model(&models.User{}).Where("email = ?", input.Email).Update("password", hashed).Error; err != nil {
+			log.Printf("failed to update password for %s: %v", input.Email, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update password"})
 			return
 		}
@@ -446,11 +507,16 @@ func ResetPassword(db *gorm.DB) gin.HandlerFunc {
 func ResendPasswordResetCode(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
-			Email string `json:"email" binding:"required"`
+			Email string `json:"email" binding:"required" validate:"required,email"`
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "email is required"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "valid email is required"})
+			return
+		}
+
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -475,6 +541,7 @@ func ResendPasswordResetCode(db *gorm.DB) gin.HandlerFunc {
 
 		newCode, err := security.GenerateVerificationCode()
 		if err != nil {
+			log.Printf("failed to generate reset code: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate reset code"})
 			return
 		}
@@ -486,6 +553,7 @@ func ResendPasswordResetCode(db *gorm.DB) gin.HandlerFunc {
 		passwordResetCodes.set(input.Email, resetData)
 
 		if err := SendPasswordResetCode(input.Email, newCode); err != nil {
+			log.Printf("failed to send reset email: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not send reset email"})
 			return
 		}
@@ -493,4 +561,3 @@ func ResendPasswordResetCode(db *gorm.DB) gin.HandlerFunc {
 		c.JSON(http.StatusOK, generic)
 	}
 }
-

@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,6 +14,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+const maxImageSizeBytes = 5 * 1024 * 1024 // 5MB
+
+var allowedImageMimeTypes = map[string]bool{
+	"image/jpeg": true,
+	"image/png":  true,
+	"image/webp": true,
+	"image/gif":  true,
+}
 
 func CreateQuestion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -29,7 +39,8 @@ func CreateQuestion(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("error verifying folder ownership: %v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not verify folder ownership"})
 			}
 			return
 		}
@@ -39,15 +50,47 @@ func CreateQuestion(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "image file is required"})
 			return
 		}
+
+		if fileHeader.Size > maxImageSizeBytes {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "image file exceeds maximum allowed size of 5MB"})
+			return
+		}
+
 		file, err := fileHeader.Open()
 		if err != nil {
+			log.Printf("failed to open uploaded file: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not read image"})
 			return
 		}
 		defer file.Close()
 
+		// Read the first 512 bytes to sniff and validate the MIME type
+		buf := make([]byte, 512)
+		n, err := file.Read(buf)
+		if err != nil && err != io.EOF {
+			log.Printf("failed to read image header: %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "could not inspect image file"})
+			return
+		}
+
+		mimeType := http.DetectContentType(buf[:n])
+		if !allowedImageMimeTypes[mimeType] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid image type; allowed formats: JPEG, PNG, WebP, GIF"})
+			return
+		}
+
+		// Reset reader position back to the beginning for upload
+		if seeker, ok := file.(io.ReadSeeker); ok {
+			if _, err := seeker.Seek(0, io.SeekStart); err != nil {
+				log.Printf("failed to seek image: %v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not process image upload"})
+				return
+			}
+		}
+
 		imageURL, err := UploadQuestionImage(c.Request.Context(), file)
 		if err != nil {
+			log.Printf("failed to upload image to cloudinary: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not upload image"})
 			return
 		}
@@ -77,6 +120,7 @@ func CreateQuestion(db *gorm.DB) gin.HandlerFunc {
 			return tx.Model(&models.Subject{}).Where("id = ?", folder.SubjectID).Update("updated_at", now).Error
 		})
 		if err != nil {
+			log.Printf("failed to create question transaction: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create question"})
 			return
 		}
@@ -99,14 +143,16 @@ func GetFolderQuestions(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("error verifying folder ownership: %v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve questions"})
 			}
 			return
 		}
 
 		var questions []models.Question
 		if err := db.Where("folder_id = ?", folderID).Find(&questions).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Printf("failed to retrieve folder questions: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve questions"})
 			return
 		}
 
@@ -124,18 +170,14 @@ func GetQuestionByID(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var question models.Question
-		if err := db.First(&question, questionID).Error; err != nil {
+		question, err := validators.UserOwnQuestion(db, questionID, userID)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve question %d: %v", questionID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve question"})
 			}
-			return
-		}
-
-		if _, err := validators.UserOwnFolder(db, question.FolderID, userID); err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
 			return
 		}
 
@@ -144,8 +186,6 @@ func GetQuestionByID(db *gorm.DB) gin.HandlerFunc {
 }
 
 // Text/answer/difficulty/note only — does not support replacing the image.
-// A re-upload flow (new Cloudinary asset + orphaning the old one) is a
-// separate feature and wasn't part of this request.
 func UpdateQuestion(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.GetInt("userID")
@@ -156,18 +196,14 @@ func UpdateQuestion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var question models.Question
-		if err := db.First(&question, questionID).Error; err != nil {
+		question, err := validators.UserOwnQuestion(db, questionID, userID)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve question for update %d: %v", questionID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update question"})
 			}
-			return
-		}
-
-		if _, err := validators.UserOwnFolder(db, question.FolderID, userID); err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
 			return
 		}
 
@@ -188,6 +224,7 @@ func UpdateQuestion(db *gorm.DB) gin.HandlerFunc {
 		question.Note = input.Note
 
 		if err := db.Save(&question).Error; err != nil {
+			log.Printf("failed to save question %d: %v", questionID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update question"})
 			return
 		}
@@ -206,22 +243,19 @@ func DeleteQuestion(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var question models.Question
-		if err := db.First(&question, questionID).Error; err != nil {
+		question, err := validators.UserOwnQuestion(db, questionID, userID)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to find question for deletion %d: %v", questionID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete question"})
 			}
 			return
 		}
 
-		if _, err := validators.UserOwnFolder(db, question.FolderID, userID); err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "question not found"})
-			return
-		}
-
 		if err := db.Delete(&question).Error; err != nil {
+			log.Printf("failed to delete question %d: %v", questionID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete question"})
 			return
 		}

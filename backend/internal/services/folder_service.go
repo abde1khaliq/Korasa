@@ -28,7 +28,8 @@ func CreateFolder(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "subject not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to verify subject ownership %d: %v", subjectID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not verify subject ownership"})
 			}
 			return
 		}
@@ -39,8 +40,12 @@ func CreateFolder(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		folder := models.Folder{Name: input.Name, SubjectID: subjectID}
+		if err := validators.Validate(input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
+		folder := models.Folder{Name: input.Name, SubjectID: subjectID}
 		if err := validators.Validate(folder); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -55,6 +60,7 @@ func CreateFolder(db *gorm.DB) gin.HandlerFunc {
 				Update("updated_at", time.Now()).Error
 		})
 		if err != nil {
+			log.Printf("failed to create folder transaction: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create folder"})
 			return
 		}
@@ -77,14 +83,16 @@ func GetSubjectFolders(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "subject not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to verify subject ownership %d: %v", subjectID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve folders"})
 			}
 			return
 		}
 
 		var folders []models.Folder
 		if err := db.Where("subject_id = ?", subjectID).Find(&folders).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Printf("failed to retrieve folders for subject %d: %v", subjectID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve folders"})
 			return
 		}
 
@@ -107,7 +115,8 @@ func UpdateFolder(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to verify folder ownership %d: %v", folderID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update folder"})
 			}
 			return
 		}
@@ -124,6 +133,7 @@ func UpdateFolder(db *gorm.DB) gin.HandlerFunc {
 
 		folder.Name = input.Name
 		if err := db.Save(&folder).Error; err != nil {
+			log.Printf("failed to save folder %d: %v", folderID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not update folder"})
 			return
 		}
@@ -147,7 +157,8 @@ func DeleteFolder(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to verify folder ownership %d: %v", folderID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete folder"})
 			}
 			return
 		}
@@ -158,6 +169,7 @@ func DeleteFolder(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		if err := db.Delete(&folder).Error; err != nil {
+			log.Printf("failed to delete folder %d: %v", folderID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete folder"})
 			return
 		}

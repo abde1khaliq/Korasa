@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -16,13 +17,16 @@ import (
 
 var validDifficulties = map[string]bool{"easy": true, "medium": true, "hard": true}
 
-func eligibleQuestionsQuery(db *gorm.DB, scopeType string, scopeID int, difficulties []string) *gorm.DB {
+func eligibleQuestionsQuery(db *gorm.DB, scopeType string, scopeID int, userID int, difficulties []string) *gorm.DB {
 	q := db.Model(&models.Question{}).Where("difficulty IN ?", difficulties)
 	if scopeType == "subject" {
 		return q.Joins("JOIN folders ON folders.id = questions.folder_id").
-			Where("folders.subject_id = ?", scopeID)
+			Joins("JOIN subjects ON subjects.id = folders.subject_id").
+			Where("folders.subject_id = ? AND subjects.user_id = ?", scopeID, userID)
 	}
-	return q.Where("questions.folder_id = ?", scopeID)
+	return q.Joins("JOIN folders ON folders.id = questions.folder_id").
+		Joins("JOIN subjects ON subjects.id = folders.subject_id").
+		Where("questions.folder_id = ? AND subjects.user_id = ?", scopeID, userID)
 }
 
 func checkScopeOwnership(db *gorm.DB, scopeType string, scopeID int, userID int) error {
@@ -60,13 +64,15 @@ func GetEligibleQuestionCount(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "scope not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to check scope ownership for user %d: %v", userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not verify scope ownership"})
 			}
 			return
 		}
 
 		var count int64
-		if err := eligibleQuestionsQuery(db, scopeType, scopeID, difficulties).Count(&count).Error; err != nil {
+		if err := eligibleQuestionsQuery(db, scopeType, scopeID, userID, difficulties).Count(&count).Error; err != nil {
+			log.Printf("failed to count eligible questions: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not count eligible questions"})
 			return
 		}
@@ -101,7 +107,8 @@ func CreateExam(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "scope not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to check scope ownership for user %d: %v", userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not verify scope ownership"})
 			}
 			return
 		}
@@ -116,8 +123,9 @@ func CreateExam(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		var eligibleIDs []int
-		if err := eligibleQuestionsQuery(db, input.ScopeType, input.ScopeID, difficulties).
+		if err := eligibleQuestionsQuery(db, input.ScopeType, input.ScopeID, userID, difficulties).
 			Pluck("questions.id", &eligibleIDs).Error; err != nil {
+			log.Printf("failed to evaluate question pool: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not evaluate question pool"})
 			return
 		}
@@ -164,6 +172,7 @@ func CreateExam(db *gorm.DB) gin.HandlerFunc {
 			return tx.Create(&examQuestions).Error
 		})
 		if err != nil {
+			log.Printf("failed to create exam transaction for user %d: %v", userID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create exam"})
 			return
 		}
@@ -177,7 +186,8 @@ func ListExams(db *gorm.DB) gin.HandlerFunc {
 		userID := c.GetInt("userID")
 		var exams []models.Exam
 		if err := db.Where("user_id = ?", userID).Order("created_at DESC").Find(&exams).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			log.Printf("failed to list exams for user %d: %v", userID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve exams"})
 			return
 		}
 		c.JSON(http.StatusOK, dto.ToExamListResponse(exams, db))
@@ -197,7 +207,8 @@ func GetExam(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "exam not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve exam %d for user %d: %v", examID, userID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve exam"})
 			}
 			return
 		}
@@ -218,7 +229,8 @@ func RenameExam(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "exam not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve exam for renaming %d: %v", examID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not rename exam"})
 			}
 			return
 		}
@@ -235,6 +247,7 @@ func RenameExam(db *gorm.DB) gin.HandlerFunc {
 
 		exam.Name = input.Name
 		if err := db.Save(&exam).Error; err != nil {
+			log.Printf("failed to save renamed exam %d: %v", examID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not rename exam"})
 			return
 		}
@@ -255,15 +268,14 @@ func DeleteExam(db *gorm.DB) gin.HandlerFunc {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"error": "exam not found"})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				log.Printf("failed to retrieve exam for deletion %d: %v", examID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete exam"})
 			}
 			return
 		}
-		// exam_questions and exam_attempts cascade at the DB level.
-		// Deleting an exam wipes its attempt history — if you want history
-		// to survive exam deletion, say so and I'll change the FK to not
-		// cascade and orphan attempts instead.
+
 		if err := db.Delete(&exam).Error; err != nil {
+			log.Printf("failed to delete exam %d: %v", examID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not delete exam"})
 			return
 		}

@@ -1,7 +1,11 @@
 package router
 
 import (
+	"net/http"
+
+	"github.com/abde1khaliq/korasa/config"
 	"github.com/abde1khaliq/korasa/internal/api"
+	"github.com/abde1khaliq/korasa/internal/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -9,12 +13,27 @@ import (
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://www.korasa.study", "https://korasa.study", "http://localhost:3000"},
-		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "PUT"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+
+	// Limit multipart memory allocation to 8MB
+	r.MaxMultipartMemory = 8 << 20
+
+	// Security Headers
+	r.Use(middleware.SecurityHeaders())
+
+	// CORS Configuration
+	corsConfig := cors.Config{
+		AllowOrigins:     config.App.CORSAllowedOrigins,
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
+		ExposeHeaders:    []string{"Content-Length", "Retry-After"},
 		AllowCredentials: true,
-	}))
+	}
+	r.Use(cors.New(corsConfig))
+
+	// Health check endpoint
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
+	})
 
 	SubjectRouteGroup := r.Group("/api/subjects")
 	api.SubjectRoutes(SubjectRouteGroup, db)

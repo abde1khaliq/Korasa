@@ -28,6 +28,15 @@ func ToSubjectResponse(s models.Subject, db *gorm.DB) SubjectResponse {
 }
 
 func ToSubjectListResponse(subjects []models.Subject, db *gorm.DB) []SubjectResponse {
+	if len(subjects) == 0 {
+		return []SubjectResponse{}
+	}
+
+	subjectIDs := make([]int, len(subjects))
+	for i, s := range subjects {
+		subjectIDs[i] = s.ID
+	}
+
 	folderCounts := make(map[int]int64)
 	var folderResults []struct {
 		SubjectID int
@@ -35,6 +44,7 @@ func ToSubjectListResponse(subjects []models.Subject, db *gorm.DB) []SubjectResp
 	}
 	db.Model(&models.Folder{}).
 		Select("subject_id, COUNT(*) as count").
+		Where("subject_id IN ?", subjectIDs).
 		Group("subject_id").
 		Scan(&folderResults)
 	for _, r := range folderResults {
@@ -49,6 +59,7 @@ func ToSubjectListResponse(subjects []models.Subject, db *gorm.DB) []SubjectResp
 	db.Table("questions").
 		Select("folders.subject_id, COUNT(*) as count").
 		Joins("JOIN folders ON folders.id = questions.folder_id").
+		Where("folders.subject_id IN ?", subjectIDs).
 		Group("folders.subject_id").
 		Scan(&questionResults)
 	for _, r := range questionResults {

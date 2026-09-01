@@ -44,6 +44,9 @@ func ValidateToken(tokenStr string, isRefresh bool) (int, error) {
 	if isRefresh {
 		secret = config.App.JWTRefreshSecret
 	}
+	if len(secret) == 0 {
+		return 0, errors.New("JWT secret not configured")
+	}
 
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {

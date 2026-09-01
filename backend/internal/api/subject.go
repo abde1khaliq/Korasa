@@ -10,10 +10,15 @@ import (
 func SubjectRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	router.Use(middleware.RequireAuth())
 
+	router.GET("", services.GetUserSubjects(db))
 	router.GET("/", services.GetUserSubjects(db))
+	router.POST("", services.CreateSubject(db))
 	router.POST("/", services.CreateSubject(db))
+
+	// Static routes must be registered before parameterized /:subjectID routes
+	router.GET("/recent", services.GetMostRecentSubject(db))
+
 	router.GET("/:subjectID", services.GetSubjectByID(db))
 	router.DELETE("/:subjectID", services.DeleteSubject(db))
 	router.PATCH("/:subjectID", services.UpdateSubject(db))
-	router.GET("/recent", services.GetMostRecentSubject(db))
 }
