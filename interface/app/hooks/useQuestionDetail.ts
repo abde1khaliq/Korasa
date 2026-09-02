@@ -9,17 +9,19 @@ export function useQuestionDetail(questionId: string | string[] | undefined) {
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
 
+  const resolvedQuestionId = Array.isArray(questionId) ? questionId[0] : questionId;
+
   const fetchQuestion = async () => {
-    if (!session || !questionId) return;
+    if (!session?.accessToken || !resolvedQuestionId) return;
     
     setIsLoading(true);
     setError(null);
 
     try {
-      const headers = { Authorization: `Bearer ${session?.accessToken}` };
+      const headers = { Authorization: `Bearer ${session.accessToken}` };
 
       const qRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/questions/${questionId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/questions/${resolvedQuestionId}`,
         { headers },
       );
       if (!qRes.ok) {
@@ -33,8 +35,8 @@ export function useQuestionDetail(questionId: string | string[] | undefined) {
         { headers },
       );
       if (listRes.ok) {
-        const list: Question[] = await listRes.json();
-        setSiblings(list);
+        const list = await listRes.json();
+        setSiblings(Array.isArray(list) ? list : []);
       }
     } catch (err) {
       const message =
@@ -54,10 +56,10 @@ export function useQuestionDetail(questionId: string | string[] | undefined) {
   };
 
   useEffect(() => {
-    if (session && questionId) {
+    if (session?.accessToken && resolvedQuestionId) {
       fetchQuestion();
     }
-  }, [session, questionId]);
+  }, [session, resolvedQuestionId]);
 
   return {
     question,

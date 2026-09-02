@@ -44,7 +44,7 @@ export function HeroSection() {
                 href="/register"
                 className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-onyx px-6 py-3.5 text-[15px] font-medium text-paper shadow-sm transition-all hover:bg-onyx/90 hover:shadow"
               >
-                Get Started Free
+                Open Korasa in your browser
                 <ArrowRight className="size-4" strokeWidth={2} />
               </Link>
 
@@ -52,8 +52,7 @@ export function HeroSection() {
                 href="#download"
                 className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-rule bg-paper-card px-5 py-3.5 text-[14px] font-medium text-ink transition-colors hover:border-brand/40 hover:bg-paper"
               >
-                <Smartphone className="size-4 text-brand" />
-                Download Android App
+                Download the Android App
               </a>
             </div>
           </div>

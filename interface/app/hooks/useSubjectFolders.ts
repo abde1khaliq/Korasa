@@ -56,6 +56,31 @@ export function useSubjectFolders(subjectID: string | string[] | undefined) {
     setFolders((prev) => [...prev, newFolder]);
   };
 
+  const updateFolderState = (updated: FolderItem) => {
+    setFolders((prev) => prev.map((f) => (f.id === updated.id ? updated : f)));
+  };
+
+  const deleteFolder = async (folderId: number) => {
+    if (!session?.accessToken || !subjectID) throw new Error("Not authenticated");
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/${subjectID}/folders/${folderId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to delete folder (${res.status})`);
+    }
+
+    setFolders((prev) => prev.filter((f) => f.id !== folderId));
+    return { success: true };
+  };
+
   useEffect(() => {
     if (session && subjectID) {
       fetchData();
@@ -65,9 +90,12 @@ export function useSubjectFolders(subjectID: string | string[] | undefined) {
   return {
     subject,
     folders,
+    setFolders,
     isLoading,
     error,
     fetchData,
     addFolder,
+    updateFolderState,
+    deleteFolder,
   };
 }

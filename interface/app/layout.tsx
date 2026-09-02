@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Playfair_Display, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "./providers";
 import { SITE_CONFIG } from "@/lib/seo";
@@ -8,6 +8,27 @@ import { SiteJsonLd } from "@/components/SEO/SiteJsonLd";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -90,9 +111,9 @@ export default function RootLayout({
     <html
       suppressHydrationWarning
       lang="en"
-      className={`${geistSans.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${playfair.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased font-sans`}
     >
-      <body className="min-h-full flex flex-col bg-paper">
+      <body className="min-h-full flex flex-col bg-paper text-ink selection:bg-brand/20 selection:text-ink">
         <SiteJsonLd />
         <AppProviders>{children}</AppProviders>
       </body>

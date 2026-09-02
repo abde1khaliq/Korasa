@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Plus, ArrowRight, Trash2, Zap, X, Loader2 } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Plus, ArrowRight, Trash2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Notification } from "@/components/misc/Notification";
@@ -55,6 +55,11 @@ export function HomeSubjects() {
     resetLongPress,
   } = useLongPress();
 
+  const closeMenu = useCallback(() => {
+    setMenuSubject(null);
+    setMenuPosition(null);
+  }, []);
+
   // Prevent scroll when menu is open
   useEffect(() => {
     if (menuSubject) {
@@ -83,14 +88,13 @@ export function HomeSubjects() {
     };
 
     if (menuSubject) {
-      // Use capture phase to catch the event before it bubbles
       document.addEventListener("mousedown", handleClickOutside, true);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside, true);
     };
-  }, [menuSubject]);
+  }, [menuSubject, closeMenu]);
 
   const handleSubjectCreated = (newSubject: Subject) => {
     addSubject(newSubject);
@@ -133,11 +137,9 @@ export function HomeSubjects() {
     e.preventDefault();
     e.stopPropagation();
 
-    const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
 
-    // Position the menu near the click, but keep it in viewport
     const menuWidth = 260;
     const menuHeight = 150;
     const adjustedX = Math.min(x, window.innerWidth - menuWidth - 10);
@@ -148,14 +150,8 @@ export function HomeSubjects() {
   };
 
   const handleLongPress = (subject: Subject) => {
-    // On mobile, center the menu
     setMenuPosition(null);
     setMenuSubject(subject);
-  };
-
-  const closeMenu = () => {
-    setMenuSubject(null);
-    setMenuPosition(null);
   };
 
   if (isLoading) {
@@ -183,7 +179,7 @@ export function HomeSubjects() {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       <style>{`
         @keyframes drawBorder {
           from { stroke-dashoffset: 100; }
@@ -201,77 +197,69 @@ export function HomeSubjects() {
         }
       `}</style>
 
-      <div className="px-6 pt-6">
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
-            {getGreeting()}
-          </span>
-        </div>
-        <h1 className="mt-2 font-display text-[48px] leading-[1.05] text-ink">
+      {/* Greeting Header */}
+      <div>
+        <span className="font-mono text-[13px] tracking-widest text-ink-faint uppercase">
+          {getGreeting()}
+        </span>
+        <h1 className="mt-1 font-display text-[40px] leading-[44px] sm:text-[46px] sm:leading-[50px] font-normal text-ink">
           {getFormattedName(userName)}
         </h1>
-        <p className="mt-2 text-[17px] text-ink-soft">
+        <p className="mt-1.5 text-[16px] text-ink-soft">
           Ready to pick up where you left off?
         </p>
       </div>
 
+      {/* Continue Studying Banner */}
       {recentSubject && (
-        <div className="mt-6 px-6">
-          <div className="relative overflow-hidden rounded-2xl border border-rule bg-onyx p-5 text-paper">
-            <div className="relative z-10">
-              <span className="font-mono text-[13px] tracking-[0.18em] text-paper/60 uppercase">
-                Continue studying
-              </span>
-              <h2 className="mt-2 font-display text-[26px] leading-[1.15]">
-                {recentSubject.name}
-              </h2>
-              <button
-                onClick={() => router.push(`/subject/${recentSubject.id}`)}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-paper px-5 py-2.5 text-[15px] font-medium text-onyx"
-              >
-                Continue
-                <ArrowRight className="size-4" strokeWidth={1.75} />
-              </button>
-            </div>
-            <div className="pointer-events-none absolute -right-6 -top-6 opacity-10">
-              <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="60"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="44"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-                <circle
-                  cx="80"
-                  cy="80"
-                  r="28"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-              </svg>
-            </div>
+        <div className="relative overflow-hidden rounded-2xl border border-rule bg-onyx p-6 text-paper shadow-md">
+          <div className="relative z-10">
+            <span className="font-mono text-[12px] tracking-widest text-paper/70 uppercase">
+              Continue Studying
+            </span>
+            <h2 className="mt-1.5 font-display text-[26px] leading-[30px] font-normal text-paper">
+              {recentSubject.name}
+            </h2>
+            <button
+              onClick={() => router.push(`/subject/${recentSubject.id}`)}
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-paper px-5 py-2.5 text-[14px] font-medium text-onyx hover:bg-paper/90 active:scale-95 transition-all shadow-xs"
+            >
+              <span>Continue</span>
+              <ArrowRight className="size-4" />
+            </button>
+          </div>
+          <div className="pointer-events-none absolute -right-6 -top-6 opacity-10">
+            <svg width="180" height="180" viewBox="0 0 160 160" fill="none">
+              <circle cx="80" cy="80" r="60" stroke="currentColor" strokeWidth="2" />
+              <circle cx="80" cy="80" r="44" stroke="currentColor" strokeWidth="2" />
+              <circle cx="80" cy="80" r="28" stroke="currentColor" strokeWidth="2" />
+            </svg>
           </div>
         </div>
       )}
 
-      <div className="px-6 pt-8">
-        <h2 className="font-display text-[30px] leading-tight text-ink">
-          Subjects
-        </h2>
-        <p className="mt-1 text-[17px] text-ink-soft">
-          {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
-        </p>
+      {/* Subjects Section Title */}
+      <div className="pt-2 flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-[30px] leading-[34px] font-normal text-ink">
+            Subjects
+          </h2>
+          <p className="text-[14px] text-ink-soft mt-0.5">
+            {subjects.length} {subjects.length === 1 ? "subject" : "subjects"}
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="inline-flex items-center gap-2 rounded-xl bg-onyx px-4 py-2.5 text-[14px] font-medium text-paper hover:bg-onyx/90 active:scale-95 transition-all shadow-xs"
+        >
+          <Plus className="size-4" strokeWidth={2.2} />
+          <span>New Subject</span>
+        </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 px-6 py-6 pb-24">
+      {/* Subjects Grid (2 items per row) */}
+      <div className="grid grid-cols-2 gap-3.5 sm:gap-4.5">
         {subjects.map((subject) => {
           const { code, chip } = getSubjectMeta(subject.id, subject.name);
           const isLongPressing = longPressSubjectId === subject.id;
@@ -287,7 +275,7 @@ export function HomeSubjects() {
               onPointerLeave={handlePointerUpOrCancel}
               onClick={(e) => handleSubjectClick(e, subject.id)}
               onContextMenu={(e) => handleContextMenu(e, subject)}
-              className="relative flex h-[190px] flex-col rounded-2xl border border-rule bg-paper-card p-4 hover:border-brand cursor-pointer transition-colors select-none"
+              className="group relative flex h-[195px] flex-col justify-between rounded-2xl border border-rule bg-paper-card p-4 sm:p-5 hover:border-brand/70 hover:shadow-xs cursor-pointer transition-all select-none"
             >
               {isLongPressing && (
                 <div className="absolute inset-0 rounded-2xl pointer-events-none">
@@ -314,61 +302,56 @@ export function HomeSubjects() {
                 </div>
               )}
 
-              <span
-                className={`inline-flex w-fit rounded-lg px-3 py-1.5 font-mono text-[13px] tracking-widest ${chip}`}
-              >
-                {code}
-              </span>
-              <h2 className="mt-auto font-display text-[26px] leading-[1.15] truncate text-ink">
-                {subject.name}
-              </h2>
-              <div className="mt-3 flex flex-col gap-2 font-mono text-[14px] text-ink-soft">
-                <span className="flex flex-row items-center gap-2 leading-tight">
-                  <span>{subject.folder_count || 0}</span>
-                  <span>folders</span>
+              <div className="flex items-center justify-between">
+                <span
+                  className={`inline-flex rounded-lg px-2.5 py-1 font-mono text-[11px] sm:text-[12px] font-bold tracking-widest ${chip}`}
+                >
+                  {code}
                 </span>
-                <span className="flex flex-row items-center gap-2 leading-tight">
-                  <span>{subject.question_count || 0}</span>
-                  <span>questions</span>
+
+                <span className="text-[10px] sm:text-[11px] font-mono text-ink-faint group-hover:text-brand transition-colors hidden xs:inline">
+                  Menu
                 </span>
+              </div>
+
+              <div>
+                <h3 className="font-display text-[20px] sm:text-[25px] leading-[24px] sm:leading-[29px] font-normal truncate text-ink group-hover:text-brand transition-colors">
+                  {subject.name}
+                </h3>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2 font-mono text-[11px] sm:text-[12px] text-ink-soft">
+                  <span>{subject.folder_count || 0} folders</span>
+                  <span className="text-ink-faint">·</span>
+                  <span>{subject.question_count || 0} questions</span>
+                </div>
               </div>
             </article>
           );
         })}
 
+        {/* In-grid Create button: Mobile only (hidden on desktop/PC) */}
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule hover:bg-tag/30 transition-colors"
+          className="flex md:hidden h-[195px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule hover:bg-tag/30 hover:border-brand/60 transition-all text-ink cursor-pointer"
         >
-          <span className="flex size-12 items-center justify-center rounded-full border border-ink-faint">
-            <Plus className="size-5 text-ink-soft" strokeWidth={1.5} />
+          <div className="flex size-11 sm:size-12 items-center justify-center rounded-full border border-ink-faint text-ink-soft">
+            <Plus className="size-5" strokeWidth={1.75} />
+          </div>
+          <span className="text-[14px] sm:text-[15px] font-medium text-ink-soft">
+            Create new subject
           </span>
-          <span className="text-[16px] text-ink-soft">New subject</span>
         </button>
       </div>
 
-      <button
-        onClick={() => setShowQuickCreate(true)}
-        className="fixed bottom-6 right-6 flex size-14 items-center justify-center rounded-full bg-onyx text-paper shadow-lg shadow-onyx/30 hover:bg-onyx/90 transition-all active:scale-95 border border-rule/20"
-      >
-        <Zap className="size-6" strokeWidth={0} fill="currentColor" />
-      </button>
-
-      {/* Absolute positioned delete modal */}
+      {/* Context Action Menu */}
       {menuSubject && (
         <div
           className="fixed inset-0 z-50"
           onClick={(e) => {
-            // Close only if clicking the backdrop itself (not the menu)
-            if (e.target === e.currentTarget) {
-              closeMenu();
-            }
+            if (e.target === e.currentTarget) closeMenu();
           }}
         >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-onyx/20 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-onyx/20 backdrop-blur-xs" />
 
-          {/* Menu positioned absolutely */}
           <div
             ref={menuRef}
             className="absolute animate-[popIn_0.2s_ease-out]"
@@ -381,28 +364,36 @@ export function HomeSubjects() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="rounded-2xl border border-rule bg-paper shadow-2xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-rule">
-                <h3 className="font-display text-[16px] text-ink truncate">
+            <div className="rounded-2xl border border-rule bg-paper shadow-2xl overflow-hidden p-1">
+              <div className="px-3 py-2 border-b border-rule">
+                <h3 className="font-display text-[15px] font-normal text-ink truncate">
                   {menuSubject.name}
                 </h3>
               </div>
 
-              <div className="p-2">
+              <div className="p-1 space-y-1">
+                <button
+                  onClick={() => {
+                    router.push(`/subject/${menuSubject.id}`);
+                    closeMenu();
+                  }}
+                  className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-ink hover:bg-tag/40"
+                >
+                  <ArrowRight className="size-4 text-ink-soft" />
+                  <span>Open Subject</span>
+                </button>
+
                 <button
                   onClick={() => handleDeleteSubject(menuSubject)}
                   disabled={isDeleting}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] text-hard hover:bg-hard-soft/20 transition-colors disabled:opacity-40"
+                  className="flex w-full items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-hard hover:bg-hard-soft/30 disabled:opacity-40"
                 >
                   {isDeleting ? (
-                    <Loader2
-                      className="size-4 animate-spin"
-                      strokeWidth={1.75}
-                    />
+                    <Loader2 className="size-4 animate-spin" />
                   ) : (
-                    <Trash2 className="size-4" strokeWidth={1.75} />
+                    <Trash2 className="size-4" />
                   )}
-                  {isDeleting ? "Deleting..." : "Delete subject"}
+                  <span>{isDeleting ? "Deleting..." : "Delete Subject"}</span>
                 </button>
               </div>
             </div>
@@ -417,6 +408,7 @@ export function HomeSubjects() {
           onCreated={handleSubjectCreated}
         />
       )}
+
       {showQuickCreate && (
         <QuickCreateModal
           subjects={subjects}
@@ -426,7 +418,8 @@ export function HomeSubjects() {
           onQuestionCreated={handleQuickQuestionCreated}
         />
       )}
+
       <Notification message={notification} />
-    </>
+    </div>
   );
 }

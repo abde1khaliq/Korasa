@@ -24,7 +24,7 @@ export const HomeEmptyState = ({
           Begin with a subject
         </h2>
         <p className="mt-3 max-w-[19rem] text-center text-[17px] leading-relaxed text-ink-soft">
-          English, Chemistry, or anything you're learning.
+          English, Chemistry, or anything you&apos;re learning.
         </p>
 
         <button

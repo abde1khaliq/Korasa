@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Smartphone, Sparkles } from "lucide-react";
 
 export function LandingFooter() {
   return (

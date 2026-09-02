@@ -96,7 +96,6 @@ export function HowItWorksSection() {
         {/* 5 Steps Vertical Timeline Cards */}
         <div className="mt-16 space-y-6">
           {steps.map((s) => {
-            const Icon = s.icon;
             return (
               <div
                 key={s.num}
@@ -112,7 +111,7 @@ export function HowItWorksSection() {
                       <span className="font-mono text-[10.5px] font-semibold tracking-wider text-brand uppercase">
                         {s.tag}
                       </span>
-                      <h3 className="font-display text-xl font-medium text-ink">
+                      <h3 className="font-display text-xl font-normal text-ink">
                         {s.title}
                       </h3>
                       <p className="text-[13px] text-ink-faint">{s.subtitle}</p>

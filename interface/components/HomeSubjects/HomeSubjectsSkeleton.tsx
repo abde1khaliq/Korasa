@@ -68,7 +68,7 @@ export function HomeSubjectsSkeleton() {
           </article>
         ))}
 
-        <div className="flex h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule">
+        <div className="flex md:hidden h-[190px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-rule">
           <div className="flex size-12 items-center justify-center rounded-full border border-ink-faint/30">
             <Plus className="size-5 text-ink-faint/30" strokeWidth={1.5} />
           </div>
