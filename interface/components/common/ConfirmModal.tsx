@@ -36,7 +36,7 @@ export function ConfirmModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-onyx/40 backdrop-blur-sm p-4 sm:p-6"
+      className="fixed inset-0 z-100 flex items-end sm:items-center justify-center bg-onyx/40 backdrop-blur-sm p-4 sm:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget) onCancel();
       }}
