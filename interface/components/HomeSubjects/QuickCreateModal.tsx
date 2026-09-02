@@ -50,31 +50,35 @@ export function QuickCreateModal({
   const [note, setNote] = useState("");
 
   useEffect(() => {
-    if (tab !== "question" || !subjectId) {
-      setFolders([]);
-      setFolderId("");
-      return;
-    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  useEffect(() => {
     let cancelled = false;
-    setLoadingFolders(true);
-    setFolderId("");
-    fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/${subjectId}/folders`,
-      { headers: { Authorization: `Bearer ${accessToken}` } },
-    )
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load folders");
-        return res.json();
-      })
-      .then((data: FolderOption[]) => {
-        if (!cancelled) setFolders(data);
-      })
-      .catch(() => {
-        if (!cancelled) setFolders([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingFolders(false);
-      });
+    if (tab === "question" && subjectId) {
+      setLoadingFolders(true);
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subjects/${subjectId}/folders`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      )
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to load folders");
+          return res.json();
+        })
+        .then((data: FolderOption[]) => {
+          if (!cancelled) setFolders(data);
+        })
+        .catch(() => {
+          if (!cancelled) setFolders([]);
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingFolders(false);
+        });
+    }
     return () => {
       cancelled = true;
     };
@@ -200,20 +204,26 @@ export function QuickCreateModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-onyx/40 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-onyx/40 backdrop-blur-sm p-0 md:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="flex max-h-[90vh] w-full max-w-[440px] flex-col animate-[slideUp_0.25s_ease-out] rounded-t-3xl bg-paper sm:rounded-3xl">
-        <header className="flex shrink-0 items-center justify-between px-6 py-5 border-b border-rule">
-          <X
-            className="size-6 cursor-pointer text-ink-soft hover:text-ink transition-colors"
-            strokeWidth={1.75}
+      <div className="flex max-h-[90vh] w-full max-w-[460px] md:max-w-lg flex-col animate-[slideUp_0.25s_ease-out] md:animate-in md:fade-in md:zoom-in-95 rounded-t-3xl md:rounded-3xl bg-paper md:border md:border-rule md:shadow-xl">
+        <header className="flex shrink-0 items-center justify-between px-6 py-4 md:py-5 border-b border-rule/60">
+          <div>
+            <h2 className="font-display text-[20px] md:text-[22px] font-normal text-ink">Quick Create</h2>
+            <p className="text-[12px] text-ink-soft hidden md:block">
+              Add a folder or question instantly to any subject.
+            </p>
+          </div>
+          <button
             onClick={onClose}
-          />
-          <h1 className="text-[17px] text-ink">Quick add</h1>
-          <div className="size-6" />
+            className="flex size-8 items-center justify-center rounded-full text-ink-soft hover:text-ink hover:bg-tag/60 transition-colors cursor-pointer"
+            title="Close"
+          >
+            <X className="size-5" strokeWidth={1.75} />
+          </button>
         </header>
 
         <div className="flex shrink-0 gap-2 px-6 pt-4">
@@ -222,10 +232,10 @@ export function QuickCreateModal({
               setTab("folder");
               setError(null);
             }}
-            className={`flex-1 rounded-full border py-2 text-[14px] font-medium transition-colors ${
+            className={`flex-1 rounded-xl border py-2 text-[14px] font-medium transition-colors cursor-pointer ${
               tab === "folder"
                 ? "bg-onyx text-paper border-onyx"
-                : "border-rule text-ink-soft"
+                : "border-rule text-ink-soft hover:text-ink hover:bg-tag/30"
             }`}
           >
             Folder
@@ -235,10 +245,10 @@ export function QuickCreateModal({
               setTab("question");
               setError(null);
             }}
-            className={`flex-1 rounded-full border py-2 text-[14px] font-medium transition-colors ${
+            className={`flex-1 rounded-xl border py-2 text-[14px] font-medium transition-colors cursor-pointer ${
               tab === "question"
                 ? "bg-onyx text-paper border-onyx"
-                : "border-rule text-ink-soft"
+                : "border-rule text-ink-soft hover:text-ink hover:bg-tag/30"
             }`}
           >
             Question

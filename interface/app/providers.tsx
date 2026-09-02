@@ -1,15 +1,9 @@
 "use client";
 
-import { Header } from "@/components/Header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "next-auth/react";
-import { usePathname } from "next/navigation";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  
-  const isAuthPage = pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/verify-email";
-
   return (
     <SessionProvider>
       <ThemeProvider
@@ -18,7 +12,6 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
-        {!isAuthPage && <Header />}
         {children}
       </ThemeProvider>
     </SessionProvider>

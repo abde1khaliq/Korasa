@@ -3,11 +3,6 @@
 import {
   Smartphone,
   Download,
-  Camera,
-  WifiOff,
-  Sparkles,
-  ShieldCheck,
-  QrCode,
 } from "lucide-react";
 
 export function DownloadAppSection() {
@@ -57,7 +52,7 @@ export function DownloadAppSection() {
                   <Smartphone className="size-7" />
                 </div>
 
-                <h3 className="mt-4 font-display text-xl font-medium text-ink">
+                <h3 className="mt-4 font-display text-xl font-normal text-ink">
                   Direct Install on Android
                 </h3>
                 <p className="mt-1 text-[13px] text-ink-soft">

@@ -6,19 +6,19 @@ export const Notification = ({ message }: { message: string | null }) => {
   const [displayMessage, setDisplayMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    let timeout: NodeJS.Timeout;
     if (message) {
-      setDisplayMessage(message);
-      requestAnimationFrame(() => {
+      timeout = setTimeout(() => {
+        setDisplayMessage(message);
         setIsVisible(true);
-      });
+      }, 0);
     } else {
       setIsVisible(false);
-      const timeout = setTimeout(() => {
+      timeout = setTimeout(() => {
         setDisplayMessage(null);
       }, 300);
-
-      return () => clearTimeout(timeout);
     }
+    return () => clearTimeout(timeout);
   }, [message]);
 
   if (!displayMessage) return null;

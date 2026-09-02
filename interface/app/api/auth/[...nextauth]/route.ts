@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
 import { Session } from "next-auth";
@@ -48,12 +48,12 @@ export const authOptions = {
     maxAge: 7 * 24 * 60 * 60, // 7 days matching refresh token
   },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: any }) {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
       // Initial sign in
       if (user) {
         token.id = user.id;
-        token.accessToken = user.accessToken;
-        token.refreshToken = user.refreshToken;
+        token.accessToken = (user as User & { accessToken?: string }).accessToken;
+        token.refreshToken = (user as User & { refreshToken?: string }).refreshToken;
         // Expire slightly before the actual 15m to be safe
         token.accessTokenExpires = Date.now() + 14 * 60 * 1000;
         return token;
@@ -78,7 +78,7 @@ export const authOptions = {
         let data;
         try {
           data = text ? JSON.parse(text) : {};
-        } catch (err) {
+        } catch {
           throw new Error(
             `Failed to parse JSON. Response: ${text.slice(0, 100)}`,
           );
@@ -104,8 +104,7 @@ export const authOptions = {
       if (session.user) {
         session.user.id = token.id as string;
       }
-      (session as any).accessToken = token.accessToken as string;
-      (session as any).error = token.error as string | undefined;
+      session.accessToken = token.accessToken as string;
 
       return session;
     },

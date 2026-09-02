@@ -8,7 +8,6 @@ import {
   Menu,
   Plus,
   User,
-  Wifi,
 } from "lucide-react";
 
 export function MobileHomeScreenPreview() {
@@ -55,7 +54,7 @@ export function MobileHomeScreenPreview() {
     <div className="relative flex h-full w-full flex-col justify-between bg-paper font-sans select-none overflow-hidden">
       {/* Top App Header (K logo + Menu) */}
       <div className="flex items-center justify-between px-5 pt-3 pb-2">
-        <span className="font-display text-xl font-semibold text-ink">K</span>
+        <span className="font-display text-xl font-normal text-ink">K</span>
         <button
           type="button"
           aria-label="Open menu"
@@ -133,7 +132,7 @@ export function MobileHomeScreenPreview() {
 
               {/* Subject Title & Stats */}
               <div className="mt-4">
-                <h4 className="font-display text-[14px] font-medium leading-tight text-ink truncate">
+                <h4 className="font-display text-[14px] font-normal leading-tight text-ink truncate">
                   {sub.name}
                 </h4>
                 <p className="mt-1 text-[10px] text-ink-soft">

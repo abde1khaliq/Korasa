@@ -76,7 +76,7 @@ export function FaqSection() {
                   className="flex w-full items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-paper-card"
                   aria-expanded={isOpen}
                 >
-                  <span className="font-display text-[17px] font-medium text-ink">
+                  <span className="font-display text-[17px] font-normal text-ink">
                     {item.question}
                   </span>
                   <div
