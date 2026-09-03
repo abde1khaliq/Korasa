@@ -1,4 +1,4 @@
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments, usePathname } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -15,6 +15,8 @@ import { WhatsNewProvider } from "@/context/WhatsNewContext";
 import { WhatsNewModal } from "@/components/misc/WhatsNewModal";
 import { useAppUpdates } from "@/hooks/useAppUpdates";
 import { UpdateSplash } from "@/components/misc/UpdateSplash";
+import { PostHogProvider } from "posthog-react-native";
+import { posthog } from "@/lib/posthog";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -84,20 +86,32 @@ function AppWithUpdateCheck() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ PlayfairDisplay_400Regular });
+  const pathname = usePathname();
 
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
+  // Expo Router builds on React Navigation v7, where automatic screen capture
+  // is unreliable, so we send $screen manually on each route change.
+  useEffect(() => {
+    posthog.screen(pathname);
+  }, [pathname]);
+
   if (!fontsLoaded) return null;
 
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <WhatsNewProvider>
-          <AppWithUpdateCheck />
-        </WhatsNewProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <PostHogProvider
+      client={posthog}
+      autocapture={{ captureScreens: false, captureTouches: true }}
+    >
+      <AuthProvider>
+        <ThemeProvider>
+          <WhatsNewProvider>
+            <AppWithUpdateCheck />
+          </WhatsNewProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </PostHogProvider>
   );
 }
