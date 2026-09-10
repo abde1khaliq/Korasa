@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface ConfirmModalProps {
   visible: boolean;
@@ -23,6 +24,12 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!visible) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,17 +39,29 @@ export function ConfirmModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [visible, onCancel]);
 
-  if (!visible) return null;
+  useEffect(() => {
+    if (!visible) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [visible]);
 
-  return (
+  if (!visible || !mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-100 flex items-end sm:items-center justify-center bg-onyx/40 backdrop-blur-sm p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-modal-title"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-onyx/40 backdrop-blur-sm p-4 sm:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget) onCancel();
       }}
     >
       <div className="w-full max-w-sm rounded-3xl border border-rule bg-paper p-6 shadow-xl animate-in fade-in zoom-in-95">
-        <h3 className="text-[18px] font-semibold text-ink">
+        <h3 id="confirm-modal-title" className="text-[18px] font-semibold text-ink">
           {title}
         </h3>
         <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
@@ -70,6 +89,7 @@ export function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

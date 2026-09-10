@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { View, Text, Pressable, FlatList, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router/react-navigation";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Plus, Clock, Layers, ChevronRight } from "lucide-react-native";
 import { useExams } from "@/hooks/useExams";

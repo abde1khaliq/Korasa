@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { View, Text, Pressable, FlatList } from "react-native";
 import { useRouter } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "expo-router/react-navigation";
 import { Play, MoreHorizontal, Clock, Layers } from "lucide-react-native";
 import { useExam } from "@/hooks/useExam";
 import { useExamHistory } from "@/hooks/useExamHistory";

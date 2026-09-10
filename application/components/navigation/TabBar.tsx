@@ -14,7 +14,7 @@ import { useNotification } from "@/hooks/useNotification";
 import { Notification } from "@/components/Notification";
 import { QuickCreateModal } from "@/components/home/QuickCreateModal";
 import { triggerHomeRefresh } from "@/lib/refreshBus";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import type { BottomTabBarProps } from "expo-router/js-tabs";
 
 const TABS: { name: string; label: string; icon: typeof Home }[] = [
   { name: "index", label: "Home", icon: Home },

@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "application",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.abdelkhaliqq.korasastudy",
@@ -17,7 +16,6 @@
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.abdelkhaliqq.korasastudy",
       "versionCode": 2,
@@ -57,7 +55,10 @@
           "icon": "./assets/images/icon.png",
           "color": "#A8703F"
         }
-      ]
+      ],
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
