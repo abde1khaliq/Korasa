@@ -17,7 +17,7 @@ We take the security of Korasa seriously. If you discover a security vulnerabili
 
 Instead, follow responsible disclosure:
 
-1. **Email us privately**: Send details to [security@korasa.study](mailto:security@korasa.study) or [support@korasa.study](mailto:support@korasa.study).
+1. **Email us privately**: Send details to [support@korasa.study](mailto:support@korasa.study).
 2. **Include details**:
    - Description of the vulnerability and its potential impact.
    - Step-by-step reproduction steps or a minimal proof of concept (PoC).
