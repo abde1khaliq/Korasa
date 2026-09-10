@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/abde1khaliq/korasa/config"
+	"github.com/abde1khaliq/korasa/internal/admin"
 	"github.com/abde1khaliq/korasa/internal/api"
 	"github.com/abde1khaliq/korasa/internal/middleware"
 	"github.com/gin-contrib/cors"
@@ -53,6 +54,15 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	UserRouteGroup := r.Group("/auth")
 	api.UserRouters(UserRouteGroup, db)
+
+	// Admin API endpoints (enforce JWT & admin role)
+	AdminRouteGroup := r.Group("/api/admin")
+	AdminRouteGroup.Use(middleware.RequireAuth(db), middleware.RequireAdmin(db))
+	api.AdminRoutes(AdminRouteGroup, db)
+
+	// Admin Web Console
+	r.GET("/admin", admin.DashboardHandler)
+	r.GET("/admin/*filepath", admin.DashboardHandler)
 
 	return r
 }

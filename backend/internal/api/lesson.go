@@ -9,7 +9,7 @@ import (
 
 // LessonRoutes registers routes for calendar lessons.
 func LessonRoutes(router *gin.RouterGroup, db *gorm.DB) {
-	router.Use(middleware.RequireAuth())
+	router.Use(middleware.RequireAuth(db))
 
 	router.POST("", services.CreateLesson(db))
 	router.POST("/", services.CreateLesson(db))

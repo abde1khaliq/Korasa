@@ -8,14 +8,14 @@ import (
 )
 
 func QuestionRoutes(router *gin.RouterGroup, db *gorm.DB) {
-	router.Use(middleware.RequireAuth())
+	router.Use(middleware.RequireAuth(db))
 
 	router.POST("/:folderID/questions", services.CreateQuestion(db))
 	router.GET("/:folderID/questions", services.GetFolderQuestions(db))
 }
 
 func QuestionDirectRoutes(router *gin.RouterGroup, db *gorm.DB) {
-	router.Use(middleware.RequireAuth())
+	router.Use(middleware.RequireAuth(db))
 
 	router.GET("/:questionID", services.GetQuestionByID(db))
 	router.PUT("/:questionID", services.UpdateQuestion(db))

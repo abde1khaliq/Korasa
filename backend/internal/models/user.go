@@ -7,7 +7,9 @@ type User struct {
 	Username               string    `gorm:"unique;not null;size:32" validate:"required,min=3,max=32"`
 	Email                  string    `gorm:"unique;not null;size:255" validate:"required,email"`
 	Password               string    `gorm:"not null" validate:"required,min=8" json:"-"`
+	Role                   string    `gorm:"not null;default:'user';size:32" json:"role"`
 	HasCompletedOnboarding bool      `gorm:"not null;default:false" json:"has_completed_onboarding"`
+	LastActiveAt           time.Time `gorm:"not null;default:now()" json:"last_active_at"`
 	CreatedAt              time.Time `gorm:"not null;default:now()"`
 	UpdatedAt              time.Time `gorm:"not null;default:now()"`
 }

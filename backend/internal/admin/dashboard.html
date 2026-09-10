@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Korasa — Admin Console & Database Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            paper: {
+              DEFAULT: '#f8f7f5',
+              card: '#ffffff',
+              muted: '#f2f0ec',
+              dark: '#181716',
+              'card-dark': '#21201e',
+              'muted-dark': '#2b2927',
+            },
+            ink: {
+              DEFAULT: '#22201e',
+              soft: '#5c5752',
+              faint: '#948e87',
+              dark: '#f4f2ee',
+              'soft-dark': '#b0aaa2',
+              'faint-dark': '#736d65',
+            },
+            brand: {
+              DEFAULT: '#994828',
+              hover: '#823c20',
+              light: '#f7ede8',
+              dark: '#e0764e',
+            },
+            rule: {
+              DEFAULT: '#e6e3de',
+              dark: '#383531',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    body { font-family: 'Inter', sans-serif; }
+    .font-serif { font-family: 'Playfair Display', Georgia, serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body 
+  x-data="adminApp()" 
+  x-init="init()" 
+  :class="{ 'dark': darkMode }" 
+  class="h-full bg-paper text-ink dark:bg-paper-dark dark:text-ink-dark transition-colors duration-200 antialiased flex flex-col"
+>
+
+  <!-- Notification Toast -->
+  <div 
+    x-cloak 
+    x-show="toast.show" 
+    x-transition:enter="transition ease-out duration-300 transform"
+    x-transition:enter-start="opacity-0 translate-y-2"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-200 transform"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 translate-y-2"
+    class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium"
+    :class="toast.type === 'error' ? 'bg-red-50 text-red-900 border-red-200 dark:bg-red-950 dark:text-red-200 dark:border-red-800' : 'bg-stone-900 text-white border-stone-800 dark:bg-stone-100 dark:text-stone-900'"
+  >
+    <span x-text="toast.message"></span>
+    <button @click="toast.show = false" class="opacity-60 hover:opacity-100">&times;</button>
+  </div>
+
+  <!-- AUTH SCREEN (Shown if not logged in or not admin) -->
+  <div x-cloak x-show="!authenticated" class="flex-1 flex items-center justify-center p-6 bg-paper dark:bg-paper-dark">
+    <div class="w-full max-w-md bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl shadow-sm p-8">
+      <div class="mb-8 text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand/10 text-brand dark:text-brand-dark mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+        <h1 class="font-serif text-3xl font-bold tracking-tight mb-2">Korasa Admin</h1>
+        <p class="text-ink-soft dark:text-ink-soft-dark text-sm">Sign in with an admin account to access system analytics and data</p>
+      </div>
+
+      <div x-show="loginError" class="mb-5 p-3 rounded-lg bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300 text-sm border border-red-200 dark:border-red-900/50" x-text="loginError"></div>
+
+      <form @submit.prevent="login" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark mb-1.5">Email Address</label>
+          <input 
+            type="email" 
+            x-model="loginForm.email" 
+            required 
+            placeholder="admin@korasa.com" 
+            class="w-full px-3.5 py-2.5 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark focus:outline-none focus:ring-2 focus:ring-brand dark:focus:ring-brand-dark text-sm"
+          >
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark mb-1.5">Password</label>
+          <input 
+            type="password" 
+            x-model="loginForm.password" 
+            required 
+            placeholder="••••••••" 
+            class="w-full px-3.5 py-2.5 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark focus:outline-none focus:ring-2 focus:ring-brand dark:focus:ring-brand-dark text-sm"
+          >
+        </div>
+        <button 
+          type="submit" 
+          :disabled="loginLoading"
+          class="w-full py-2.5 px-4 rounded-lg bg-brand hover:bg-brand-hover text-white font-medium text-sm transition-colors duration-150 flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+        >
+          <svg x-show="loginLoading" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span>Sign In to Admin Console</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD MAIN VIEW -->
+  <div x-cloak x-show="authenticated" class="flex-1 flex flex-col overflow-hidden">
+    
+    <!-- Top Navigation Header -->
+    <header class="h-16 border-b border-rule dark:border-rule-dark bg-paper-card dark:bg-paper-card-dark flex items-center justify-between px-6 shrink-0">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2.5">
+          <span class="font-serif text-2xl font-bold tracking-tight">Korasa</span>
+          <span class="px-2 py-0.5 text-xs font-semibold tracking-wide rounded-md bg-brand/10 text-brand dark:text-brand-dark border border-brand/20">ADMIN</span>
+        </div>
+        <nav class="flex items-center gap-1">
+          <button 
+            @click="currentTab = 'analytics'" 
+            :class="currentTab === 'analytics' ? 'bg-paper-muted dark:bg-paper-muted-dark text-brand dark:text-brand-dark font-medium' : 'text-ink-soft dark:text-ink-soft-dark hover:text-ink dark:hover:text-ink-dark'"
+            class="px-3.5 py-1.5 rounded-lg text-sm transition-colors"
+          >
+            Analytics & Pulse
+          </button>
+          <button 
+            @click="currentTab = 'users'; loadUsers()" 
+            :class="currentTab === 'users' ? 'bg-paper-muted dark:bg-paper-muted-dark text-brand dark:text-brand-dark font-medium' : 'text-ink-soft dark:text-ink-soft-dark hover:text-ink dark:hover:text-ink-dark'"
+            class="px-3.5 py-1.5 rounded-lg text-sm transition-colors"
+          >
+            Users Management
+          </button>
+          <button 
+            @click="currentTab = 'tables'; loadTablesList()" 
+            :class="currentTab === 'tables' ? 'bg-paper-muted dark:bg-paper-muted-dark text-brand dark:text-brand-dark font-medium' : 'text-ink-soft dark:text-ink-soft-dark hover:text-ink dark:hover:text-ink-dark'"
+            class="px-3.5 py-1.5 rounded-lg text-sm transition-colors"
+          >
+            Database Explorer
+          </button>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Refresh button -->
+        <button 
+          @click="refreshCurrentTab()" 
+          title="Refresh Data"
+          class="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-ink dark:hover:text-ink-dark hover:bg-paper dark:hover:bg-paper-dark rounded-lg transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+
+        <!-- Theme Toggle -->
+        <button 
+          @click="toggleTheme()" 
+          class="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-ink dark:hover:text-ink-dark hover:bg-paper dark:hover:bg-paper-dark rounded-lg transition-colors"
+          title="Toggle Color Theme"
+        >
+          <svg x-show="!darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.03 9.03 0 008.354-5.646z"/>
+          </svg>
+          <svg x-show="darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </button>
+
+        <!-- Current User Pill -->
+        <div class="flex items-center gap-2 pl-3 border-l border-rule dark:border-rule-dark">
+          <div class="w-8 h-8 rounded-full bg-brand/10 text-brand dark:text-brand-dark flex items-center justify-center font-bold text-xs">
+            <span x-text="currentUser?.username ? currentUser.username.charAt(0).toUpperCase() : 'A'"></span>
+          </div>
+          <div class="text-xs">
+            <p class="font-medium" x-text="currentUser?.username || 'Admin'"></p>
+            <p class="text-ink-faint dark:text-ink-faint-dark" x-text="currentUser?.email || ''"></p>
+          </div>
+          <button 
+            @click="logout()" 
+            class="ml-2 text-xs text-ink-soft dark:text-ink-soft-dark hover:text-red-600 transition-colors p-1" 
+            title="Sign Out"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- TAB 1: ANALYTICS & STATS -->
+    <main x-show="currentTab === 'analytics'" class="flex-1 overflow-y-auto p-8 space-y-8 max-w-7xl mx-auto w-full">
+      <div>
+        <h2 class="font-serif text-3xl font-bold">Platform Pulse</h2>
+        <p class="text-ink-soft dark:text-ink-soft-dark text-sm mt-1">Live metrics, active user trends, and database scale overview</p>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        <!-- Total Users -->
+        <div class="bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark">Total Users</span>
+            <span class="p-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-ink dark:text-ink-dark">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+            </span>
+          </div>
+          <p class="text-3xl font-bold font-serif mt-3" x-text="stats.total_users ?? 0"></p>
+          <span class="text-xs text-ink-faint dark:text-ink-faint-dark mt-1 block">Registered learner accounts</span>
+        </div>
+
+        <!-- DAU -->
+        <div class="bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark">Daily Active (DAU)</span>
+            <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+            </span>
+          </div>
+          <p class="text-3xl font-bold font-serif mt-3 text-emerald-600 dark:text-emerald-400" x-text="stats.dau ?? 0"></p>
+          <span class="text-xs text-ink-faint dark:text-ink-faint-dark mt-1 block">Active in past 24 hours</span>
+        </div>
+
+        <!-- MAU -->
+        <div class="bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark">Monthly Active (MAU)</span>
+            <span class="p-2 rounded-xl bg-brand/10 text-brand dark:text-brand-dark">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </span>
+          </div>
+          <p class="text-3xl font-bold font-serif mt-3 text-brand dark:text-brand-dark" x-text="stats.mau ?? 0"></p>
+          <span class="text-xs text-ink-faint dark:text-ink-faint-dark mt-1 block">Active in past 30 days</span>
+        </div>
+
+        <!-- Engagement Ratio -->
+        <div class="bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark">Stickiness (DAU/MAU)</span>
+            <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </span>
+          </div>
+          <p class="text-3xl font-bold font-serif mt-3 text-amber-600 dark:text-amber-400" x-text="stats.mau > 0 ? Math.round((stats.dau / stats.mau) * 100) + '%' : '0%'"></p>
+          <span class="text-xs text-ink-faint dark:text-ink-faint-dark mt-1 block">Daily return rate</span>
+        </div>
+
+      </div>
+
+      <!-- Activity Timeline & Entity Counts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Activity Chart (14-day) -->
+        <div class="lg:col-span-2 bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-sm">
+          <h3 class="font-serif text-lg font-bold mb-1">Active Users (Last 14 Days)</h3>
+          <p class="text-xs text-ink-faint dark:text-ink-faint-dark mb-6">Daily counts based on tracked user activity timestamps</p>
+          
+          <div class="h-48 flex items-end gap-3 pt-6 border-b border-rule dark:border-rule-dark">
+            <template x-for="item in stats.daily_stats || []" :key="item.date">
+              <div class="flex-1 flex flex-col items-center gap-2 group relative">
+                <!-- Tooltip -->
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8 px-2 py-1 rounded bg-stone-900 text-white text-[10px] font-mono whitespace-nowrap pointer-events-none z-10">
+                  <span x-text="item.count + ' active on ' + item.date"></span>
+                </div>
+                <!-- Bar -->
+                <div 
+                  class="w-full bg-brand/80 dark:bg-brand-dark/80 rounded-t group-hover:bg-brand transition-colors"
+                  :style="'height: ' + Math.max((item.count / getMaxDailyCount()) * 100, 8) + '%'"
+                ></div>
+                <!-- Date label -->
+                <span class="text-[10px] font-mono text-ink-faint dark:text-ink-faint-dark truncate max-w-full" x-text="item.date.slice(5)"></span>
+              </div>
+            </template>
+            <div x-show="!stats.daily_stats || stats.daily_stats.length === 0" class="w-full h-full flex items-center justify-center text-xs text-ink-faint dark:text-ink-faint-dark">
+              No daily activity records logged yet
+            </div>
+          </div>
+        </div>
+
+        <!-- Entity Scale Overview -->
+        <div class="bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-sm flex flex-col">
+          <h3 class="font-serif text-lg font-bold mb-1">Content Scale</h3>
+          <p class="text-xs text-ink-faint dark:text-ink-faint-dark mb-4">Total entities across database</p>
+          
+          <div class="space-y-3 flex-1 flex flex-col justify-around">
+            <template x-for="(count, entity) in stats.counts || {}" :key="entity">
+              <div class="flex items-center justify-between text-sm py-1.5 border-b border-rule/50 dark:border-rule-dark/50 last:border-0">
+                <span class="capitalize text-ink-soft dark:text-ink-soft-dark" x-text="entity.replace('_', ' ')"></span>
+                <span class="font-mono font-semibold" x-text="count"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Active Users Table -->
+      <div class="bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-sm">
+        <h3 class="font-serif text-lg font-bold mb-4">Recently Active Users</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-rule dark:border-rule-dark text-xs uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark">
+                <th class="py-3 px-4 font-semibold">User</th>
+                <th class="py-3 px-4 font-semibold">Email</th>
+                <th class="py-3 px-4 font-semibold">Role</th>
+                <th class="py-3 px-4 font-semibold">Last Active</th>
+                <th class="py-3 px-4 font-semibold">Registered</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rule/50 dark:divide-rule-dark/50">
+              <template x-for="u in stats.recent_users || []" :key="u.id">
+                <tr class="hover:bg-paper-muted dark:hover:bg-paper-muted-dark transition-colors">
+                  <td class="py-3 px-4 font-medium flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-brand/10 text-brand dark:text-brand-dark flex items-center justify-center text-xs font-bold" x-text="u.username.charAt(0).toUpperCase()"></span>
+                    <span x-text="u.username"></span>
+                  </td>
+                  <td class="py-3 px-4 text-ink-soft dark:text-ink-soft-dark font-mono text-xs" x-text="u.email"></td>
+                  <td class="py-3 px-4">
+                    <span 
+                      class="px-2 py-0.5 text-xs font-semibold rounded-full"
+                      :class="u.role === 'admin' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300'"
+                      x-text="u.role"
+                    ></span>
+                  </td>
+                  <td class="py-3 px-4 text-xs font-mono text-ink-soft dark:text-ink-soft-dark" x-text="formatDate(u.last_active_at)"></td>
+                  <td class="py-3 px-4 text-xs font-mono text-ink-faint dark:text-ink-faint-dark" x-text="formatDate(u.created_at)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- TAB 2: USERS MANAGEMENT (CRUD) -->
+    <main x-show="currentTab === 'users'" class="flex-1 overflow-y-auto p-8 space-y-6 max-w-7xl mx-auto w-full">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="font-serif text-3xl font-bold">User Management</h2>
+          <p class="text-ink-soft dark:text-ink-soft-dark text-sm mt-1">Full control over learner accounts, roles, access, and credentials</p>
+        </div>
+        <button 
+          @click="openUserModal('create')" 
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-sm font-medium transition-colors shadow-sm self-start sm:self-auto"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span>Create New User</span>
+        </button>
+      </div>
+
+      <!-- Users Filter / Search -->
+      <div class="bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-4 shadow-sm flex flex-wrap gap-4 items-center justify-between">
+        <div class="flex items-center gap-3 flex-1 min-w-[260px]">
+          <input 
+            type="text" 
+            x-model="userSearch" 
+            placeholder="Search by username or email..." 
+            class="w-full px-3.5 py-2 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          >
+        </div>
+        <div class="flex items-center gap-3">
+          <select 
+            x-model="userRoleFilter" 
+            class="px-3.5 py-2 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          >
+            <option value="">All Roles</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+          <span class="text-xs text-ink-faint dark:text-ink-faint-dark" x-text="filteredUsers().length + ' user(s)'"></span>
+        </div>
+      </div>
+
+      <!-- Users Table -->
+      <div class="bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-rule dark:border-rule-dark text-xs uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark bg-paper-muted/50 dark:bg-paper-muted-dark/50">
+                <th class="py-3 px-4 font-semibold">ID</th>
+                <th class="py-3 px-4 font-semibold">User</th>
+                <th class="py-3 px-4 font-semibold">Email</th>
+                <th class="py-3 px-4 font-semibold">Role</th>
+                <th class="py-3 px-4 font-semibold">Last Active</th>
+                <th class="py-3 px-4 font-semibold">Registered</th>
+                <th class="py-3 px-4 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rule/50 dark:divide-rule-dark/50">
+              <template x-for="u in filteredUsers()" :key="u.id">
+                <tr class="hover:bg-paper-muted dark:hover:bg-paper-muted-dark transition-colors">
+                  <td class="py-3.5 px-4 font-mono text-xs text-ink-faint dark:text-ink-faint-dark" x-text="u.id"></td>
+                  <td class="py-3.5 px-4 font-medium flex items-center gap-2">
+                    <span class="w-7 h-7 rounded-full bg-brand/10 text-brand dark:text-brand-dark flex items-center justify-center text-xs font-bold" x-text="u.username.charAt(0).toUpperCase()"></span>
+                    <span x-text="u.username"></span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-xs text-ink-soft dark:text-ink-soft-dark" x-text="u.email"></td>
+                  <td class="py-3.5 px-4">
+                    <span 
+                      class="px-2.5 py-0.5 text-xs font-semibold rounded-full capitalize"
+                      :class="u.role === 'admin' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300'"
+                      x-text="u.role || 'user'"
+                    ></span>
+                  </td>
+                  <td class="py-3.5 px-4 text-xs font-mono text-ink-soft dark:text-ink-soft-dark" x-text="formatDate(u.last_active_at)"></td>
+                  <td class="py-3.5 px-4 text-xs font-mono text-ink-faint dark:text-ink-faint-dark" x-text="formatDate(u.created_at)"></td>
+                  <td class="py-3.5 px-4 text-right space-x-2">
+                    <button 
+                      @click="openUserModal('edit', u)" 
+                      class="px-2.5 py-1 rounded text-xs font-medium text-brand dark:text-brand-dark hover:bg-brand/10 transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      @click="confirmDeleteUser(u)" 
+                      class="px-2.5 py-1 rounded text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="filteredUsers().length === 0">
+                <td colspan="7" class="py-8 text-center text-xs text-ink-faint dark:text-ink-faint-dark">
+                  No users match the search criteria.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- TAB 3: DATABASE EXPLORER (ALL DB TABLES) -->
+    <main x-show="currentTab === 'tables'" class="flex-1 flex overflow-hidden">
+      
+      <!-- Tables Sidebar -->
+      <aside class="w-64 border-r border-rule dark:border-rule-dark bg-paper-card dark:bg-paper-card-dark flex flex-col shrink-0">
+        <div class="p-4 border-b border-rule dark:border-rule-dark">
+          <h3 class="font-serif font-bold text-sm uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark">All Tables</h3>
+          <p class="text-xs text-ink-faint dark:text-ink-faint-dark mt-0.5">Database schema introspection</p>
+        </div>
+        <div class="flex-1 overflow-y-auto p-2 space-y-1">
+          <template x-for="t in tablesList" :key="t.name">
+            <button 
+              @click="selectTable(t.name)"
+              :class="selectedTable === t.name ? 'bg-brand/10 text-brand dark:text-brand-dark font-medium' : 'text-ink-soft dark:text-ink-soft-dark hover:bg-paper-muted dark:hover:bg-paper-muted-dark'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-colors"
+            >
+              <div class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                </svg>
+                <span class="font-mono" x-text="t.name"></span>
+              </div>
+              <span class="px-1.5 py-0.5 rounded bg-paper-muted dark:bg-paper-muted-dark font-mono text-[10px]" x-text="t.row_count"></span>
+            </button>
+          </template>
+        </div>
+      </aside>
+
+      <!-- Table Content Area -->
+      <section class="flex-1 flex flex-col overflow-hidden p-6 space-y-4">
+        <div class="flex items-center justify-between shrink-0">
+          <div>
+            <div class="flex items-center gap-3">
+              <h2 class="font-serif text-2xl font-bold capitalize" x-text="selectedTable || 'Select Table'"></h2>
+              <span class="px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-xs font-mono text-ink-soft dark:text-ink-soft-dark" x-text="tableTotal + ' rows'"></span>
+            </div>
+            <p class="text-xs text-ink-soft dark:text-ink-soft-dark mt-0.5">Read, insert, update, or remove records from this table directly</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button 
+              @click="openRowModal('create')" 
+              class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-brand hover:bg-brand-hover text-white text-xs font-medium transition-colors"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              <span>Add Record</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Data Grid -->
+        <div class="flex-1 bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl shadow-sm overflow-hidden flex flex-col">
+          <div class="flex-1 overflow-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="sticky top-0 bg-paper-muted/90 dark:bg-paper-muted-dark/90 backdrop-blur border-b border-rule dark:border-rule-dark z-10">
+                <tr>
+                  <th class="py-2.5 px-3 font-semibold text-ink-soft dark:text-ink-soft-dark">Actions</th>
+                  <template x-for="col in tableSchema" :key="col.column_name">
+                    <th class="py-2.5 px-3 font-semibold font-mono text-ink-soft dark:text-ink-soft-dark whitespace-nowrap">
+                      <span x-text="col.column_name"></span>
+                      <span class="text-[9px] font-normal opacity-50 block" x-text="col.data_type"></span>
+                    </th>
+                  </template>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-rule/40 dark:divide-rule-dark/40 font-mono text-[11px]">
+                <template x-for="row in tableData" :key="row.id || JSON.stringify(row)">
+                  <tr class="hover:bg-paper-muted dark:hover:bg-paper-muted-dark transition-colors">
+                    <td class="py-2 px-3 whitespace-nowrap font-sans text-xs">
+                      <div class="flex items-center gap-1.5">
+                        <button @click="openRowModal('edit', row)" class="text-brand dark:text-brand-dark hover:underline">Edit</button>
+                        <span class="opacity-30">|</span>
+                        <button @click="confirmDeleteRow(row)" class="text-red-600 hover:underline">Delete</button>
+                      </div>
+                    </td>
+                    <template x-for="col in tableSchema" :key="col.column_name">
+                      <td class="py-2 px-3 max-w-xs truncate" :title="formatCellValue(row[col.column_name])">
+                        <span x-text="formatCellValue(row[col.column_name])"></span>
+                      </td>
+                    </template>
+                  </tr>
+                </template>
+                <tr x-show="tableData.length === 0">
+                  <td :colspan="tableSchema.length + 1" class="py-12 text-center text-ink-faint dark:text-ink-faint-dark font-sans text-xs">
+                    No rows found in table
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="h-12 border-t border-rule dark:border-rule-dark px-4 flex items-center justify-between text-xs shrink-0">
+            <span class="text-ink-faint dark:text-ink-faint-dark" x-text="'Showing page ' + tablePage + ' of ' + Math.ceil(tableTotal / tableLimit || 1)"></span>
+            <div class="flex items-center gap-2">
+              <button 
+                @click="changeTablePage(tablePage - 1)" 
+                :disabled="tablePage <= 1" 
+                class="px-2.5 py-1 rounded border border-rule dark:border-rule-dark disabled:opacity-30"
+              >
+                Prev
+              </button>
+              <button 
+                @click="changeTablePage(tablePage + 1)" 
+                :disabled="tablePage * tableLimit >= tableTotal" 
+                class="px-2.5 py-1 rounded border border-rule dark:border-rule-dark disabled:opacity-30"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- USER CREATE/EDIT MODAL -->
+  <div x-cloak x-show="userModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="w-full max-w-md bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-rule dark:border-rule-dark pb-3">
+        <h3 class="font-serif text-xl font-bold" x-text="userModal.mode === 'create' ? 'Create User' : 'Edit User'"></h3>
+        <button @click="userModal.show = false" class="text-ink-faint hover:text-ink dark:hover:text-ink-dark">&times;</button>
+      </div>
+
+      <div x-show="userModal.error" class="p-2.5 rounded bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300 text-xs border border-red-200 dark:border-red-900" x-text="userModal.error"></div>
+
+      <form @submit.prevent="saveUser" class="space-y-3.5 text-sm">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark mb-1">Username</label>
+          <input 
+            type="text" 
+            x-model="userModal.form.username" 
+            required 
+            class="w-full px-3 py-2 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark mb-1">Email</label>
+          <input 
+            type="email" 
+            x-model="userModal.form.email" 
+            required 
+            class="w-full px-3 py-2 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark mb-1">Role</label>
+          <select 
+            x-model="userModal.form.role" 
+            class="w-full px-3 py-2 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          >
+            <option value="user">User (Standard)</option>
+            <option value="admin">Admin (Full Access)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark mb-1">
+            Password <span x-show="userModal.mode === 'edit'" class="font-normal lowercase opacity-70">(leave blank to keep current)</span>
+          </label>
+          <input 
+            type="password" 
+            x-model="userModal.form.password" 
+            :required="userModal.mode === 'create'" 
+            placeholder="Min 8 characters" 
+            class="w-full px-3 py-2 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          >
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-rule dark:border-rule-dark">
+          <button 
+            type="button" 
+            @click="userModal.show = false" 
+            class="px-4 py-2 rounded-lg border border-rule dark:border-rule-dark text-xs font-medium hover:bg-paper dark:hover:bg-paper-dark"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            :disabled="userModal.loading" 
+            class="px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover text-white text-xs font-medium disabled:opacity-50"
+          >
+            Save User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DYNAMIC ROW CREATE/EDIT MODAL -->
+  <div x-cloak x-show="rowModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="w-full max-w-lg bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-rule dark:border-rule-dark pb-3 shrink-0">
+        <h3 class="font-serif text-xl font-bold capitalize">
+          <span x-text="rowModal.mode === 'create' ? 'Add Record to ' : 'Edit Record in '"></span>
+          <span class="font-mono text-brand dark:text-brand-dark" x-text="selectedTable"></span>
+        </h3>
+        <button @click="rowModal.show = false" class="text-ink-faint hover:text-ink dark:hover:text-ink-dark">&times;</button>
+      </div>
+
+      <div x-show="rowModal.error" class="p-2.5 rounded bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300 text-xs border border-red-200 dark:border-red-900 shrink-0" x-text="rowModal.error"></div>
+
+      <form @submit.prevent="saveRow" class="space-y-3 flex-1 overflow-y-auto pr-1 text-xs">
+        <template x-for="col in tableSchema" :key="col.column_name">
+          <div x-show="col.column_name !== 'id' || rowModal.mode === 'edit'">
+            <label class="block font-mono font-medium text-ink-soft dark:text-ink-soft-dark mb-1">
+              <span x-text="col.column_name"></span>
+              <span class="text-[9px] opacity-60 font-sans" x-text="' (' + col.data_type + (col.is_nullable === 'NO' ? ', required' : '') + ')'"></span>
+            </label>
+            <input 
+              :disabled="col.column_name === 'id'" 
+              type="text" 
+              x-model="rowModal.form[col.column_name]" 
+              class="w-full px-3 py-2 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark font-mono text-xs focus:outline-none focus:ring-2 focus:ring-brand disabled:opacity-50"
+            >
+          </div>
+        </template>
+      </form>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-rule dark:border-rule-dark shrink-0">
+        <button 
+          type="button" 
+          @click="rowModal.show = false" 
+          class="px-4 py-2 rounded-lg border border-rule dark:border-rule-dark text-xs font-medium hover:bg-paper dark:hover:bg-paper-dark"
+        >
+          Cancel
+        </button>
+        <button 
+          type="button" 
+          @click="saveRow()" 
+          :disabled="rowModal.loading" 
+          class="px-4 py-2 rounded-lg bg-brand hover:bg-brand-hover text-white text-xs font-medium disabled:opacity-50"
+        >
+          Save Record
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM DELETE MODAL -->
+  <div x-cloak x-show="deleteModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="w-full max-w-sm bg-paper-card dark:bg-paper-card-dark border border-rule dark:border-rule-dark rounded-2xl p-6 shadow-xl space-y-4">
+      <h3 class="font-serif text-lg font-bold text-red-600" x-text="deleteModal.title"></h3>
+      <p class="text-xs text-ink-soft dark:text-ink-soft-dark" x-text="deleteModal.message"></p>
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button 
+          @click="deleteModal.show = false" 
+          class="px-3.5 py-1.5 rounded-lg border border-rule dark:border-rule-dark text-xs font-medium"
+        >
+          Cancel
+        </button>
+        <button 
+          @click="deleteModal.confirm()" 
+          class="px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-medium"
+        >
+          Confirm Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function adminApp() {
+      return {
+        darkMode: localStorage.getItem('korasa_theme') === 'dark',
+        authenticated: false,
+        token: localStorage.getItem('korasa_admin_token') || '',
+        currentUser: JSON.parse(localStorage.getItem('korasa_admin_user') || 'null'),
+        
+        loginLoading: false,
+        loginError: '',
+        loginForm: { email: '', password: '' },
+
+        currentTab: 'analytics',
+        stats: { total_users: 0, dau: 0, mau: 0, counts: {}, recent_users: [], daily_stats: [] },
+
+        // Users Tab state
+        usersList: [],
+        userSearch: '',
+        userRoleFilter: '',
+        userModal: { show: false, mode: 'create', form: { id: null, username: '', email: '', password: '', role: 'user' }, error: '', loading: false },
+
+        // Database Explorer Tab state
+        tablesList: [],
+        selectedTable: '',
+        tableSchema: [],
+        tableData: [],
+        tableTotal: 0,
+        tablePage: 1,
+        tableLimit: 50,
+        rowModal: { show: false, mode: 'create', form: {}, error: '', loading: false },
+
+        // Common delete modal
+        deleteModal: { show: false, title: '', message: '', confirm: () => {} },
+
+        // Toast
+        toast: { show: false, message: '', type: 'info' },
+
+        showToast(msg, type = 'info') {
+          this.toast = { show: true, message: msg, type: type };
+          setTimeout(() => { this.toast.show = false; }, 3500);
+        },
+
+        toggleTheme() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('korasa_theme', this.darkMode ? 'dark' : 'light');
+        },
+
+        async init() {
+          if (this.token) {
+            this.authenticated = true;
+            await this.loadStats();
+          }
+        },
+
+        async apiFetch(url, options = {}) {
+          options.headers = options.headers || {};
+          if (this.token) {
+            options.headers['Authorization'] = 'Bearer ' + this.token;
+          }
+          if (options.body && typeof options.body === 'object') {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(options.body);
+          }
+
+          const res = await fetch(url, options);
+          if (res.status === 401 || res.status === 403) {
+            this.authenticated = false;
+            this.token = '';
+            localStorage.removeItem('korasa_admin_token');
+            localStorage.removeItem('korasa_admin_user');
+            this.loginError = res.status === 403 ? 'Access Forbidden: Admin privileges required.' : 'Session expired. Please log in again.';
+            throw new Error('Unauthorized');
+          }
+          return res;
+        },
+
+        async login() {
+          this.loginLoading = true;
+          this.loginError = '';
+          try {
+            const res = await fetch('/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.loginForm)
+            });
+            const data = await res.json();
+            if (!res.ok) {
+              this.loginError = data.error || 'Failed to sign in';
+              return;
+            }
+
+            this.token = data.accessToken;
+            this.currentUser = data.user;
+
+            // Verify admin access by attempting to fetch admin stats
+            const verifyRes = await fetch('/api/admin/stats', {
+              headers: { 'Authorization': 'Bearer ' + this.token }
+            });
+
+            if (verifyRes.status === 403) {
+              this.loginError = 'Access Denied: This account does not possess admin rights.';
+              this.token = '';
+              return;
+            }
+
+            if (!verifyRes.ok) {
+              this.loginError = 'Failed to verify admin status.';
+              this.token = '';
+              return;
+            }
+
+            localStorage.setItem('korasa_admin_token', this.token);
+            localStorage.setItem('korasa_admin_user', JSON.stringify(this.currentUser));
+            this.authenticated = true;
+            this.showToast('Signed in successfully', 'success');
+            await this.loadStats();
+          } catch (e) {
+            this.loginError = e.message || 'An error occurred';
+          } finally {
+            this.loginLoading = false;
+          }
+        },
+
+        logout() {
+          this.token = '';
+          this.currentUser = null;
+          this.authenticated = false;
+          localStorage.removeItem('korasa_admin_token');
+          localStorage.removeItem('korasa_admin_user');
+        },
+
+        async refreshCurrentTab() {
+          if (this.currentTab === 'analytics') await this.loadStats();
+          else if (this.currentTab === 'users') await this.loadUsers();
+          else if (this.currentTab === 'tables') await this.loadTableData();
+          this.showToast('Data refreshed', 'info');
+        },
+
+        async loadStats() {
+          try {
+            const res = await this.apiFetch('/api/admin/stats');
+            this.stats = await res.json();
+          } catch (e) {
+            console.error(e);
+          }
+        },
+
+        getMaxDailyCount() {
+          if (!this.stats.daily_stats || this.stats.daily_stats.length === 0) return 1;
+          return Math.max(...this.stats.daily_stats.map(d => d.count), 1);
+        },
+
+        // --- USERS MANAGEMENT ---
+        async loadUsers() {
+          try {
+            const res = await this.apiFetch('/api/admin/tables/users?limit=200');
+            const data = await res.json();
+            this.usersList = data.data || [];
+          } catch (e) {
+            console.error(e);
+          }
+        },
+
+        filteredUsers() {
+          return this.usersList.filter(u => {
+            const matchesSearch = !this.userSearch || 
+              (u.username && u.username.toLowerCase().includes(this.userSearch.toLowerCase())) ||
+              (u.email && u.email.toLowerCase().includes(this.userSearch.toLowerCase()));
+            const matchesRole = !this.userRoleFilter || u.role === this.userRoleFilter;
+            return matchesSearch && matchesRole;
+          });
+        },
+
+        openUserModal(mode, user = null) {
+          this.userModal.mode = mode;
+          this.userModal.error = '';
+          this.userModal.loading = false;
+          if (mode === 'create') {
+            this.userModal.form = { id: null, username: '', email: '', password: '', role: 'user' };
+          } else {
+            this.userModal.form = { 
+              id: user.id, 
+              username: user.username, 
+              email: user.email, 
+              password: '', 
+              role: user.role || 'user' 
+            };
+          }
+          this.userModal.show = true;
+        },
+
+        async saveUser() {
+          this.userModal.loading = true;
+          this.userModal.error = '';
+          try {
+            const payload = {
+              username: this.userModal.form.username,
+              email: this.userModal.form.email,
+              role: this.userModal.form.role,
+            };
+            if (this.userModal.form.password) {
+              payload.password = this.userModal.form.password;
+            }
+
+            let res;
+            if (this.userModal.mode === 'create') {
+              res = await this.apiFetch('/api/admin/tables/users', {
+                method: 'POST',
+                body: payload
+              });
+            } else {
+              res = await this.apiFetch('/api/admin/tables/users/' + this.userModal.form.id, {
+                method: 'PUT',
+                body: payload
+              });
+            }
+
+            const data = await res.json();
+            if (!res.ok) {
+              this.userModal.error = data.error || 'Failed to save user';
+              return;
+            }
+
+            this.userModal.show = false;
+            this.showToast('User saved successfully', 'success');
+            await this.loadUsers();
+            await this.loadStats();
+          } catch (e) {
+            this.userModal.error = e.message;
+          } finally {
+            this.userModal.loading = false;
+          }
+        },
+
+        confirmDeleteUser(user) {
+          this.deleteModal = {
+            show: true,
+            title: 'Delete User account?',
+            message: `Are you sure you want to permanently delete user "${user.username}" (${user.email})? This will cascade-delete their subjects, folders, and exams.`,
+            confirm: async () => {
+              try {
+                const res = await this.apiFetch('/api/admin/tables/users/' + user.id, { method: 'DELETE' });
+                if (res.ok) {
+                  this.deleteModal.show = false;
+                  this.showToast('User deleted', 'success');
+                  await this.loadUsers();
+                  await this.loadStats();
+                } else {
+                  const data = await res.json();
+                  alert(data.error || 'Failed to delete');
+                }
+              } catch (e) {
+                alert(e.message);
+              }
+            }
+          };
+        },
+
+        // --- DATABASE EXPLORER ---
+        async loadTablesList() {
+          try {
+            const res = await this.apiFetch('/api/admin/tables');
+            const data = await res.json();
+            this.tablesList = data.tables || [];
+            if (this.tablesList.length > 0 && !this.selectedTable) {
+              this.selectTable(this.tablesList[0].name);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        },
+
+        async selectTable(name) {
+          this.selectedTable = name;
+          this.tablePage = 1;
+          await this.loadTableSchema();
+          await this.loadTableData();
+        },
+
+        async loadTableSchema() {
+          try {
+            const res = await this.apiFetch(`/api/admin/tables/${this.selectedTable}/schema`);
+            const data = await res.json();
+            this.tableSchema = data.columns || [];
+          } catch (e) {
+            console.error(e);
+          }
+        },
+
+        async loadTableData() {
+          if (!this.selectedTable) return;
+          try {
+            const res = await this.apiFetch(`/api/admin/tables/${this.selectedTable}?page=${this.tablePage}&limit=${this.tableLimit}`);
+            const data = await res.json();
+            this.tableData = data.data || [];
+            this.tableTotal = data.total || 0;
+          } catch (e) {
+            console.error(e);
+          }
+        },
+
+        async changeTablePage(page) {
+          this.tablePage = page;
+          await this.loadTableData();
+        },
+
+        formatCellValue(val) {
+          if (val === null || val === undefined) return 'NULL';
+          if (typeof val === 'object') return JSON.stringify(val);
+          return String(val);
+        },
+
+        openRowModal(mode, row = null) {
+          this.rowModal.mode = mode;
+          this.rowModal.error = '';
+          this.rowModal.form = {};
+          if (mode === 'edit' && row) {
+            this.tableSchema.forEach(c => {
+              this.rowModal.form[c.column_name] = row[c.column_name] !== undefined ? row[c.column_name] : '';
+            });
+          } else {
+            this.tableSchema.forEach(c => {
+              this.rowModal.form[c.column_name] = '';
+            });
+          }
+          this.rowModal.show = true;
+        },
+
+        async saveRow() {
+          this.rowModal.loading = true;
+          this.rowModal.error = '';
+          try {
+            const payload = { ...this.rowModal.form };
+            // Format types
+            this.tableSchema.forEach(col => {
+              if (col.column_name in payload) {
+                const v = payload[col.column_name];
+                if (v === '' && col.is_nullable === 'YES') {
+                  payload[col.column_name] = null;
+                } else if (col.data_type.includes('int') && v !== null && v !== '') {
+                  payload[col.column_name] = parseInt(v, 10);
+                } else if (col.data_type.includes('bool') && v !== null && v !== '') {
+                  payload[col.column_name] = v === 'true' || v === true;
+                }
+              }
+            });
+
+            let res;
+            if (this.rowModal.mode === 'create') {
+              res = await this.apiFetch(`/api/admin/tables/${this.selectedTable}`, {
+                method: 'POST',
+                body: payload
+              });
+            } else {
+              const id = this.rowModal.form.id;
+              res = await this.apiFetch(`/api/admin/tables/${this.selectedTable}/${id}`, {
+                method: 'PUT',
+                body: payload
+              });
+            }
+
+            const data = await res.json();
+            if (!res.ok) {
+              this.rowModal.error = data.error || 'Failed to save record';
+              return;
+            }
+
+            this.rowModal.show = false;
+            this.showToast('Record saved', 'success');
+            await this.loadTableData();
+            await this.loadTablesList();
+          } catch (e) {
+            this.rowModal.error = e.message;
+          } finally {
+            this.rowModal.loading = false;
+          }
+        },
+
+        confirmDeleteRow(row) {
+          const id = row.id;
+          if (!id) {
+            alert('Cannot delete row without an "id" primary key');
+            return;
+          }
+
+          this.deleteModal = {
+            show: true,
+            title: `Delete record from ${this.selectedTable}?`,
+            message: `Are you sure you want to delete record with ID #${id}?`,
+            confirm: async () => {
+              try {
+                const res = await this.apiFetch(`/api/admin/tables/${this.selectedTable}/${id}`, {
+                  method: 'DELETE'
+                });
+                if (res.ok) {
+                  this.deleteModal.show = false;
+                  this.showToast('Record deleted', 'success');
+                  await this.loadTableData();
+                  await this.loadTablesList();
+                } else {
+                  const data = await res.json();
+                  alert(data.error || 'Failed to delete');
+                }
+              } catch (e) {
+                alert(e.message);
+              }
+            }
+          };
+        },
+
+        formatDate(d) {
+          if (!d) return 'Never';
+          const date = new Date(d);
+          if (isNaN(date.getTime())) return d;
+          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+      }
+    }
+  </script>
+</body>
+</html>

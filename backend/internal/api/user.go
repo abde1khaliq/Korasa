@@ -10,7 +10,6 @@ import (
 )
 
 func UserRouters(router *gin.RouterGroup, db *gorm.DB) {
-	// Sensitive auth endpoints rate limited to 20 requests per minute per IP
 	authRateLimit := middleware.RateLimit(20, time.Minute)
 
 	router.POST("/register", authRateLimit, services.RegisterUser(db))
@@ -22,5 +21,5 @@ func UserRouters(router *gin.RouterGroup, db *gorm.DB) {
 	router.POST("/verify-reset-code", authRateLimit, services.VerifyResetCode())
 	router.POST("/reset-password", authRateLimit, services.ResetPassword(db))
 	router.POST("/resend-reset-code", authRateLimit, services.ResendPasswordResetCode(db))
-	router.PATCH("/onboarding-complete", middleware.RequireAuth(), services.CompleteOnboarding(db))
+	router.PATCH("/onboarding-complete", middleware.RequireAuth(db), services.CompleteOnboarding(db))
 }

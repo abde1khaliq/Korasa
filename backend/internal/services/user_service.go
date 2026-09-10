@@ -250,6 +250,10 @@ func LoginUser(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		go func(uid int) {
+			db.Model(&models.User{}).Where("id = ?", uid).Update("last_active_at", time.Now())
+		}(user.ID)
+
 		c.JSON(http.StatusOK, gin.H{
 			"accessToken":  accessToken,
 			"refreshToken": refreshToken,
@@ -257,6 +261,7 @@ func LoginUser(db *gorm.DB) gin.HandlerFunc {
 				"id":                       user.ID,
 				"email":                    user.Email,
 				"username":                 user.Username,
+				"role":                     user.Role,
 				"has_completed_onboarding": user.HasCompletedOnboarding,
 			},
 		})

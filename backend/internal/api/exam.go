@@ -8,7 +8,7 @@ import (
 )
 
 func ExamRoutes(router *gin.RouterGroup, db *gorm.DB) {
-	router.Use(middleware.RequireAuth())
+	router.Use(middleware.RequireAuth(db))
 
 	router.POST("/", services.CreateExam(db))
 	router.GET("/", services.ListExams(db))
