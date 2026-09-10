@@ -1,16 +1,5 @@
 # Security Policy
 
-## Supported Versions
-
-We actively maintain and provide security updates for the following versions:
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.x     | :white_check_mark: |
-| < 1.0   | :x:                |
-
----
-
 ## Reporting a Vulnerability
 
 We take the security of Korasa seriously. If you discover a security vulnerability, please **do not open a public GitHub issue**.
