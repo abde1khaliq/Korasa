@@ -127,7 +127,7 @@ export function ExamAttemptRunner({ examId }: { examId: string }) {
         setPhase("error");
       }
     },
-    [session?.accessToken, examId],
+    [session, examId],
   );
 
   // Timer countdown

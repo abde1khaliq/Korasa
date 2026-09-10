@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Playfair_Display, JetBrains_Mono, Inter } from "next/font/google";
+import { Geist, Playfair_Display, JetBrains_Mono, Inter, Noto_Kufi_Arabic } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "./providers";
 import { SITE_CONFIG } from "@/lib/seo";
@@ -29,6 +29,13 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
+});
+
+const notoKufi = Noto_Kufi_Arabic({
+  variable: "--font-kufi",
+  subsets: ["arabic"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -111,7 +118,7 @@ export default function RootLayout({
     <html
       suppressHydrationWarning
       lang="en"
-      className={`${geistSans.variable} ${playfair.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased font-sans`}
+      className={`${geistSans.variable} ${playfair.variable} ${jetbrainsMono.variable} ${inter.variable} ${notoKufi.variable} h-full antialiased font-sans`}
     >
       <body className="min-h-full flex flex-col bg-paper text-ink selection:bg-brand/20 selection:text-ink">
         <SiteJsonLd />
