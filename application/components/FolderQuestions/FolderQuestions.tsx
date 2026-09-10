@@ -139,6 +139,7 @@ function QuestionGridCard({
               source={{ uri: question.image_url }}
               style={{ width: "100%", height: "100%" }}
               resizeMode="cover"
+              accessibilityLabel={`Preview of question: ${question.title || "question"}`}
             />
           </View>
         </View>

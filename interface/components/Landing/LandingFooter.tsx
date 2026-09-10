@@ -14,11 +14,11 @@ export function LandingFooter() {
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
           {/* Brand column */}
-          <div className="md:col-span-2">
+          <div>
             <span className="font-display text-2xl font-medium tracking-tight text-ink">
               {locale === "ar" ? "كراسة" : "Korasa"}
             </span>
-            <p className="mt-3 max-w-sm text-[14px] leading-relaxed text-ink-soft">
+            <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">
               {t("footer.brandTagline")}
             </p>
           </div>
@@ -57,11 +57,6 @@ export function LandingFooter() {
             </p>
             <ul className="mt-3 space-y-2 text-[14px] text-ink-soft">
               <li>
-                <Link href="/login" className="transition-colors hover:text-ink">
-                  {t("footer.signIn")}
-                </Link>
-              </li>
-              <li>
                 <Link
                   href="/register"
                   className="transition-colors hover:text-ink"
@@ -73,6 +68,39 @@ export function LandingFooter() {
                 <a href="#faq" className="transition-colors hover:text-ink">
                   {t("footer.faq")}
                 </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal links */}
+          <div>
+            <p className="font-mono text-[11px] font-semibold tracking-wider text-ink uppercase">
+              {t("footer.navLegal")}
+            </p>
+            <ul className="mt-3 space-y-2 text-[14px] text-ink-soft">
+              <li>
+                <Link
+                  href="/privacy"
+                  className="transition-colors hover:text-ink"
+                >
+                  {t("footer.privacy")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms"
+                  className="transition-colors hover:text-ink"
+                >
+                  {t("footer.terms")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/cookies"
+                  className="transition-colors hover:text-ink"
+                >
+                  {t("footer.cookies")}
+                </Link>
               </li>
             </ul>
           </div>

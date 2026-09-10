@@ -13,9 +13,9 @@ export const translations = {
     "header.getApp": "Get Android APK",
 
     // Hero
-    "hero.headline": "The questions worth",
-    "hero.headlineHighlight": "remembering",
-    "hero.headlineSuffix": ", ready for your next exam.",
+    "hero.headline": "You'll never forget",
+    "hero.headlineHighlight": "the way to solve the question again,",
+    "hero.headlineSuffix": ", with Korasa.",
     "hero.subtitle":
       "Snap or type tricky questions you encounter while studying, organize them by subject and folder, then generate custom practice exams from your own question bank.",
     "hero.ctaPrimary": "Open Korasa in your browser",
@@ -70,6 +70,12 @@ export const translations = {
       "After finishing an exam simulation, you can see your score, review the questions you missed, and re-read the solving approach notes you wrote when you first encountered the problem. This targeted review loop turns past mistakes into lasting comprehension.",
     "faq.supportPrompt": "Need more help or have a feature suggestion? Reach out at",
 
+    // Cookie Consent
+    "cookie.message":
+      "We use essential cookies to keep you signed in securely. No tracking cookies are used.",
+    "cookie.learnMore": "Learn more",
+    "cookie.accept": "Got it",
+
     // Footer
     "footer.brandTagline":
       "The quiet study companion and exam generator built for focused students.",
@@ -77,9 +83,12 @@ export const translations = {
     "footer.howItWorks": "How It Works",
     "footer.androidApp": "Android App",
     "footer.navQuickAccess": "Quick Access",
-    "footer.signIn": "Sign in",
     "footer.createAccount": "Create Account",
     "footer.faq": "FAQ & Support",
+    "footer.navLegal": "Legal",
+    "footer.privacy": "Privacy Policy",
+    "footer.terms": "Terms of Service",
+    "footer.cookies": "Cookie Policy",
     "footer.rights": "All rights reserved.",
   },
   ar: {
@@ -93,9 +102,9 @@ export const translations = {
     "header.getApp": "تحميل تطبيق الأندرويد",
 
     // Hero
-    "hero.headline": "الأسئلة اللي تستاهل",
-    "hero.headlineHighlight": "تفتكرها",
-    "hero.headlineSuffix": "، جاهزة لامتحانك الجاي.",
+    "hero.headline": "عمرك ما هتنسي",
+    "hero.headlineHighlight": "طريقة حل السوال تاني",
+    "hero.headlineSuffix": "مع كراسة.",
     "hero.subtitle":
       "صوّر أو اكتب الأسئلة الصعبة اللي بتقابلك وانت بتذاكر، نظّمها بالمواد والفولدرات، وولّد امتحانات تدريبية مخصصة من بنك أسئلتك في أي وقت.",
     "hero.ctaPrimary": "افتح كراسة في المتصفح",
@@ -150,6 +159,12 @@ export const translations = {
       "بعد الامتحان بتشوف درجتك وتراجع الأسئلة اللي غلطت فيها وتشوف ملاحظات الحل اللي سجلتها أول ما شوفت السؤال، وده بيحول الغلطات لفهم دائم ودرجات أعلى.",
     "faq.supportPrompt": "محتاج مساعدة تانية أو عندك اقتراح؟ تواصل معانا على",
 
+    // Cookie Consent
+    "cookie.message":
+      "بنستخدم ملفات تعريف ارتباط أساسية عشان نسجل دخولك بأمان. مش بنستخدم أي كوكيز تتبع.",
+    "cookie.learnMore": "اعرف أكتر",
+    "cookie.accept": "تمام، فهمت",
+
     // Footer
     "footer.brandTagline":
       "رفيق المذاكرة الهادي ومولّد الامتحانات المصمم للطلاب اللي عايزين يركزوا.",
@@ -157,9 +172,12 @@ export const translations = {
     "footer.howItWorks": "إزاي بيشتغل",
     "footer.androidApp": "تطبيق الأندرويد",
     "footer.navQuickAccess": "وصول سريع",
-    "footer.signIn": "تسجيل الدخول",
     "footer.createAccount": "حساب جديد",
     "footer.faq": "الأسئلة الشائعة",
+    "footer.navLegal": "قانوني",
+    "footer.privacy": "سياسة الخصوصية",
+    "footer.terms": "شروط الاستخدام",
+    "footer.cookies": "ملفات الكوكيز",
     "footer.rights": "جميع الحقوق محفوظة.",
   },
 } as const;

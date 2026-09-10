@@ -6,6 +6,7 @@ import { HeroSection } from "./HeroSection";
 import { HowItWorksSection } from "./HowItWorksSection";
 import { FaqSection } from "./FaqSection";
 import { LandingFooter } from "./LandingFooter";
+import { CookieConsentBanner } from "@/components/CookieConsent/CookieConsentBanner";
 
 export function LandingPage() {
   return (
@@ -18,6 +19,7 @@ export function LandingPage() {
           <FaqSection />
         </main>
         <LandingFooter />
+        <CookieConsentBanner />
       </div>
     </I18nProvider>
   );

@@ -146,6 +146,7 @@ export function QuestionDetail({
             marginTop: 16,
           }}
           resizeMode="contain"
+          accessibilityLabel={`Question image: ${question.title || "study question"}`}
         />
 
         {question.text ? (

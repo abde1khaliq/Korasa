@@ -19,6 +19,7 @@ export default function RegisterScreen() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -26,6 +27,10 @@ export default function RegisterScreen() {
     setError("");
     if (!username || !email || !password) {
       setError("Please fill in all fields.");
+      return;
+    }
+    if (!agreed) {
+      setError("You must agree to the Terms and Privacy Policy.");
       return;
     }
     if (password.length < 8) {
@@ -113,9 +118,32 @@ export default function RegisterScreen() {
           </Text>
 
           <Pressable
+            onPress={() => !loading && setAgreed(!agreed)}
+            className="mt-6 flex-row items-start gap-3"
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: agreed }}
+            accessibilityLabel="Agree to Terms of Service and Privacy Policy"
+          >
+            <View
+              className={`mt-0.5 h-6 w-6 rounded-md border items-center justify-center ${
+                agreed
+                  ? "bg-onyx border-onyx"
+                  : "border-ink-faint bg-paper-card"
+              }`}
+            >
+              {agreed && (
+                <Text className="text-paper text-xs font-bold">✓</Text>
+              )}
+            </View>
+            <Text className="flex-1 text-[15px] leading-snug text-ink-soft select-none">
+              I agree to the Terms of Service and Privacy Policy.
+            </Text>
+          </Pressable>
+
+          <Pressable
             onPress={handleRegister}
             disabled={loading}
-            className="mt-8 rounded-full bg-onyx py-4 items-center"
+            className="mt-7 rounded-full bg-onyx py-4 items-center"
             style={{ opacity: loading ? 0.5 : 1 }}
           >
             {loading ? (

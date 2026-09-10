@@ -167,16 +167,18 @@ export function Register() {
             At least 8 characters.
           </p>
 
-          <div
-            className="mt-7 flex items-start gap-3 cursor-pointer"
-            onClick={() => !loading && setAgreed(!agreed)}
-          >
-            <span
-              className={`mt-0.5 flex size-6 items-center justify-center rounded-md border ${
+          <div className="mt-7 flex items-start gap-3">
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={agreed}
+              aria-label="Agree to Terms of Service and Privacy Policy"
+              onClick={() => !loading && setAgreed(!agreed)}
+              className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border ${
                 agreed
                   ? "bg-onyx border-onyx"
                   : "border-ink-faint bg-paper-card"
-              } transition-colors`}
+              } transition-colors focus:outline-hidden`}
             >
               {agreed && (
                 <Check
@@ -184,14 +186,25 @@ export function Register() {
                   strokeWidth={2.25}
                 />
               )}
-            </span>
+            </button>
 
-            <p className="text-[16px] leading-snug text-ink-soft select-none">
+            <p className="text-[15px] sm:text-[16px] leading-snug text-ink-soft select-none">
               I agree to the{" "}
-              <span className="text-brand hover:underline">Terms</span> and{" "}
-              <span className="text-brand hover:underline">
+              <Link
+                href="/terms"
+                target="_blank"
+                className="text-brand font-medium hover:underline underline-offset-2"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                target="_blank"
+                className="text-brand font-medium hover:underline underline-offset-2"
+              >
                 Privacy Policy
-              </span>
+              </Link>
               .
             </p>
           </div>

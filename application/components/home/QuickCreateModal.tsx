@@ -498,6 +498,7 @@ export function QuickCreateModal({
                             borderRadius: 16,
                           }}
                           resizeMode="cover"
+                          accessibilityLabel="Selected question photo preview"
                         />
                         <Pressable
                           onPress={() => setImage(null)}

@@ -14,7 +14,7 @@ import { useI18n } from "@/lib/i18n";
 import { useScrollReveal } from "@/lib/hooks/useScrollReveal";
 
 const APK_DOWNLOAD_URL =
-  "https://download854.mediafire.com/cnskjkkzkqsgIGD8ECiG-XHVtPsMYzvYDygbZ5dMgS-bCFcF2b4ieck3cL0hHZoCJSE6mL3HFOnDcU-xEVLyD3d9_BGJYUi2TEUDhEP2-3dJDBh4IWX1KkvgzBPRwrkIjD2a-C-W94o_OmQu1egwEb7vm1Q6xSBO5ar-D48UiFHXfA/mx5jqtcbomzpdfh/Korasa.apk";
+  "https://download1980.mediafire.com/rdqz2y4ly68gQLPneLxt3du2j9H3wO9iS54ZBg5EeJSTtal95I0GzBhyNO-vqWFW1vlFv39VyNKh8zlz5CcoNSHTxy_X-bnbikyXR5QGQz0c8puhmEG2n01TmeOM6i8PXGHMq_LrZZ6CTApVuYdIIseZktHgVxwX3UtnpaHKpv6lF3U/0l0usenhagej6bt/Korasa.apk";
 
 export function HeroSection() {
   const { t, isRtl } = useI18n();

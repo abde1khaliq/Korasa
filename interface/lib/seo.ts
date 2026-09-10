@@ -50,9 +50,7 @@ export function constructMetadata({
   noIndex = false,
   keywords = [...SITE_CONFIG.keywords],
 }: MetadataOptions = {}): Metadata {
-  const fullTitle = title
-    ? `${title} | ${SITE_CONFIG.name}`
-    : SITE_CONFIG.title;
+  const fullTitle = title ?? SITE_CONFIG.title;
 
   const canonicalUrl = `${SITE_CONFIG.url}${path}`;
 

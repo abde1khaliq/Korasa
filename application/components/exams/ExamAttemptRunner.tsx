@@ -201,6 +201,7 @@ export function ExamAttemptRunner({ examId }: { examId: string }) {
           source={{ uri: question.image_url }}
           style={{ width: "100%", height: 260, borderRadius: 16 }}
           resizeMode="contain"
+          accessibilityLabel={`Question image for: ${question.text || "exam question"}`}
         />
 
         {question.text ? (
