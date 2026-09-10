@@ -8,13 +8,10 @@ import {
   ClipboardList,
   Settings,
   Plus,
-  Moon,
-  Sun,
   LogOut,
   User as UserIcon,
 } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
-import { useTheme } from "next-themes";
 import { useState } from "react";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 
@@ -32,7 +29,6 @@ const NAV_ITEMS = [
 export function AppSidebar({ onQuickCreate }: AppSidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const { theme, setTheme } = useTheme();
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
 
   const userName = session?.user?.name || "Student";
@@ -49,7 +45,7 @@ export function AppSidebar({ onQuickCreate }: AppSidebarProps) {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-rule bg-paper min-h-screen sticky top-0 h-screen select-none">
+    <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-rule bg-paper min-h-screen sticky top-0 h-screen select-none z-30">
       {/* Brand Header */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-rule/60">
         <Link href="/app" className="flex items-center gap-3 group">
@@ -117,18 +113,6 @@ export function AppSidebar({ onQuickCreate }: AppSidebarProps) {
               </p>
             </div>
           </div>
-
-          {/* <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            title="Toggle theme"
-            className="group flex size-8 items-center justify-center rounded-lg text-ink hover:bg-ink/5 dark:hover:bg-white/5 active:scale-95 transition-all duration-200 cursor-pointer"
-          >
-            {theme === "dark" ? (
-              <Sun className="size-4 text-ink group-hover:rotate-45 transition-transform duration-200" strokeWidth={1.75} />
-            ) : (
-              <Moon className="size-4 text-ink group-hover:-rotate-12 transition-transform duration-200" strokeWidth={1.75} />
-            )}
-          </button> */}
         </div>
 
         <button
