@@ -3,17 +3,33 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  ArrowLeft,
   Camera,
   Layers,
-  Smartphone,
+  Download,
 } from "lucide-react";
 import { PhoneMockup } from "./PhoneMockup";
 import { MobileHomeScreenPreview } from "./MobileHomeScreenPreview";
+import { useI18n } from "@/lib/i18n";
+import { useScrollReveal } from "@/lib/hooks/useScrollReveal";
+
+const APK_DOWNLOAD_URL =
+  "https://download854.mediafire.com/cnskjkkzkqsgIGD8ECiG-XHVtPsMYzvYDygbZ5dMgS-bCFcF2b4ieck3cL0hHZoCJSE6mL3HFOnDcU-xEVLyD3d9_BGJYUi2TEUDhEP2-3dJDBh4IWX1KkvgzBPRwrkIjD2a-C-W94o_OmQu1egwEb7vm1Q6xSBO5ar-D48UiFHXfA/mx5jqtcbomzpdfh/Korasa.apk";
 
 export function HeroSection() {
+  const { t, isRtl } = useI18n();
+  const { ref, isVisible } = useScrollReveal<HTMLElement>({ threshold: 0.05 });
+
+  const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
+
   return (
-    <section className="relative overflow-hidden px-6 pt-12 pb-20 md:pt-18 md:pb-28">
-      {/* Subtle paper-like background radial glows */}
+    <section
+      ref={ref}
+      className={`relative overflow-hidden px-6 pt-12 pb-18 md:pt-20 md:pb-28 transition-all duration-700 ease-out ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+      }`}
+    >
+      {/* Subtle paper-like ambient glow */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,oklch(0.53_0.09_65/0.12),transparent_70%)]"
@@ -21,43 +37,43 @@ export function HeroSection() {
 
       <div className="mx-auto max-w-6xl">
         <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
-          {/* Left Column: Editorial & Value Proposition */}
+          {/* Left Column: Value Proposition */}
           <div className="lg:col-span-7">
-
             {/* Main Headline */}
-            <h1 className="mt-6 font-display text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-6xl">
-              The questions worth{" "}
-              <span className="italic text-brand">remembering</span>, ready for
-              your next exam.
+            <h1 className="font-display text-4xl leading-[1.12] tracking-tight text-ink sm:text-5xl lg:text-6xl">
+              {t("hero.headline")}{" "}
+              <span className="italic text-brand">{t("hero.headlineHighlight")}</span>
+              {t("hero.headlineSuffix")}
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-ink-soft sm:text-[18px]">
-              Snap or type tricky questions you encounter while studying,
-              organize them by subject and folder, then generate custom practice
-              exams from your own question bank.
+            <p className="mt-6 max-w-xl text-[16.5px] leading-relaxed text-ink-soft sm:text-[18px]">
+              {t("hero.subtitle")}
             </p>
 
-            {/* CTAs */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center gap-3">
+            {/* Sleek CTAs without harsh borders */}
+            <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <Link
                 href="/register"
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-onyx px-6 py-3.5 text-[15px] font-medium text-paper shadow-sm transition-all hover:bg-onyx/90 hover:shadow"
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-onyx px-6 py-3.5 text-[15px] font-medium text-paper shadow-sm transition-all duration-200 hover:bg-onyx/90 hover:shadow-md hover:scale-[1.01] active:scale-[0.98]"
               >
-                Open Korasa in your browser
-                <ArrowRight className="size-4" strokeWidth={2} />
+                <span>{t("hero.ctaPrimary")}</span>
+                <ArrowIcon className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" strokeWidth={2.2} />
               </Link>
 
               <a
-                href="#download"
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-rule bg-paper-card px-5 py-3.5 text-[14px] font-medium text-ink transition-colors hover:border-brand/40 hover:bg-paper"
+                href={APK_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-ink/[0.04] px-5 py-3.5 text-[14.5px] font-medium text-ink transition-all duration-200 hover:bg-ink/[0.08] hover:text-ink active:scale-[0.98]"
               >
-                Download the Android App
+                <Download className="size-4 text-ink-soft" strokeWidth={2} />
+                <span>{t("hero.ctaSecondary")}</span>
               </a>
             </div>
           </div>
 
-          {/* Right Column: Realistic Phone Mockup with Actual Application UI */}
+          {/* Right Column: Realistic Phone Mockup */}
           <div className="relative flex items-center justify-center lg:col-span-5">
             {/* Soft backdrop halo */}
             <div
@@ -65,32 +81,44 @@ export function HeroSection() {
               className="pointer-events-none absolute -inset-6 -z-10 rounded-full bg-gradient-to-tr from-brand/15 via-medium-soft/20 to-easy-soft/20 blur-2xl"
             />
 
-            {/* Floating Fragment Card 1: Camera OCR (Top Left) */}
-            <div className="pointer-events-none absolute -left-4 top-10 z-20 hidden -rotate-6 rounded-2xl border border-rule bg-paper/95 p-3 shadow-lg backdrop-blur-md sm:flex sm:items-center sm:gap-2.5">
+            {/* Floating Badge 1: Camera OCR */}
+            <div
+              className={`pointer-events-none absolute top-10 z-20 hidden rounded-2xl bg-paper/95 p-3 shadow-lg shadow-ink/5 backdrop-blur-md ring-1 ring-ink/5 sm:flex sm:items-center sm:gap-2.5 ${
+                isRtl
+                  ? "-right-4 rotate-6"
+                  : "-left-4 -rotate-6"
+              }`}
+            >
               <div className="flex size-7 items-center justify-center rounded-lg bg-brand/10 text-brand">
                 <Camera className="size-3.5" />
               </div>
               <div>
-                <p className="font-mono text-[10px] font-semibold text-brand uppercase">
-                  Capture Question
+                <p className="font-mono text-[9.5px] font-semibold text-brand uppercase tracking-wider">
+                  {t("hero.badgeCapture")}
                 </p>
                 <p className="text-[11.5px] font-medium text-ink">
-                  Snap & Save
+                  {t("hero.badgeCaptureSub")}
                 </p>
               </div>
             </div>
 
-            {/* Floating Fragment Card 2: Exam Generator (Bottom Right) */}
-            <div className="pointer-events-none absolute -right-4 bottom-12 z-20 hidden rotate-6 rounded-2xl border border-rule bg-paper/95 p-3 shadow-lg backdrop-blur-md sm:flex sm:items-center sm:gap-2.5">
+            {/* Floating Badge 2: Exam Generator */}
+            <div
+              className={`pointer-events-none absolute bottom-12 z-20 hidden rounded-2xl bg-paper/95 p-3 shadow-lg shadow-ink/5 backdrop-blur-md ring-1 ring-ink/5 sm:flex sm:items-center sm:gap-2.5 ${
+                isRtl
+                  ? "-left-4 -rotate-6"
+                  : "-right-4 rotate-6"
+              }`}
+            >
               <div className="flex size-7 items-center justify-center rounded-lg bg-easy/10 text-easy">
                 <Layers className="size-3.5" />
               </div>
               <div>
-                <p className="font-mono text-[10px] font-semibold text-easy uppercase">
-                  Exam Mode
+                <p className="font-mono text-[9.5px] font-semibold text-easy uppercase tracking-wider">
+                  {t("hero.badgeExam")}
                 </p>
                 <p className="text-[11.5px] font-medium text-ink">
-                  Instant Mock Tests
+                  {t("hero.badgeExamSub")}
                 </p>
               </div>
             </div>

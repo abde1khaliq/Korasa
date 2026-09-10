@@ -177,5 +177,15 @@
     font-family: var(--font-display);
     font-weight: 400 !important;
   }
+
+  :root[lang="ar"] body {
+    font-family: var(--font-kufi), var(--font-sans);
+  }
+
+  :root[lang="ar"] .font-display {
+    font-family: var(--font-kufi), sans-serif !important;
+    letter-spacing: normal !important;
+  }
 }
+
 

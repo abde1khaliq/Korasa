@@ -1,72 +1,89 @@
 "use client";
 
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
+
+const APK_DOWNLOAD_URL =
+  "https://download854.mediafire.com/cnskjkkzkqsgIGD8ECiG-XHVtPsMYzvYDygbZ5dMgS-bCFcF2b4ieck3cL0hHZoCJSE6mL3HFOnDcU-xEVLyD3d9_BGJYUi2TEUDhEP2-3dJDBh4IWX1KkvgzBPRwrkIjD2a-C-W94o_OmQu1egwEb7vm1Q6xSBO5ar-D48UiFHXfA/mx5jqtcbomzpdfh/Korasa.apk";
 
 export function LandingFooter() {
+  const { t, locale } = useI18n();
+
   return (
-    <footer className="border-t border-rule bg-paper-card transition-colors">
-
-      {/* Main Footer Links */}
-      <div className="border-t border-rule py-12">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
-            {/* Brand column */}
-            <div className="md:col-span-1">
-              <span className="font-display text-2xl tracking-tight text-ink">
-                Korasa
-              </span>
-              <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">
-                The quiet study companion and exam generator built for focused students.
-              </p>
-            </div>
-
-            {/* Navigation links */}
-            <div>
-              <p className="font-mono text-[11px] font-semibold tracking-wider text-ink uppercase">
-                Product
-              </p>
-              <ul className="mt-3 space-y-2 text-[14px] text-ink-soft">
-                <li>
-                  <a href="#how-it-works" className="hover:text-ink">
-                    How It Works
-                  </a>
-                </li>
-                <li>
-                  <a href="#download" className="hover:text-ink">
-                    Android App
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="font-mono text-[11px] font-semibold tracking-wider text-ink uppercase">
-                Quick Access
-              </p>
-              <ul className="mt-3 space-y-2 text-[14px] text-ink-soft">
-                <li>
-                  <Link href="/login" className="hover:text-ink">
-                    Sign in
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/register" className="hover:text-ink">
-                    Create Account
-                  </Link>
-                </li>
-                <li>
-                  <a href="#faq" className="hover:text-ink">
-                    FAQ & Support
-                  </a>
-                </li>
-              </ul>
-            </div>
+    <footer className="border-t border-rule/60 bg-paper-card/40 transition-colors">
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
+          {/* Brand column */}
+          <div className="md:col-span-2">
+            <span className="font-display text-2xl font-medium tracking-tight text-ink">
+              {locale === "ar" ? "كراسة" : "Korasa"}
+            </span>
+            <p className="mt-3 max-w-sm text-[14px] leading-relaxed text-ink-soft">
+              {t("footer.brandTagline")}
+            </p>
           </div>
 
-          {/* Copyright line */}
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-rule pt-6 font-mono text-[12px] text-ink-faint sm:flex-row">
-            <p>© {new Date().getFullYear()} Korasa. All rights reserved.</p>
+          {/* Product links */}
+          <div>
+            <p className="font-mono text-[11px] font-semibold tracking-wider text-ink uppercase">
+              {t("footer.navProduct")}
+            </p>
+            <ul className="mt-3 space-y-2 text-[14px] text-ink-soft">
+              <li>
+                <a
+                  href="#how-it-works"
+                  className="transition-colors hover:text-ink"
+                >
+                  {t("footer.howItWorks")}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={APK_DOWNLOAD_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-colors hover:text-ink"
+                >
+                  {t("footer.androidApp")}
+                </a>
+              </li>
+            </ul>
           </div>
+
+          {/* Quick Access links */}
+          <div>
+            <p className="font-mono text-[11px] font-semibold tracking-wider text-ink uppercase">
+              {t("footer.navQuickAccess")}
+            </p>
+            <ul className="mt-3 space-y-2 text-[14px] text-ink-soft">
+              <li>
+                <Link href="/login" className="transition-colors hover:text-ink">
+                  {t("footer.signIn")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/register"
+                  className="transition-colors hover:text-ink"
+                >
+                  {t("footer.createAccount")}
+                </Link>
+              </li>
+              <li>
+                <a href="#faq" className="transition-colors hover:text-ink">
+                  {t("footer.faq")}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Copyright line */}
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-rule/50 pt-6 text-[13px] text-ink-faint sm:flex-row">
+          <p>
+            © {new Date().getFullYear()} {locale === "ar" ? "كراسة" : "Korasa"}.{" "}
+            {t("footer.rights")}
+          </p>
         </div>
       </div>
     </footer>
