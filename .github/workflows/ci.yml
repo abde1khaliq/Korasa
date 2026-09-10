@@ -1,0 +1,44 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  backend-test:
+    name: Backend Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Static analysis (go vet)
+        run: go vet ./...
+
+      - name: Compile backend binary
+        run: go build ./...
+
+      - name: Run unit & integration tests
+        env:
+          JWT_SECRET: "ci-secret-key-32-characters-long-minimum-strictly"
+          JWT_REFRESH_SECRET: "ci-refresh-secret-32-characters-long-minimum-strictly"
+        run: go test -v -race -count=1 -coverprofile=coverage.out -coverpkg=./... ./...
+
+      - name: Display coverage summary
+        run: |
+          go tool cover -func=coverage.out | tail -n 1
