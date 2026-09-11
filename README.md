@@ -6,12 +6,10 @@
 
 Organize questions into folders, folders into subjects, generate custom practice exams, and schedule periodic lessons.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React Native](https://img.shields.io/badge/React%20Native-Expo%2057-000020?logo=expo&logoColor=white)](https://expo.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 [Live Web App](https://korasa.study) • [Features](#-features) • [Quickstart](#-quickstart) • [Architecture](#-architecture) • [API Overview](#-api-endpoints) • [Contributing](#-contributing)
 
