@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📚 Korasa (كُرّاسة)
+# Korasa
 
 **A modern, open-source study revision and question organizer.**
 
