@@ -33,8 +33,7 @@ export default function CookiesPage() {
 
         <h3>A. Essential Authentication Cookies</h3>
         <p>
-          When you sign in to your Korasa account, secure session tokens (such
-          as NextAuth cookies) are set to authenticate your requests and keep
+          When you sign in to your Korasa account, secure session tokens are set to authenticate your requests and keep
           you signed in as you navigate between your subjects, folders, and
           exams.
         </p>
