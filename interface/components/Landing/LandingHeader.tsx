@@ -155,14 +155,56 @@ export function LandingHeader() {
               aria-label={t("header.language")}
               aria-expanded={langDropdownOpen}
             >
-              <Languages className="size-3.5" />
-              <span>{locale === "ar" ? "عربي" : "EN"}</span>
+              <span>{locale === "ar" ? "🇪🇬" : "🇺🇸"}</span>
               <ChevronDown
                 className={`size-2.5 text-ink-faint transition-transform duration-200 ${
                   langDropdownOpen ? "rotate-180 text-ink" : ""
                 }`}
               />
             </button>
+
+            <div
+              className={`absolute top-full mt-2 end-0 z-50 w-44 overflow-hidden rounded-2xl bg-paper/95 p-1.5 transition-all duration-200 ease-out ${
+                isRtl ? "origin-top-left" : "origin-top-right"
+              } ${
+                langDropdownOpen
+                  ? "opacity-100 scale-100 translate-y-0 pointer-events-auto visible"
+                  : "opacity-0 scale-95 -translate-y-1.5 pointer-events-none invisible"
+              }`}
+              aria-hidden={!langDropdownOpen}
+            >
+              <button
+                type="button"
+                tabIndex={langDropdownOpen ? 0 : -1}
+                onClick={() => selectLanguage("en")}
+                className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-[13px] font-medium transition-colors mb-1 ${
+                  locale === "en"
+                    ? "bg-ink/5 text-ink"
+                    : "text-ink-soft hover:bg-ink/5 hover:text-ink"
+                }`}
+              >
+                <span>🇺🇸 English (US)</span>
+                {locale === "en" && (
+                  <Check className="size-3.5 text-brand" strokeWidth={2.5} />
+                )}
+              </button>
+
+              <button
+                type="button"
+                tabIndex={langDropdownOpen ? 0 : -1}
+                onClick={() => selectLanguage("ar")}
+                className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-[13px] font-medium transition-colors ${
+                  locale === "ar"
+                    ? "bg-ink/5 text-ink"
+                    : "text-ink-soft hover:bg-ink/5 hover:text-ink"
+                }`}
+              >
+                <span>🇪🇬 Arabic (AR)</span>
+                {locale === "ar" && (
+                  <Check className="size-3.5 text-brand" strokeWidth={2.5} />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
