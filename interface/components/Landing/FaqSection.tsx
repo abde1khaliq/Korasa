@@ -37,17 +37,13 @@ export function FaqSection() {
       }`}
     >
       <div className="mx-auto max-w-3xl">
-        {/* Section Header */}
         <div className="text-center">
           <h2 className="font-display text-3xl tracking-tight text-ink sm:text-4xl">
             {t("faq.title")}
           </h2>
-          <p className="mt-3 text-[16px] text-ink-soft">
-            {t("faq.subtitle")}
-          </p>
+          <p className="mt-3 text-[16px] text-ink-soft">{t("faq.subtitle")}</p>
         </div>
 
-        {/* FAQ Accordion List */}
         <div className="mt-12 space-y-3">
           {FAQ_CONFIG.map((item, idx) => {
             const isOpen = openIndex === idx;
@@ -73,7 +69,6 @@ export function FaqSection() {
                   />
                 </button>
 
-                {/* Animated accordion panel */}
                 <div
                   className={`grid transition-[grid-template-rows] duration-300 ease-out ${
                     isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
@@ -92,9 +87,8 @@ export function FaqSection() {
           })}
         </div>
 
-        {/* Support contact info */}
         <div className="mt-12 text-center text-[13.5px] text-ink-faint">
-          <span>{t("faq.supportPrompt")}{" "}</span>
+          <span>{t("faq.supportPrompt")} </span>
           <a
             href="mailto:support@korasa.study"
             className="text-brand font-medium hover:underline underline-offset-4 transition-colors"

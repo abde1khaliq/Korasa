@@ -2,9 +2,7 @@
 
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
-
-const APK_DOWNLOAD_URL =
-  "https://download854.mediafire.com/cnskjkkzkqsgIGD8ECiG-XHVtPsMYzvYDygbZ5dMgS-bCFcF2b4ieck3cL0hHZoCJSE6mL3HFOnDcU-xEVLyD3d9_BGJYUi2TEUDhEP2-3dJDBh4IWX1KkvgzBPRwrkIjD2a-C-W94o_OmQu1egwEb7vm1Q6xSBO5ar-D48UiFHXfA/mx5jqtcbomzpdfh/Korasa.apk";
+import { APK_DOWNLOAD_URL } from "@/app/utils/data";
 
 export function LandingFooter() {
   const { t, locale } = useI18n();
@@ -13,7 +11,6 @@ export function LandingFooter() {
     <footer className="border-t border-rule/60 bg-paper-card/40 transition-colors">
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
-          {/* Brand column */}
           <div>
             <span className="font-display text-2xl font-medium tracking-tight text-ink">
               {locale === "ar" ? "كراسة" : "Korasa"}
@@ -23,7 +20,6 @@ export function LandingFooter() {
             </p>
           </div>
 
-          {/* Product links */}
           <div>
             <p className="font-mono text-[11px] font-semibold tracking-wider text-ink uppercase">
               {t("footer.navProduct")}
@@ -50,7 +46,6 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Quick Access links */}
           <div>
             <p className="font-mono text-[11px] font-semibold tracking-wider text-ink uppercase">
               {t("footer.navQuickAccess")}
@@ -72,7 +67,6 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Legal links */}
           <div>
             <p className="font-mono text-[11px] font-semibold tracking-wider text-ink uppercase">
               {t("footer.navLegal")}
@@ -106,7 +100,6 @@ export function LandingFooter() {
           </div>
         </div>
 
-        {/* Copyright line */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-rule/50 pt-6 text-[13px] text-ink-faint sm:flex-row">
           <p>
             © {new Date().getFullYear()} {locale === "ar" ? "كراسة" : "Korasa"}.{" "}

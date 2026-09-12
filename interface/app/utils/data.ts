@@ -1,0 +1,2 @@
+export const APK_DOWNLOAD_URL =
+  "https://download1980.mediafire.com/rdqz2y4ly68gQLPneLxt3du2j9H3wO9iS54ZBg5EeJSTtal95I0GzBhyNO-vqWFW1vlFv39VyNKh8zlz5CcoNSHTxy_X-bnbikyXR5QGQz0c8puhmEG2n01TmeOM6i8PXGHMq_LrZZ6CTApVuYdIIseZktHgVxwX3UtnpaHKpv6lF3U/0l0usenhagej6bt/Korasa.apk";

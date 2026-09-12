@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Wifi } from "lucide-react";
+import { Signal, Wifi, BatteryFull } from "lucide-react";
 
 interface PhoneMockupProps {
   children: ReactNode;
@@ -9,44 +9,112 @@ interface PhoneMockupProps {
 
 export function PhoneMockup({ children }: PhoneMockupProps) {
   return (
-    <div className="relative mx-auto flex w-full max-w-[310px] items-center justify-center sm:max-w-[330px]">
-      {/* Outer Phone Frame / Chassis */}
-      <div className="relative w-full aspect-[9/19] rounded-[48px] border-[10px] border-onyx bg-onyx p-1.5 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35),0_0_0_1px_rgba(255,255,255,0.08)] ring-1 ring-black/20">
-        {/* Left Side Physical Buttons (Volume Rocker) */}
-        <div className="absolute -left-[13px] top-24 h-9 w-[3px] rounded-l-sm bg-onyx" />
-        <div className="absolute -left-[13px] top-36 h-9 w-[3px] rounded-l-sm bg-onyx" />
+    <div
+      className="relative mx-auto flex w-full max-w-[310px] items-center justify-center sm:max-w-[330px]"
+      style={{ perspective: "1200px" }}
+    >
+      <div className="relative w-full">
+        <div
+          className="relative w-full aspect-[9/19.5] rounded-[52px] p-[2px]"
+          style={{
+            background:
+              "linear-gradient(145deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.10) 30%, rgba(0,0,0,0.05) 60%, rgba(0,0,0,0.20) 100%)",
+          }}
+        >
+          <div
+            className="relative h-full w-full rounded-[50px] p-[9px]"
+            style={{
+              background:
+                "linear-gradient(165deg, #2d2d32 0%, #1c1c20 35%, #131316 70%, #0e0e11 100%)",
+            }}
+          >
+            <div
+              className="absolute -left-[1px] top-[72px] h-[18px] w-[3px] rounded-l-sm"
+              style={{
+                background: "linear-gradient(180deg, #48484e, #2a2a2e)",
+              }}
+            />
+            <div
+              className="absolute -left-[1px] top-[104px] h-[32px] w-[3px] rounded-l-sm"
+              style={{
+                background: "linear-gradient(180deg, #48484e, #2a2a2e)",
+              }}
+            />
+            <div
+              className="absolute -left-[1px] top-[144px] h-[32px] w-[3px] rounded-l-sm"
+              style={{
+                background: "linear-gradient(180deg, #48484e, #2a2a2e)",
+              }}
+            />
 
-        {/* Right Side Physical Button (Power) */}
-        <div className="absolute -right-[13px] top-28 h-12 w-[3px] rounded-r-sm bg-onyx" />
+            <div
+              className="absolute -right-[1px] top-[120px] h-[40px] w-[3px] rounded-r-sm"
+              style={{
+                background: "linear-gradient(180deg, #3a3a3e, #222226)",
+              }}
+            />
 
-        {/* Inner Phone Display Container */}
-        <div className="relative flex h-full w-full flex-col overflow-hidden rounded-[38px] bg-paper">
-          {/* Top Status Bar & Dynamic Island */}
-          <div className="relative z-30 flex h-8 w-full items-center justify-between px-6 pt-1 text-ink select-none">
-            {/* Clock */}
-            <span className="font-mono text-[11px] font-semibold tracking-tight">
-              9:41
-            </span>
+            <div className="relative flex h-full w-full flex-col overflow-hidden rounded-[42px]">
+              <div className="relative flex h-full w-full flex-col bg-paper">
+                <div className="relative z-30 flex h-12 w-full items-end justify-between px-7 pb-1.5 select-none">
+                  <span className="text-[13px] font-semibold tracking-tight text-ink">
+                    9:41
+                  </span>
 
-            {/* Dynamic Island / Speaker cutout */}
-            <div className="absolute left-1/2 top-2 h-4 w-20 -translate-x-1/2 rounded-full bg-onyx" />
+                  <div
+                    className="absolute left-1/2 top-3 -translate-x-1/2"
+                    style={{ width: "92px", height: "28px" }}
+                  >
+                    <div
+                      className="h-full w-full rounded-full"
+                      style={{ background: "#0a0a0c" }}
+                    />
+                  </div>
 
-            {/* Status Icons */}
-            <div className="flex items-center gap-1.5 text-ink">
-              <span className="font-mono text-[9px] font-bold">5G</span>
-              <Wifi className="size-2.5" strokeWidth={2.5} />
-              {/* Battery Icon */}
-              <div className="flex h-2.5 w-4 items-center rounded-xs border border-ink p-0.5">
-                <div className="h-full w-full rounded-2xs bg-ink" />
+                  <div className="flex items-center gap-1 text-ink">
+                    <Signal className="size-3" strokeWidth={2.2} />
+                    <Wifi className="size-3" strokeWidth={2.2} />
+                    <BatteryFull className="size-[15px]" strokeWidth={1.8} />
+                  </div>
+                </div>
+
+                <div className="relative flex-1 overflow-hidden">
+                  {children}
+                </div>
+
+                <div className="pointer-events-none relative z-30 flex justify-center pb-2 pt-0.5">
+                  <div className="h-[4px] w-[120px] rounded-full bg-ink/25" />
+                </div>
               </div>
+
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 z-20 rounded-[42px]"
+                style={{
+                  background:
+                    "linear-gradient(130deg, rgba(255,255,255,0.10) 0%, transparent 30%, transparent 100%)",
+                }}
+              />
             </div>
           </div>
 
-          {/* Screen Content */}
-          <div className="relative flex-1 overflow-hidden">{children}</div>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-16 top-0 h-[1.5px] rounded-full"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+            }}
+          />
 
-          {/* Bottom Home Indicator Bar */}
-          <div className="pointer-events-none absolute bottom-1.5 left-1/2 z-30 h-1 w-28 -translate-x-1/2 rounded-full bg-ink/30" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-0 inset-y-20 w-[1.5px] rounded-full"
+            style={{
+              background:
+                "linear-gradient(180deg, transparent 10%, rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.08) 70%, transparent 90%)",
+            }}
+          />
         </div>
       </div>
     </div>
