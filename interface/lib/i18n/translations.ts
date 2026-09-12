@@ -14,8 +14,8 @@ export const translations = {
 
     // Hero
     "hero.headline": "You'll never forget",
-    "hero.headlineHighlight": "the way to solve the question again,",
-    "hero.headlineSuffix": ", with Korasa.",
+    "hero.headlineHighlight": "the way to solve the question again ",
+    "hero.headlineSuffix": "with Korasa.",
     "hero.subtitle":
       "Snap or type tricky questions you encounter while studying, organize them by subject and folder, then generate custom practice exams from your own question bank.",
     "hero.ctaPrimary": "Open Korasa in your browser",

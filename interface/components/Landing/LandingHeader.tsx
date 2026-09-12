@@ -155,7 +155,7 @@ export function LandingHeader() {
               aria-label={t("header.language")}
               aria-expanded={langDropdownOpen}
             >
-              <span>{locale === "ar" ? "🇪🇬" : "🇺🇸"}</span>
+              <span style={{ fontSize: "14px"}}>{locale === "ar" ? "🇪🇬" : "🇺🇸"}</span>
               <ChevronDown
                 className={`size-2.5 text-ink-faint transition-transform duration-200 ${
                   langDropdownOpen ? "rotate-180 text-ink" : ""
