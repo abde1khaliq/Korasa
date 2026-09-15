@@ -94,9 +94,14 @@ export function Login() {
             </button>
           </div>
 
-          <p className="mt-4 text-[16px] text-brand hover:underline cursor-pointer">
-            Forgot password?
-          </p>
+          <div className="mt-4">
+            <Link
+              href="/forgot-password"
+              className="text-[16px] text-brand hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
 
           <button
             type="submit"
@@ -107,18 +112,6 @@ export function Login() {
             <ArrowRight className="size-5" strokeWidth={1.75} />
           </button>
         </form>
-
-        {/* <div className="mt-8 flex items-center gap-4">
-          <span className="h-px flex-1 bg-rule" />
-          <span className="font-mono text-[13px] tracking-[0.18em] text-ink-faint uppercase">
-            or
-          </span>
-          <span className="h-px flex-1 bg-rule" />
-        </div>
-
-        <button className="text-ink mt-6 w-full rounded-full border border-rule bg-paper-card px-8 py-4 text-[17px] hover:bg-rule/50 transition-colors">
-          Continue with Google
-        </button> */}
 
         <p className="mt-auto pt-12 text-center text-[17px] text-ink-soft">
           New here?{" "}
