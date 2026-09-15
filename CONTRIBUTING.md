@@ -1,14 +1,8 @@
 # Contributing to Korasa
 
-Thank you for your interest in contributing to Korasa! Korasa is an open-source study revision and question organizer built to help learners master subjects through structured organization, periodic scheduling, and active exam practice.
+Thank you for your interest in contributing to Korasa! Korasa is an open-source study revision and question organizer built to help learners master subjects through structured organization, periodic scheduling for lessons, and active exam practice.
 
 This guide will help you set up your local development environment and submit high-quality contributions.
-
----
-
-## Code of Conduct
-
-All contributors are expected to adhere to our [Code of Conduct](CODE_OF_CONDUCT.md). Please read it before participating.
 
 ---
 
@@ -20,7 +14,7 @@ Korasa is organized as a monorepo with three core workspaces:
 Korasa Project/
 ├── backend/       # Go REST API (Gin, GORM, PostgreSQL)
 ├── interface/     # Web Frontend (Next.js 16 App Router, TypeScript, TailwindCSS v4)
-└── application/   # Mobile App (Expo 54, React Native, NativeWind, TypeScript)
+└── application/   # Mobile App (Expo 57, React Native, NativeWind, TypeScript)
 ```
 
 ---
@@ -121,7 +115,7 @@ npx expo start
 
 1. Push your branch to your fork.
 2. Open a Pull Request against the `main` branch.
-3. Fill out the PR template completely with a summary of changes, rationale, and testing steps.
+3. Fill out the PR template completely with a summary of changes.
 4. Ensure all automated checks and tests pass.
 5. Respond to any code review comments. Once approved, your PR will be merged!
 
